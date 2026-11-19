@@ -1,0 +1,73 @@
+/* Settings: a long page, so every group is a card with a heading and each setting is one row:
+   its name and one line of help on the left, the control on the right (under them on a phone when it is wide).
+   Built from Slate tokens. Every rule is scoped to .stg, the screen's wrapper (it has no box of its own). */
+.stg{display:contents}
+
+.stg .set-col{display:flex;flex-direction:column;gap:var(--sp-3);min-width:0}
+.stg .set-col>.card{scroll-margin-top:var(--sp-4)}
+.stg .set-col .card-h{margin-bottom:var(--sp-3)}
+.stg .hd{display:flex;align-items:center;gap:var(--sp-2)}
+.stg .hd .i{color:var(--c-text-2)}
+
+.stg .sets{display:grid}
+.stg .set{display:flex;align-items:center;gap:var(--sp-2) var(--sp-4);padding:var(--sp-3) 0;border-top:1px solid var(--c-line)}
+.stg .set:first-child{padding-top:0;border-top:0}
+.stg .set:last-child{padding-bottom:0}
+.stg .set-join{padding-top:0;border-top:0}                      /* belongs to the row above it */
+.stg .set-l{flex:1 1 0;min-width:0;display:grid;gap:2px}
+.stg .set-l .help,.stg .set-col p.help{text-wrap:pretty}
+.stg .set-key{gap:var(--sp-2)}
+.stg .set-wrap{flex-wrap:wrap}
+.stg .set-wrap>.set-l{flex-basis:100%}
+.stg .set-wrap>.seg,.stg .set-wrap>.btn{flex:1 1 100%}
+.stg .money{flex:none;width:124px}
+.stg .btns{display:flex;gap:var(--sp-2)}
+.stg .switch[disabled]{opacity:.5;pointer-events:none}
+.stg .modal-btn{flex:none}
+
+/* Jump list: chips on a phone, a list beside the cards on desktop */
+.stg .jump{margin:0 calc(var(--gut)*-1);padding:0 var(--gut)}
+.stg .toc button{width:100%;display:flex;align-items:center;gap:10px;min-height:40px;padding:0 10px;border-radius:var(--r-md);font-size:var(--fs-md);color:var(--c-text-2)}
+.stg .toc button:hover{background:var(--c-raised);color:var(--c-text)}
+.stg .toc button[aria-current="true"]{background:var(--c-accent-tint);color:var(--c-accent-text);font-weight:600}
+
+/* The key: always masked; only its first ten and last four characters are shown */
+.stg .keybox{display:flex;align-items:center;gap:var(--sp-2);min-height:48px;padding:0 var(--sp-3);border:1px solid var(--c-line);border-radius:var(--r-md);background:var(--c-story);color:var(--c-text-2)}
+.stg .keybox .mono{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--c-text)}
+.stg .state{display:flex;align-items:center;flex-wrap:wrap;gap:0 var(--sp-2);font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.stg .state b{display:inline-flex;align-items:center;gap:var(--sp-1);color:var(--c-ok)}
+
+/* A value that is shown and cannot be changed here */
+.stg .fixed{flex:none;display:inline-flex;align-items:center;gap:var(--sp-1);height:28px;padding:0 10px;border:1px dashed var(--c-line-strong);border-radius:var(--r-pill);font-size:var(--fs-sm);font-weight:600;white-space:nowrap}
+.stg .fixed .i{color:var(--c-text-2)}
+
+/* Prices */
+.stg .prices{margin-top:var(--sp-1)}
+.stg .prices th,.stg .prices td{padding-left:0}
+.stg .prices th:last-child,.stg .prices td:last-child{padding-right:0}
+.stg .prices td{vertical-align:middle}
+.stg .prices th+th,.stg .prices td+td{width:76px}
+.stg .prices th{white-space:normal}
+.stg .prices-n{margin-top:var(--sp-3)}
+
+/* The story whose settings are shown */
+.stg .which{display:flex;align-items:center;gap:var(--sp-3)}
+.stg .which .list{display:flex;flex-wrap:wrap;margin-left:-12px;clip-path:inset(0 0 0 12px);font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.stg .st-swatch{flex:none;width:10px;height:10px;border-radius:3px;background:var(--a)}
+.stg .about{--kv:76px}
+.stg .sets+.about{margin-top:var(--sp-4);padding-top:var(--sp-4);border-top:1px solid var(--c-line)}
+
+@media (min-width:700px){
+  .stg .set-wrap{flex-wrap:nowrap}
+  .stg .set-wrap>.set-l{flex-basis:0}
+  .stg .set-wrap>.seg{flex:none;width:300px}
+  .stg .set-wrap>.btn{flex:none;padding:0 var(--sp-4)}
+  .stg .btns .btn{flex:none;padding:0 var(--sp-4)}
+  .stg .prices th+th,.stg .prices td+td{width:104px}
+}
+@media (min-width:1100px){
+  .stg .set-col{gap:var(--sp-4)}
+  .stg .set-col>.card{padding:var(--sp-4) var(--sp-5) var(--sp-5);scroll-margin-top:var(--sp-6)}
+  .stg .toc{position:sticky;top:var(--sp-6);display:grid;gap:2px;padding:var(--sp-2);border:1px solid var(--c-line);border-radius:var(--r-lg);background:var(--c-card)}
+  .stg .money{width:140px}
+}

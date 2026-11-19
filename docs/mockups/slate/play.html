@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitor Quest - Play</title>
+<link rel="stylesheet" href="slate.css">
+<link rel="stylesheet" href="play.css">
+</head>
+<body data-shell="story" data-page="story" data-title="The Glass Road" data-cost data-mode="continue">
+
+
+
+<div class="app">
+
+  <!-- ===== Top bar ===== -->
+  <header class="top">
+    <div class="bar" data-bar></div>
+
+    <div class="vitals" role="group" aria-label="Aren">
+      <div class="hp" style="--v:80%">
+        <div class="m-top"><span class="m-k"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-heart"/></svg>HP</span><span class="m-v"><b>12</b>/15</span></div>
+        <div class="track"><i></i></div>
+      </div>
+      <div class="en" style="--v:60%">
+        <div class="m-top"><span class="m-k"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-bolt"/></svg>Energy</span><span class="m-v"><b>9</b>/15</span></div>
+        <div class="track"><i></i></div>
+      </div>
+      <div class="destiny">
+        <div class="m-top"><span class="m-k">Destiny</span><span class="m-v"><b>2</b></span></div>
+        <div class="gems" aria-hidden="true"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-gem"/></svg><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-gem"/></svg></div>
+      </div>
+    </div>
+
+    <div class="strip" role="group" aria-label="People with you">
+      <div class="strip-row">
+        <button class="pc who-mira" title="Mira, pinned favourite">
+          <span class="av" aria-hidden="true">M<span class="fav"><svg class="i i-f" width="11" height="11" aria-hidden="true"><use href="#i-star"/></svg></span></span>
+          <span class="pc-n">Mira</span>
+          <span class="bb" role="img" aria-label="Bond 64 of 100, Close" data-mira-bar><i style="--f:1"></i><i style="--f:1"></i><i style="--f:1"></i><i style="--f:.2"></i><i></i></span>
+        </button>
+        <button class="pc who-tobin">
+          <span class="av" aria-hidden="true">T</span>
+          <span class="pc-n">Tobin</span>
+          <span class="bb" role="img" aria-label="Bond 9 of 100, Acquaintance"><i style="--f:.45"></i><i></i><i></i><i></i><i></i></span>
+        </button>
+        <span class="strip-sep" aria-hidden="true"></span>
+        <button class="pc pc-scene who-roth">
+          <span class="av" aria-hidden="true">R</span>
+          <span class="pc-n">Captain Roth</span>
+          <span class="pc-m">Wary</span>
+        </button>
+        <button class="pc pc-scene">
+          <span class="av av-anon" aria-hidden="true"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-person"/></svg></span>
+          <span class="pc-n">Lantern seller</span>
+          <span class="pc-m">Stranger</span>
+        </button>
+      </div>
+      <button class="pc pc-all" data-people-toggle aria-expanded="false" aria-label="Open people panel">
+        <span class="av av-all" aria-hidden="true"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span>
+        <span class="pc-n">All</span>
+        <span class="pc-m">4 here</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== Primary navigation ===== -->
+  <nav class="nav" data-nav></nav>
+
+  <!-- ===== People ===== -->
+  <button class="scrim" type="button" data-people-toggle tabindex="-1" aria-hidden="true"></button>
+  <aside class="people" aria-label="People">
+    <header class="people-h">
+      <h2>People</h2>
+      <span class="people-n">4 here</span>
+      <button class="ib close" data-people-toggle aria-label="Close people panel"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </header>
+    <div class="people-b">
+      <h3 class="grp"><span>Your party</span><span>2</span></h3>
+
+      <article class="person who-mira is-focus">
+        <div class="person-top">
+          <span class="av av-l" aria-hidden="true">M<span class="fav"><svg class="i i-f" width="11" height="11" aria-hidden="true"><use href="#i-star"/></svg></span></span>
+          <a class="person-id" href="person.html" title="Open Mira’s profile">
+            <div class="person-name">Mira <span class="pinned"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-star"/></svg>Pinned</span></div>
+            <div class="person-role">Scout</div>
+          </a>
+          <div class="bond">
+            <div class="bond-l"><b data-mira-stage>Close</b><span><b data-mira-bond>64</b>/100</span></div>
+            <span class="bb bb-l" role="img" aria-label="Bond 64 of 100, Close" data-mira-bar><i style="--f:1"></i><i style="--f:1"></i><i style="--f:1"></i><i style="--f:.2"></i><i></i></span>
+            <span class="mood">Trusts you</span>
+          </div>
+        </div>
+        <div class="person-detail" id="mira-profile">
+          <p class="moment" data-after-bond><svg class="i i-f" width="16" height="16" aria-hidden="true"><use href="#i-spark"/></svg><span><b>New stage: Close</b>Mira wants a moment with you. Spend time together to hear it.</span></p>
+          <h4 class="mem-k">Moments that mattered</h4>
+          <ul class="mem">
+            <li data-after-bond><span>You did not use her as bait at the bridge.</span><span class="mem-x"><b>+12</b> · today</span></li>
+            <li><span>You shared your rations on the salt flats.</span><span class="mem-x"><b>+8</b> · Day 9</span></li>
+          </ul>
+          <a class="mem-more" href="person.html?state=history"><span>and 14 smaller moments</span><span class="mem-all">See all<svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-right"/></svg></span></a>
+          <p class="vals">Values <b>loyalty</b> and <b>plain speaking</b></p>
+          <div class="acts">
+            <button class="btn btn-primary"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-chat"/></svg>Talk</button>
+            <button class="btn btn-moment"><svg class="i i-f" width="14" height="14" aria-hidden="true" data-after-bond><use href="#i-spark"/></svg>Spend time together</button>
+            <button class="btn">Ask about…</button>
+          </div>
+        </div>
+        <div class="person-foot">
+          <button class="link foot-talk"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-chat"/></svg>Talk</button>
+          <button class="link" data-people-toggle aria-expanded="false" aria-controls="mira-profile">Profile<svg class="i i-s chev" width="14" height="14" aria-hidden="true"><use href="#i-down"/></svg></button>
+        </div>
+      </article>
+
+      <article class="person who-tobin">
+        <div class="person-top">
+          <span class="av av-l" aria-hidden="true">T</span>
+          <div class="person-id">
+            <div class="person-name">Tobin</div>
+            <div class="person-role">Tinkerer’s apprentice</div>
+          </div>
+          <div class="bond">
+            <div class="bond-l"><b>Acquaintance</b><span><b>9</b>/100</span></div>
+            <span class="bb bb-l" role="img" aria-label="Bond 9 of 100, Acquaintance"><i style="--f:.45"></i><i></i><i></i><i></i><i></i></span>
+            <span class="mood">Curious</span>
+          </div>
+        </div>
+        <div class="person-detail">
+          <h4 class="mem-k">Moments that mattered</h4>
+          <ul class="mem">
+            <li><span>You paid for his broken lens.</span><span class="mem-x"><b>+5</b> · Day 11</span></li>
+          </ul>
+          <button class="mem-more"><span>and 2 smaller moments</span><span class="mem-all">See all<svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-right"/></svg></span></button>
+          <p class="vals">Values not known yet</p>
+          <div class="acts">
+            <button class="btn btn-soft"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-chat"/></svg>Talk</button>
+            <button class="btn">Spend time together</button>
+            <button class="btn">Ask about…</button>
+          </div>
+        </div>
+        <div class="person-foot">
+          <button class="link"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-chat"/></svg>Talk</button>
+          <button class="link">Profile<svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-down"/></svg></button>
+        </div>
+      </article>
+
+      <h3 class="grp"><span>Also in the scene</span><span>2</span></h3>
+
+      <article class="person who-roth">
+        <div class="person-top">
+          <span class="av av-l" aria-hidden="true">R</span>
+          <div class="person-id">
+            <div class="person-name">Captain Roth</div>
+            <div class="person-role">City Watch</div>
+          </div>
+          <div class="bond">
+            <span class="mood">Wary</span>
+            <small>No bond yet</small>
+          </div>
+          <button class="btn talk-sm">Talk</button>
+        </div>
+        <p class="person-note">Suspects a courier carried the forged seal.</p>
+        <div class="person-foot">
+          <button class="link"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-chat"/></svg>Talk</button>
+        </div>
+      </article>
+
+      <article class="person">
+        <div class="person-top">
+          <span class="av av-l av-anon" aria-hidden="true"><svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-person"/></svg></span>
+          <div class="person-id">
+            <div class="person-name">Lantern seller</div>
+            <div class="person-role">Stranger</div>
+          </div>
+          <div class="bond"><small>No details yet</small></div>
+          <button class="btn talk-sm">Talk</button>
+        </div>
+        <div class="person-foot">
+          <button class="link"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-chat"/></svg>Talk</button>
+        </div>
+      </article>
+    </div>
+  </aside>
+
+  <!-- ===== Story ===== -->
+  <main class="story">
+    <div class="log" data-log role="log" aria-label="Story">
+      <div class="col">
+        <h2 class="scene">Scene 4 · Lantern Market · Dusk</h2>
+
+        <p class="narr">Paper lanterns sway above the market stalls as the last light drains out of the canal. By the bridge, Captain Roth turns a wax seal over in his gloved hand while two watchmen search a courier’s bag.</p>
+
+        <article class="say who-mira">
+          <header class="say-h"><span class="av av-s" aria-hidden="true">M</span><b class="say-n">Mira</b><span class="say-m">whispering</span></header>
+          <p>“He’s checking couriers. If he sees your satchel, we’re done. I can draw them off, or you talk your way through.”</p>
+        </article>
+
+        <article class="say who-tobin">
+          <header class="say-h"><span class="av av-s" aria-hidden="true">T</span><b class="say-n">Tobin</b></header>
+          <p>“Or we wait for dark. I vote dark.”</p>
+        </article>
+
+        <article class="act" aria-label="Your action">
+          <header class="act-h">Aren <span class="you">You</span></header>
+          <p>I walk up to Roth openly and ask whether the bridge is closed, keeping the satchel under my cloak.</p>
+        </article>
+
+        <section class="check" aria-label="Dice check result">
+          <header class="check-h">
+            <span class="check-k"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-dice"/></svg>Skill test</span>
+            <span class="badge"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg>Success</span>
+          </header>
+          <p class="check-t"><b>Manipulation</b> <span>(bluff)</span> <span class="tag">Medium</span></p>
+          <div class="roll">
+            <button class="die" data-die data-autoroll data-face="2" aria-label="Rolled 2. Roll it again to watch"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></button>
+            <div>
+              <ol class="steps" aria-hidden="true"><li class="in">1</li><li class="in hit">2</li><li class="in">3</li><li class="in">4</li><li class="lim"></li><li>5</li><li>6</li></ol>
+              <p class="scale-cap">Needed 4 or less · rolled <b>2</b></p>
+            </div>
+            <div class="stat q"><span>Quality</span><b>2</b></div>
+          </div>
+          <p class="check-f who-roth">Opposed by <span class="av av-s" aria-hidden="true">R</span><b>Captain Roth</b></p>
+        </section>
+
+        <p class="narr">Roth’s eyes go from your face to your boots and back. “Bridge is open. Papers are not,” he says, but he is already looking past you at a cart with a broken axle. He waves you on.</p>
+
+        <div class="beat" data-pending>
+          <article class="say who-mira">
+            <header class="say-h"><span class="av av-s" aria-hidden="true">M</span><b class="say-n">Mira</b><span class="say-m">low, falling in beside you</span></header>
+            <p>“You could have sent me in as the distraction. You didn’t.” <span class="aside">A&nbsp;pause.</span> “I noticed.”</p>
+          </article>
+          <div class="notes">
+            <span class="note note-bond who-mira"><span class="av av-s" aria-hidden="true">M</span><span><b>+12</b> bond with Mira</span><span class="bb" aria-hidden="true"><i style="--f:1"></i><i style="--f:1"></i><i style="--f:1"></i><i style="--f:.2"></i><i></i></span><span class="note-x">now <b>Close</b></span></span>
+            <span class="note note-moment who-mira"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-spark"/></svg>Mira wants a moment with you</span>
+          </div>
+        </div>
+
+        <div class="beat" data-pending>
+          <p class="narr">Behind you the cart finally gives way, and the whole market turns to look. The bridge ahead is empty, and beyond it the lamps of the Glass Road are being lit one by one.</p>
+          <div class="notes">
+            <span class="note"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-spark"/></svg><span><b>+1</b> experience</span></span>
+            <span class="note"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-target"/></svg><span><b>Goal progress:</b> reach the Glass Road waystation</span></span>
+          </div>
+          <p class="skip"><span><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-clock"/></svg>10 minutes pass</span></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="dock">
+      <div class="dock-in">
+        <button class="go" data-continue>
+          <span>Continue</span>
+          <span class="go-n"><b data-continue-count>2</b> more</span>
+          <svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-arrow"/></svg>
+          <kbd aria-hidden="true">Space</kbd>
+        </button>
+        <div class="compose">
+          <div class="sugg" role="group" aria-label="Suggested actions">
+            <button class="sg"><span>Cross the bridge now</span></button>
+            <button class="sg sg-2 who-mira"><span><span class="av av-s" aria-hidden="true">M</span>Ask Mira what she saw at the stalls</span></button>
+            <button class="sg"><span>Take a closer look at the cart</span></button>
+          </div>
+          <div class="field">
+            <button class="to who-mira" aria-label="To: Mira. Change who you speak to"><span class="to-k">To:</span><span class="av av-s" aria-hidden="true">M</span><b>Mira</b><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-down"/></svg></button>
+            <input type="text" placeholder="What do you do?" aria-label="What do you do?" autocomplete="off">
+            <button class="send" aria-label="Send"><svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-send"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== Context (desktop) ===== -->
+  <aside class="ctx" aria-label="Character, journal and map">
+    <section class="card">
+      <header class="card-h">
+        <h2 class="card-t"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-sheet"/></svg>Character</h2>
+        <a class="link" href="character.html">Sheet<svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-right"/></svg></a>
+      </header>
+      <div class="char-id">
+        <span class="av av-you" aria-hidden="true">A</span>
+        <div><div class="char-n">Aren</div><div class="char-s">Protagonist</div></div>
+        <dl class="char-x">
+          <div><dt>Destiny</dt><dd><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-gem"/></svg><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-gem"/></svg><span>2</span></dd></div>
+          <div><dt>Experience</dt><dd>14</dd></div>
+        </dl>
+      </div>
+      <div class="meters">
+        <div class="hp" style="--v:80%">
+          <div class="m-top"><span class="m-k"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-heart"/></svg>Hit points</span><span class="m-v"><b>12</b>/15</span></div>
+          <div class="track"><i></i></div>
+        </div>
+        <div class="en" style="--v:60%">
+          <div class="m-top"><span class="m-k"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-bolt"/></svg>Energy</span><span class="m-v"><b>9</b>/15</span></div>
+          <div class="track"><i></i></div>
+        </div>
+      </div>
+      <dl class="stats" aria-label="Attributes">
+        <div><dt>Strength</dt><dd>1</dd></div>
+        <div><dt>Skill</dt><dd>3</dd></div>
+        <div><dt>Resistance</dt><dd>3</dd></div>
+        <div><dt>Armor</dt><dd>1</dd></div>
+        <div><dt>Firepower</dt><dd class="zero">0</dd></div>
+      </dl>
+      <dl class="facts">
+        <div><dt>Paths</dt><dd><span class="tag">Air <b>2</b></span><span class="tag">Light <b>1</b></span></dd></div>
+        <div><dt>Abilities</dt><dd><span class="tag"><b>Featherstep</b> Air 1</span><span class="tag"><b>Gale Push</b> Air 2</span><span class="tag"><b>Glimmer</b> Light 1</span></dd></div>
+        <div><dt>Advantages</dt><dd class="list"><span>Quick Reflexes</span><span>Patron: Couriers’ Guild</span></dd></div>
+        <div><dt>Skills</dt><dd class="list"><span>Manipulation</span><span>Survival</span></dd></div>
+      </dl>
+    </section>
+
+    <section class="card">
+      <header class="card-h">
+        <h2 class="card-t"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-journal"/></svg>Journal · Threads</h2>
+        <a class="link" href="journal.html">Open<svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-right"/></svg></a>
+      </header>
+      <ul class="threads">
+        <li>
+          <p class="th-t">Deliver the sealed letter to the Glass Road waystation.</p>
+          <p class="th-m"><b>Next:</b> cross the bridge before the gates close.</p>
+        </li>
+        <li>
+          <p class="th-t">Who copied the baron’s seal?</p>
+          <p class="th-m"><b>Clue:</b> Roth carries a copy.</p>
+        </li>
+      </ul>
+      <div class="due">
+        <div class="due-k"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-clock"/></svg>Commitment · due tonight</div>
+        <p>Meet Tobin’s master at the Old Mill.</p>
+      </div>
+    </section>
+
+    <section class="card card-map">
+      <header class="card-h">
+        <h2 class="card-t"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-map"/></svg>Map</h2>
+        <a class="link" href="map.html">Open<svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-right"/></svg></a>
+      </header>
+      <svg class="map" width="312" height="122" viewBox="0 0 312 122" role="img" aria-label="Schematic map. Old Mill links to Lantern Market, where you are. North Gate branches off Lantern Market. Lantern Market links to Canal Bridge, which links to Glass Road Waystation. One undiscovered place lies beyond the waystation.">
+        <g class="map-l"><path d="M24 70H254M108 70V22"/><path class="dash" d="M254 70H298"/></g>
+        <g class="map-n">
+          <circle cx="24" cy="70" r="5.5"/><circle cx="108" cy="22" r="5.5"/><circle cx="186" cy="70" r="5.5"/><circle cx="254" cy="70" r="5.5"/>
+          <circle class="unk" cx="298" cy="70" r="9"/>
+          <circle class="halo" cx="108" cy="70" r="11"/><circle class="here" cx="108" cy="70" r="6"/>
+        </g>
+        <g aria-hidden="true">
+          <text x="24" y="93" text-anchor="middle">Old Mill</text>
+          <text x="120" y="26">North Gate</text>
+          <text class="t-b" x="108" y="93" text-anchor="middle">Lantern Market</text>
+          <text class="t-a" x="108" y="109" text-anchor="middle">You are here</text>
+          <text x="186" y="54" text-anchor="middle">Canal Bridge</text>
+          <text x="254" y="93" text-anchor="middle">Glass Road</text>
+          <text x="254" y="109" text-anchor="middle">Waystation</text>
+          <text x="298" y="74" text-anchor="middle">?</text>
+        </g>
+      </svg>
+    </section>
+  </aside>
+
+</div>
+
+<script src="slate.js"></script>
+<script>
+(function () {
+  var d = document, body = d.body;
+  var state = Slate.params.get('state') || 'continue';
+  var pending = [].slice.call(d.querySelectorAll('[data-pending]'));
+  var shown = (state === 'input' || state === 'people') ? pending.length : 0;
+  var log = d.querySelector('[data-log]');
+  function each(sel, fn) { [].forEach.call(d.querySelectorAll(sel), fn); }
+  function toEnd() { if (log) log.scrollTop = log.scrollHeight; }
+  // Bond runs from 0 to 100; every 20 points is a stage.
+  function stageOf(n) { return n >= 80 ? 'Devoted' : n >= 60 ? 'Close' : n >= 40 ? 'Trusted' : n >= 20 ? 'Friendly' : n > 0 ? 'Acquaintance' : 'No bond yet'; }
+  function sync(fresh) {
+    pending.forEach(function (el, i) {
+      var hide = i >= shown;
+      if (fresh) el.classList.toggle('is-new', el.hidden && !hide); // marks where to resume reading
+      el.hidden = hide;
+    });
+    var left = pending.length - shown;
+    var bond = shown > 0 ? 64 : 52; // Mira's bond rises by 12 when the first pending beat is revealed
+    var stage = stageOf(bond);
+    body.dataset.mode = left > 0 ? 'continue' : 'input';
+    body.dataset.beats = shown;
+    each('[data-continue-count]', function (c) { c.textContent = left; });
+    each('[data-mira-bond]', function (c) { c.textContent = bond; });
+    each('[data-mira-stage]', function (c) { c.textContent = stage; });
+    each('[data-mira-bar]', function (bar) {
+      [].forEach.call(bar.children, function (seg, k) { seg.style.setProperty('--f', Math.max(0, Math.min(1, (bond - 20 * k) / 20))); });
+      bar.setAttribute('aria-label', 'Bond ' + bond + ' of 100, ' + stage);
+    });
+    toEnd();
+  }
+  function people(open) {
+    body.dataset.people = open ? 'open' : '';
+    each('[data-people-toggle][aria-expanded]', function (b) { b.setAttribute('aria-expanded', open); });
+  }
+  if (state === 'people') people(true);
+  d.addEventListener('click', function (e) {
+    var t = e.target;
+    body.classList.add('is-live');
+    if (t.closest('[data-continue]')) {
+      shown = Math.min(pending.length, shown + 1);
+      sync(true);
+      if (shown === pending.length && matchMedia('(hover:hover) and (pointer:fine)').matches) {
+        var f = d.querySelector('.field input');
+        if (f) f.focus();
+      }
+    }
+    if (t.closest('[data-people-toggle]')) people(body.dataset.people !== 'open');
+  });
+  d.addEventListener('keydown', function (e) {
+    var t = e.target;
+    if (e.key === 'Escape' && body.dataset.people === 'open') people(false);
+    if (e.key === ' ' && body.dataset.mode === 'continue' && !(t.closest && t.closest('button,input,textarea,a'))) {
+      e.preventDefault();
+      var c = d.querySelector('[data-continue]');
+      if (c) c.click();
+    }
+  });
+  addEventListener('resize', toEnd);
+  sync(false);
+})();
+</script>
+</body>
+</html>

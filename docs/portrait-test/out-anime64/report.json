@@ -1,0 +1,161 @@
+{
+  "front": {
+    "layers": {
+      "mouth-a": {
+        "pixels": 14,
+        "semiTransparent": 0,
+        "bytes": 145
+      },
+      "mouth-b": {
+        "pixels": 48,
+        "semiTransparent": 0,
+        "bytes": 179
+      },
+      "mouth-c": {
+        "pixels": 31,
+        "semiTransparent": 0,
+        "bytes": 167
+      },
+      "eyes-a": {
+        "pixels": 146,
+        "semiTransparent": 0,
+        "bytes": 315
+      },
+      "eyes-b": {
+        "pixels": 153,
+        "semiTransparent": 0,
+        "bytes": 349
+      },
+      "eyes-c": {
+        "pixels": 153,
+        "semiTransparent": 0,
+        "bytes": 312
+      },
+      "hair-a": {
+        "pixels": 1040,
+        "semiTransparent": 0,
+        "bytes": 799
+      },
+      "hair-b": {
+        "pixels": 1778,
+        "semiTransparent": 0,
+        "bytes": 1165
+      },
+      "hair-c": {
+        "pixels": 1665,
+        "semiTransparent": 0,
+        "bytes": 885
+      }
+    },
+    "leaksOutsideMask": 0,
+    "erasedHeadPixels": 0,
+    "combos": 27,
+    "headBytes": 666
+  },
+  "threequarter": {
+    "layers": {
+      "mouth-a": {
+        "pixels": 25,
+        "semiTransparent": 0,
+        "bytes": 212
+      },
+      "mouth-b": {
+        "pixels": 37,
+        "semiTransparent": 0,
+        "bytes": 242
+      },
+      "mouth-c": {
+        "pixels": 35,
+        "semiTransparent": 0,
+        "bytes": 220
+      },
+      "eyes-a": {
+        "pixels": 137,
+        "semiTransparent": 0,
+        "bytes": 366
+      },
+      "eyes-b": {
+        "pixels": 142,
+        "semiTransparent": 0,
+        "bytes": 385
+      },
+      "eyes-c": {
+        "pixels": 137,
+        "semiTransparent": 0,
+        "bytes": 359
+      },
+      "hair-a": {
+        "pixels": 945,
+        "semiTransparent": 0,
+        "bytes": 1060
+      },
+      "hair-b": {
+        "pixels": 1083,
+        "semiTransparent": 0,
+        "bytes": 1086
+      },
+      "hair-c": {
+        "pixels": 1195,
+        "semiTransparent": 0,
+        "bytes": 1074
+      }
+    },
+    "leaksOutsideMask": 0,
+    "erasedHeadPixels": 12,
+    "combos": 27,
+    "headBytes": 1005
+  },
+  "closeup": {
+    "layers": {
+      "mouth-a": {
+        "pixels": 29,
+        "semiTransparent": 0,
+        "bytes": 236
+      },
+      "mouth-b": {
+        "pixels": 63,
+        "semiTransparent": 0,
+        "bytes": 219
+      },
+      "mouth-c": {
+        "pixels": 40,
+        "semiTransparent": 0,
+        "bytes": 208
+      },
+      "eyes-a": {
+        "pixels": 288,
+        "semiTransparent": 0,
+        "bytes": 517
+      },
+      "eyes-b": {
+        "pixels": 285,
+        "semiTransparent": 0,
+        "bytes": 523
+      },
+      "eyes-c": {
+        "pixels": 278,
+        "semiTransparent": 0,
+        "bytes": 566
+      },
+      "hair-a": {
+        "pixels": 1539,
+        "semiTransparent": 0,
+        "bytes": 1256
+      },
+      "hair-b": {
+        "pixels": 2040,
+        "semiTransparent": 0,
+        "bytes": 1260
+      },
+      "hair-c": {
+        "pixels": 1966,
+        "semiTransparent": 0,
+        "bytes": 1109
+      }
+    },
+    "leaksOutsideMask": 0,
+    "erasedHeadPixels": 16,
+    "combos": 27,
+    "headBytes": 1121
+  }
+}

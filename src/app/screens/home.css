@@ -1,0 +1,30 @@
+/* Screen styles for home, carried over from docs/mockups/slate/home.html. Built from Slate tokens. */
+/* Home: the story to continue, then every other story. */
+.hero{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-3);padding:var(--sp-4);border-color:color-mix(in srgb,var(--a) 45%,var(--c-card))}
+.hero-k{display:flex;align-items:center;gap:var(--sp-2)}
+.hero h2{font-size:var(--fs-xl);font-weight:600;line-height:1.25}
+.swatch{flex:none;width:10px;height:10px;border-radius:3px;background:var(--a)}
+.last{padding-left:var(--sp-3);border-left:2px solid color-mix(in srgb,var(--a) 60%,var(--c-card));color:var(--c-text-2)}
+.facts-row{display:flex;flex-wrap:wrap;gap:var(--sp-1) var(--sp-4);font-size:var(--fs-sm);color:var(--c-text-2)}
+.facts-row b{color:var(--c-text);font-variant-numeric:tabular-nums}
+.facts-row>span{display:inline-flex;align-items:center;gap:5px} /* only the row's own items: a deeper span is an avatar, which centres its letter itself */
+.hero-go{display:flex;flex-wrap:wrap;gap:var(--sp-2)}
+.hero-go .btn{flex:1 1 auto}
+.hero-go .btn-primary{flex:2 1 auto}
+.tale{display:grid;gap:10px;padding:14px}
+.tale-h{display:flex;align-items:flex-start;gap:10px}
+.tale-h h3{font-size:var(--fs-lg);font-weight:600;line-height:21px}
+.tale-h .ib{margin:-10px -10px -10px auto}
+.new{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-2);min-height:132px;border-style:dashed;border-color:var(--c-line-strong);background:none;color:var(--c-text-2);font-weight:600;text-align:center}
+.new .i{color:var(--c-accent-text)}
+@media (min-width:1100px){
+  .hero{grid-template-columns:minmax(0,1fr) auto;padding:var(--sp-5)}
+  /* The words start at the top. The buttons sit at the bottom, level with the facts row when the words are the taller column. */
+  .hero-go{flex-direction:column;width:190px;align-self:end}
+  .hero-main{display:grid;gap:var(--sp-3);align-self:start;align-content:start}
+}
+
+/* Story options: a name being changed in place, and an option this story does not have */
+.row.rename{flex-wrap:wrap}
+.row.rename .input{flex:1 1 160px;min-height:44px}
+.row.is-off{opacity:.6}

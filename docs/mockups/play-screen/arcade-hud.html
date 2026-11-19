@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitor Quest - Play (Arcade HUD)</title>
+<style>
+/* ---------- Design tokens ---------- */
+:root {
+  color-scheme: dark;
+  /* surfaces */
+  --bg-0: #060A13;      /* app background */
+  --bg-1: #0B111E;      /* panel */
+  --bg-2: #111A2B;      /* raised panel, control, newest entry */
+  --bg-3: #18243A;      /* hover, pressed */
+  /* borders */
+  --line: #1F2C44;      /* quiet divider */
+  --line-2: #31456A;    /* panel border */
+  --line-3: #4F6B99;    /* control border (3:1 on every surface) */
+  /* text */
+  --text: #E8EEF8;      /* story and primary text */
+  --text-2: #AEBCD3;    /* secondary */
+  --text-3: #8799B6;    /* labels, hints */
+  /* palette */
+  --cyan: #3FD8F2;
+  --amber: #FFB938;
+  --pink: #FF6FAE;
+  --green: #4BE08C;
+  --red: #FF5F6B;
+  /* colour roles */
+  --accent: var(--cyan);    /* primary accent, active control, the player */
+  --energy: var(--cyan);    /* energy bar */
+  --hp: var(--red);         /* hit points, failure */
+  --dice: var(--amber);     /* dice, destiny */
+  --warn: var(--amber);     /* warnings, deadlines, attention */
+  --bond: var(--pink);      /* bonds, favourites, companion actions */
+  --success: var(--green);  /* success, gains */
+  --ink-accent: #04141A;    /* text on an accent fill */
+  --ink-dice: #1A1203;      /* text on a dice fill */
+  --seg-off: #2D3C5B;       /* empty gauge segment */
+  /* character hues (speaker tags and avatars) */
+  --c-mira: #C4A6FF;
+  --c-tobin: #CFE36A;
+  --c-roth: #9DB4D6;
+  --c-extra: #8799B6;
+  /* fonts */
+  --font-story: "Segoe UI Variable Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-ui: "Segoe UI Variable Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-tech: Bahnschrift, "Roboto Condensed", "sans-serif-condensed", "Segoe UI", sans-serif;
+  --font-mono: "Cascadia Mono", Consolas, "Roboto Mono", monospace;
+  /* type scale */
+  --fs-xs: 12px;        /* labels, tags */
+  --fs-sm: 13px;        /* numbers, system lines */
+  --fs-md: 14px;        /* interface text */
+  --fs-body: 15px;      /* menus, memories */
+  --fs-lg: 16px;        /* names, inputs, primary button */
+  --fs-xl: 20px;        /* outcome readout */
+  --fs-story: 16.5px;   /* story text (18px on desktop) */
+  --lh-story: 1.6;
+  /* spacing */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  /* radii */
+  --r-1: 2px;           /* tags, segments, avatars */
+  --r-2: 4px;           /* panels, buttons */
+  --r-3: 6px;           /* sheets */
+  /* layout (desktop dashboard) */
+  --w-people: 356px;    /* people and party column */
+  --w-side: 400px;      /* character, journal and map column */
+  --w-story: 600px;     /* reading measure of the story column */
+  /* effects */
+  --glow: 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent), 0 0 18px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body {
+  height: 100dvh; overflow: hidden;
+  background: var(--bg-0); color: var(--text);
+  font: 400 var(--fs-md)/1.4 var(--font-ui);
+  -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%;
+  display: grid;
+  grid-template-columns: 100%;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas: "hud" "main" "nav";
+}
+h1, h2, h3, p, ul, ol { margin: 0; padding: 0; }
+ul, ol { list-style: none; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; text-align: inherit; -webkit-tap-highlight-color: transparent; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+svg { display: block; flex: none; }
+.ic { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.ic--solid { fill: currentColor; stroke: none; }
+.d-only { display: none; }
+
+.lbl { font: 600 var(--fs-xs)/1 var(--font-tech); letter-spacing: .1em; text-transform: uppercase; color: var(--text-3); }
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* segmented gauge: --v of --max segments lit in --c; the last segment ends flush with the right edge */
+.seg {
+  --max: 5; --v: 0; --c: var(--bond); --gap: 2px;
+  --unit: calc((100% + var(--gap)) / var(--max));
+  display: block; height: 8px; min-width: 30px;
+  background: linear-gradient(90deg, var(--c) calc(var(--v) * var(--unit) - var(--gap) / 2), var(--seg-off) 0);
+  -webkit-mask: repeating-linear-gradient(90deg, #000 0 calc(var(--unit) - var(--gap)), transparent 0 var(--unit));
+  mask: repeating-linear-gradient(90deg, #000 0 calc(var(--unit) - var(--gap)), transparent 0 var(--unit));
+}
+
+/* small bordered tag */
+.tag {
+  --c: var(--text-2);
+  display: inline-flex; align-items: center; gap: 4px; flex: none;
+  font: 700 var(--fs-xs)/1 var(--font-tech); letter-spacing: .1em; text-transform: uppercase; white-space: nowrap;
+  color: var(--c); padding: 4px 6px; border-radius: var(--r-1);
+  border: 1px solid color-mix(in srgb, var(--c) 55%, transparent);
+  background: color-mix(in srgb, var(--c) 10%, transparent);
+}
+
+/* monogram avatar */
+.ava {
+  --sz: 28px;
+  position: relative; flex: none; display: grid; place-items: center;
+  width: var(--sz); height: var(--sz); border-radius: var(--r-1);
+  font: 700 var(--fs-sm)/1 var(--font-tech); letter-spacing: .02em; color: var(--c, var(--text-2));
+  border: 1px solid color-mix(in srgb, var(--c, var(--text-3)) 70%, transparent);
+  background: color-mix(in srgb, var(--c, var(--text-3)) 14%, var(--bg-1));
+}
+.ava .fav { position: absolute; top: -7px; right: -7px; color: var(--bond); stroke: var(--bg-1); stroke-width: 5; stroke-linejoin: round; paint-order: stroke; }
+
+.iconbtn { display: grid; place-items: center; width: 44px; height: 44px; color: var(--text-2); border-radius: var(--r-2); }
+
+/* ---------- Heads-up display (phone) ---------- */
+.hud {
+  grid-area: hud;
+  display: grid; grid-template-columns: 44px minmax(0, 1fr) auto;
+  grid-template-areas: "menu story cost" "menu place cost" "vit vit vit";
+  align-items: center; column-gap: var(--s-2);
+  padding: var(--s-1) var(--s-3) var(--s-2) var(--s-1);
+  background: var(--bg-1); border-bottom: 1px solid var(--line-2);
+}
+.hud-menu { grid-area: menu; }
+.brand { display: none; }
+.hud-story { grid-area: story; align-self: end; display: flex; align-items: baseline; gap: var(--s-2); min-width: 0; margin-left: -6px; white-space: nowrap; overflow: hidden; }
+.hud-title { flex: none; font: 700 var(--fs-md)/1.25 var(--font-tech); letter-spacing: .09em; text-transform: uppercase; color: var(--text); }
+.hud-chap { min-width: 0; overflow: hidden; text-overflow: ellipsis; font: 600 var(--fs-xs)/1.25 var(--font-tech); letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); }
+/* place and time: if space runs out the place name shortens, the time of day and the day never do */
+.hud-place { grid-area: place; align-self: start; display: flex; align-items: center; min-width: 0; margin-left: -6px; font: 600 var(--fs-xs)/1.4 var(--font-tech); letter-spacing: .05em; text-transform: uppercase; color: var(--text-2); white-space: nowrap; }
+.hud-place .ic { color: var(--accent); margin-right: 5px; }
+.hud-place .pl { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.hud-place .tm { flex: none; white-space: pre; }
+.hud-place b { font-weight: 600; color: var(--warn); }
+
+.cost {
+  grid-area: cost; display: flex; align-items: center; gap: 6px;
+  min-height: 44px; padding: 0 var(--s-2); border: 1px solid var(--line-3); border-radius: var(--r-2); background: var(--bg-0);
+}
+.cost > .ic { color: var(--success); }
+.cost-cell { display: grid; gap: 4px; }
+.cost-cell .num { grid-column: 1 / -1; font-size: var(--fs-sm); line-height: 1; color: var(--text); }
+.cost-cell .seg { display: none; }
+.cost-cell.d-only { display: none; }
+
+.vitals { grid-area: vit; display: grid; grid-template-columns: 1fr 1fr auto; gap: var(--s-4); align-items: end; padding: var(--s-2) 0 0 var(--s-2); }
+.vital { display: grid; grid-template-columns: auto 1fr; align-items: baseline; row-gap: 5px; column-gap: var(--s-2); min-width: 0; }
+.vital .lbl { color: var(--c); }
+.vital .num { justify-self: end; font-size: var(--fs-xs); line-height: 1; color: var(--text-3); }
+.vital .num b { font-size: var(--fs-sm); font-weight: 700; color: var(--text); }
+.vital .seg, .vital .pips { grid-column: 1 / -1; }
+.vital--hp { --c: var(--hp); }
+.vital--en { --c: var(--energy); }
+.vital--dp { --c: var(--dice); }
+.pips { display: flex; align-items: center; gap: 6px; height: 8px; padding-left: 2px; }
+.pips i { width: 8px; height: 8px; background: var(--dice); transform: rotate(45deg); border-radius: 1px; }
+
+/* ---------- Story column ---------- */
+.story { grid-area: main; min-height: 0; min-width: 0; display: flex; flex-direction: column; }
+.log {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: var(--s-3) var(--s-3) var(--s-4);
+  scrollbar-width: thin; scrollbar-color: var(--line-2) transparent;
+}
+.log-in > * + *, [data-pending] > * + * { margin-top: var(--s-3); }
+
+.scene { display: flex; align-items: center; gap: var(--s-3); font: 600 var(--fs-xs)/1 var(--font-tech); letter-spacing: .16em; text-transform: uppercase; color: var(--accent); padding: var(--s-1) 0; }
+.scene::before, .scene::after { content: ""; flex: 1; height: 1px; background: var(--line-2); }
+
+.entry { position: relative; border: 1px solid var(--line); border-radius: var(--r-2); background: var(--bg-1); padding: var(--s-3) 14px 13px; }
+.entry p { font: 400 var(--fs-story)/var(--lh-story) var(--font-story); color: var(--text); text-wrap: pretty; }
+.entry .aside { color: var(--text-2); }
+
+/* newest revealed entry: focus brackets */
+.entry[data-new] { background: var(--bg-2); border-color: var(--line-2); }
+.entry[data-new]::before, .entry[data-new]::after { content: ""; position: absolute; width: 12px; height: 12px; border: 0 solid var(--accent); pointer-events: none; }
+.entry[data-new]::before { top: -1px; right: -1px; border-width: 2px 2px 0 0; border-top-right-radius: var(--r-2); }
+.entry[data-new]::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; border-bottom-right-radius: var(--r-2); }
+
+/* speech: coloured speaker tag */
+.say, .say[data-new] { border-left: 2px solid var(--c); }
+.who { display: flex; align-items: center; gap: var(--s-2); margin-bottom: 7px; min-height: 22px; }
+.who .tag { --c: inherit; font-size: var(--fs-sm); padding: 4px 7px; border-color: color-mix(in srgb, var(--c) 70%, transparent); background: color-mix(in srgb, var(--c) 14%, transparent); }
+.who i { font: italic 400 var(--fs-sm)/1.2 var(--font-ui); color: var(--text-3); }
+
+/* player action: command line */
+.cmd { border-color: color-mix(in srgb, var(--accent) 45%, transparent); background: color-mix(in srgb, var(--accent) 7%, var(--bg-1)); display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 10px; }
+.cmd .who { grid-column: 1 / -1; }
+.cmd .who .tag { --c: var(--accent); }
+.cmd .prompt { font: 700 var(--fs-story)/var(--lh-story) var(--font-mono); color: var(--accent); }
+
+/* dice check readout */
+.roll { border: 1px solid color-mix(in srgb, var(--dice) 60%, transparent); border-radius: var(--r-2); background: linear-gradient(180deg, color-mix(in srgb, var(--dice) 7%, var(--bg-1)), var(--bg-1) 70%); }
+.roll-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); padding: 7px 10px 7px 14px; border-bottom: 1px solid color-mix(in srgb, var(--dice) 25%, transparent); }
+.roll-head .lbl { color: var(--dice); letter-spacing: .16em; }
+.roll-head .tag { --c: var(--dice); }
+.roll-body { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--s-3); padding: var(--s-3) 14px 10px; }
+.die rect { fill: color-mix(in srgb, var(--dice) 12%, var(--bg-0)); stroke: var(--dice); stroke-width: 1.5; }
+.die circle { fill: var(--dice); }
+.roll-what { display: grid; gap: 5px; min-width: 0; }
+.roll-what b { font: 600 var(--fs-lg)/1.2 var(--font-ui); color: var(--text); }
+.roll-what b span { font-weight: 400; color: var(--text-2); }
+.roll-what > span { font: 400 var(--fs-sm)/1.3 var(--font-ui); color: var(--text-2); }
+.roll-out { display: grid; gap: 6px; justify-items: end; text-align: right; }
+.roll-out b { font: 700 var(--fs-xl)/1 var(--font-tech); letter-spacing: .1em; text-transform: uppercase; color: var(--success); }
+.roll-out span { font: 600 var(--fs-xs)/1 var(--font-tech); letter-spacing: .1em; text-transform: uppercase; color: var(--text-2); }
+.roll-out span b { font: 700 var(--fs-sm)/1 var(--font-mono); letter-spacing: 0; color: var(--success); }
+.roll-foot { padding: 0 14px var(--s-3); }
+.track { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; }
+.track li { display: grid; place-items: center; height: 24px; border-radius: var(--r-1); font: 700 var(--fs-sm)/1 var(--font-mono); color: var(--text-3); border: 1px solid var(--line); background: var(--bg-0); }
+.track .ok { color: var(--success); border-color: color-mix(in srgb, var(--success) 38%, transparent); background: color-mix(in srgb, var(--success) 9%, var(--bg-0)); }
+.track .hit { color: var(--ink-dice); border-color: var(--dice); background: var(--dice); box-shadow: 0 0 10px color-mix(in srgb, var(--dice) 40%, transparent); }
+.track .lim { position: relative; }
+.track .lim::after { content: ""; position: absolute; right: -3px; top: -4px; bottom: -4px; width: 2px; background: var(--success); }
+.roll-legend { display: flex; justify-content: space-between; gap: var(--s-2); margin-top: 7px; font: 400 var(--fs-xs)/1.3 var(--font-mono); color: var(--text-2); }
+.roll-legend b { font-weight: 700; color: var(--text); }
+.roll-legend span:last-child b { color: var(--dice); }
+
+/* system log lines */
+.sys { display: grid; gap: 2px; padding: 0 2px; }
+.sys li { display: flex; align-items: center; gap: var(--s-2); min-height: 26px; font: 400 var(--fs-sm)/1.35 var(--font-mono); color: var(--text-2); }
+.sys li > span:last-of-type { min-width: 0; text-wrap: balance; }
+.sys .tag { width: 46px; padding-left: 0; padding-right: 0; justify-content: center; }
+.sys .seg { width: 40px; flex: none; margin-left: auto; }
+.sys--bond .tag { --c: var(--bond); }
+.sys--bond b { font-weight: 700; color: var(--bond); }
+.sys--xp .tag { --c: var(--success); }
+.sys--goal .tag { --c: var(--accent); }
+.sys--time .tag { --c: var(--c-roth); }
+
+/* ---------- People strip (phone) ---------- */
+.strip { flex: none; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 56px 56px 46px; gap: 6px; padding: 6px var(--s-3); border-top: 1px solid var(--line); background: var(--bg-0); }
+.chip { position: relative; min-height: 48px; min-width: 0; border: 1px solid var(--line-3); border-radius: var(--r-2); background: var(--bg-1); }
+.chip--party { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 7px; padding: 0 6px 0 7px; }
+.chip--party .who2 { display: block; min-width: 0; }
+.chip--party .nm { display: block; white-space: nowrap; font: 700 var(--fs-sm)/1 var(--font-tech); letter-spacing: .06em; text-transform: uppercase; color: var(--text); margin-bottom: 6px; }
+.chip--party .bd { display: flex; align-items: center; gap: 5px; }
+.chip--party .seg { flex: 1; height: 7px; }
+.chip--party .num { font-size: var(--fs-xs); line-height: 1; font-weight: 700; color: var(--bond); }
+.chip--fav { border-color: color-mix(in srgb, var(--bond) 75%, transparent); }
+.chip--fav .fav { top: -15px; left: -13px; right: auto; width: 15px; height: 15px; stroke: var(--bg-0); }
+.chip--here { display: grid; justify-items: center; align-content: center; gap: 4px; border-style: dashed; }
+.chip--here .ava { --sz: 22px; font-size: var(--fs-xs); }
+.chip--here .nm { font: 600 var(--fs-xs)/1 var(--font-tech); letter-spacing: .04em; text-transform: uppercase; color: var(--text-2); }
+.chip--all { display: grid; justify-items: center; align-content: center; gap: 3px; border-color: var(--line-3); background: var(--bg-2); color: var(--text); }
+.chip--all .nm { font: 700 var(--fs-xs)/1 var(--font-tech); letter-spacing: .08em; text-transform: uppercase; }
+
+/* ---------- Bottom control ---------- */
+.control { flex: none; padding: var(--s-2) var(--s-3) 10px; border-top: 1px solid var(--line); background: var(--bg-0); }
+.continue {
+  display: none; width: 100%; min-height: 52px; align-items: center; justify-content: center; gap: 10px;
+  border: 1px solid var(--accent); border-radius: var(--r-2);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 20%, var(--bg-1)), color-mix(in srgb, var(--accent) 9%, var(--bg-1)));
+  color: var(--text); font: 700 var(--fs-lg)/1 var(--font-tech); letter-spacing: .18em; text-transform: uppercase;
+  box-shadow: var(--glow); position: relative;
+}
+.continue .ic { color: var(--accent); }
+.continue .cnt { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); display: flex; align-items: baseline; gap: 5px; padding: 6px 8px; border-radius: var(--r-1); background: var(--bg-0); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); font: 600 var(--fs-xs)/1 var(--font-tech); letter-spacing: .1em; color: var(--text-2); }
+.continue .cnt b { font: 700 var(--fs-md)/1 var(--font-mono); letter-spacing: 0; color: var(--accent); }
+.composer { display: none; }
+body[data-mode="continue"] .continue { display: flex; }
+body[data-mode="input"] .composer { display: block; }
+
+.sugg { border: 1px solid var(--line-3); border-radius: var(--r-2); background: var(--bg-1); margin-bottom: var(--s-2); }
+.sugg li + li { border-top: 1px solid var(--line); }
+.sugg button { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 0 10px; font: 400 var(--fs-body)/1.25 var(--font-ui); color: var(--text); }
+.sugg kbd { flex: none; display: grid; place-items: center; width: 22px; height: 22px; border: 1px solid var(--line-3); border-radius: var(--r-1); font: 700 var(--fs-xs)/1 var(--font-mono); color: var(--accent); background: var(--bg-0); }
+.sugg span { flex: 1; min-width: 0; }
+.sugg .ic { color: var(--text-3); }
+.inrow { display: flex; align-items: stretch; gap: 6px; }
+.to { flex: none; display: flex; align-items: center; gap: 5px; min-height: 48px; padding: 0 8px 0 10px; border: 1px solid var(--line-3); border-radius: var(--r-2); background: var(--bg-2); }
+.to b { font: 700 var(--fs-sm)/1 var(--font-tech); letter-spacing: .08em; text-transform: uppercase; color: var(--text); }
+.to .ic { color: var(--text-2); }
+.field { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--s-2); padding: 0 var(--s-3); border: 1px solid var(--accent); border-radius: var(--r-2); background: var(--bg-1); box-shadow: var(--glow); }
+.field:focus-within { background: var(--bg-2); box-shadow: 0 0 0 1px var(--accent), 0 0 22px color-mix(in srgb, var(--accent) 42%, transparent); }
+.field .prompt { font: 700 var(--fs-lg)/1 var(--font-mono); color: var(--accent); }
+.field input { flex: 1; min-width: 0; height: 46px; border: 0; outline: 0; background: none; color: var(--text); font: 400 var(--fs-lg)/1.2 var(--font-ui); padding: 0; }
+.field input::placeholder { color: var(--text-3); opacity: 1; }
+.send { flex: none; display: grid; place-items: center; width: 48px; min-height: 48px; border-radius: var(--r-2); background: var(--accent); color: var(--ink-accent); }
+
+/* ---------- Bottom navigation (phone) ---------- */
+.tabs { grid-area: nav; display: grid; grid-template-columns: repeat(5, 1fr); background: var(--bg-1); border-top: 1px solid var(--line-2); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.tab { position: relative; min-height: 56px; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; font: 600 var(--fs-xs)/1 var(--font-tech); letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); }
+.tab::before { content: ""; position: absolute; top: -1px; left: 24%; right: 24%; height: 2px; background: var(--accent); box-shadow: 0 0 8px var(--accent); opacity: 0; }
+.tab--story, body[data-people="open"] .tab--people { color: var(--accent); }
+.tab--story::before, body[data-people="open"] .tab--people::before { opacity: 1; }
+body[data-people="open"] .tab--story { color: var(--text-3); }
+body[data-people="open"] .tab--story::before { opacity: 0; }
+
+/* ---------- People panel (phone sheet, desktop left column) ---------- */
+.people { grid-area: main; z-index: 5; display: none; flex-direction: column; min-height: 0; min-width: 0; background: var(--bg-0); }
+body[data-people="open"] .people { display: flex; }
+.people-head { flex: none; display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 0 0 14px; background: var(--bg-1); border-bottom: 1px solid color-mix(in srgb, var(--bond) 45%, var(--line-2)); }
+.people-head > .ic { color: var(--bond); }
+.people-head h2, .pnl-h h2 { font: 700 var(--fs-sm)/1 var(--font-tech); letter-spacing: .16em; text-transform: uppercase; color: var(--text); }
+.people-head .x { margin-left: auto; }
+.people-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: var(--s-2) var(--s-3) var(--s-3); scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
+.grp { display: flex; align-items: center; gap: var(--s-2); margin: 10px 0 6px; }
+.grp:first-child { margin-top: 2px; }
+.grp::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.person { border: 1px solid var(--line-2); border-radius: var(--r-2); background: var(--bg-1); padding: 10px var(--s-3); }
+.person + .person { margin-top: var(--s-2); }
+.person.is-fav { border-color: color-mix(in srgb, var(--bond) 50%, transparent); }
+.p-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; column-gap: 10px; }
+.p-head .ava { --sz: 42px; font-size: var(--fs-lg); }
+.p-id h3 { display: flex; align-items: center; gap: 6px; font: 700 var(--fs-lg)/1.2 var(--font-ui); color: var(--text); white-space: nowrap; }
+.p-id h3 .ic { color: var(--bond); }
+.p-id h3 .tag { margin-left: 2px; }
+.p-id p { margin-top: 4px; font: 400 var(--fs-sm)/1.25 var(--font-ui); color: var(--text-2); text-wrap: balance; }
+.p-id p b { font-weight: 600; color: var(--bond); }
+.p-id .nw { white-space: nowrap; }
+.p-more { display: none; }
+.p-bond { display: grid; grid-template-columns: auto auto; justify-content: space-between; align-items: baseline; row-gap: 7px; width: 78px; }
+.p-bond .seg { grid-column: 1 / -1; height: 8px; }
+.p-bond .num { font-size: var(--fs-xs); line-height: 1; color: var(--text-3); }
+.p-bond .num b { font-size: var(--fs-sm); color: var(--bond); }
+.p-bond .lbl { color: var(--bond); }
+.p-bond--none { width: auto; }
+.p-bond--none .lbl { grid-column: 1 / -1; color: var(--text-3); letter-spacing: .08em; }
+.p-row { display: flex; align-items: center; gap: 10px; margin-top: var(--s-2); }
+.p-note { flex: 1; min-width: 0; padding-left: 10px; border-left: 2px solid var(--line-3); font: 400 var(--fs-md)/1.4 var(--font-ui); color: var(--text-2); text-wrap: balance; }
+.p-detail { margin-top: var(--s-3); }
+.p-mem .sec { margin: 0 0 6px; }
+.mem { display: grid; gap: 4px; }
+.mem li { position: relative; padding-left: 16px; font: 400 var(--fs-body)/1.45 var(--font-ui); color: var(--text); text-wrap: balance; }
+.mem li::before { content: ""; position: absolute; left: 2px; top: .52em; width: 6px; height: 6px; background: var(--bond); transform: rotate(45deg); }
+.p-acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.act.p-talk { flex: none; min-width: 88px; }
+.act { flex: 1 1 auto; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 var(--s-2); border: 1px solid var(--line-3); border-radius: var(--r-2); background: var(--bg-2); font: 600 var(--fs-md)/1 var(--font-ui); color: var(--text); white-space: nowrap; }
+.act .ic { color: var(--text-2); }
+.act--pri { border-color: var(--bond); background: color-mix(in srgb, var(--bond) 16%, var(--bg-1)); color: var(--text); }
+.act--pri .ic { color: var(--bond); }
+
+/* ---------- Side column (desktop only) ---------- */
+.side { display: none; }
+.pnl { flex: none; border: 1px solid var(--line-2); border-radius: var(--r-2); background: var(--bg-1); }
+.pnl-h { display: flex; align-items: center; gap: var(--s-2); min-height: 34px; padding: 0 10px 0 var(--s-3); border-bottom: 1px solid var(--line); }
+.pnl-h > .ic { color: var(--accent); }
+.pnl-h .end { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.pnl-h .pips { height: auto; padding: 0 2px 0 4px; }
+.pnl-b { padding: var(--s-3); }
+.sec { display: flex; align-items: center; gap: var(--s-2); margin: 14px 0 var(--s-2); }
+.sec::after { content: ""; flex: 1; height: 1px; background: var(--line); order: 1; }
+.sec .tag { order: 2; }
+.sheet-vit { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); }
+.sheet-vit .seg { height: 10px; }
+.attrs { display: grid; grid-template-columns: 1fr 1fr; gap: 7px var(--s-4); margin: 0; }
+.attrs div { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; align-items: center; gap: var(--s-2); }
+.attrs dt { font: 600 var(--fs-xs)/1 var(--font-tech); letter-spacing: .06em; text-transform: uppercase; color: var(--text-2); }
+.attrs dd { display: contents; }
+.attrs .seg { --c: var(--accent); height: 8px; }
+.attrs .num { font-size: var(--fs-sm); font-weight: 700; line-height: 1; color: var(--text); }
+.abil { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.abil li { display: grid; gap: 5px; padding: 7px var(--s-2); border: 1px solid var(--line); border-radius: var(--r-1); background: var(--bg-0); font: 600 var(--fs-sm)/1.1 var(--font-ui); color: var(--text); }
+.abil span { font: 600 var(--fs-xs)/1 var(--font-tech); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.kv { display: grid; grid-template-columns: 92px minmax(0, 1fr); align-items: baseline; gap: var(--s-2); margin-top: 9px; font: 400 var(--fs-sm)/1.3 var(--font-ui); color: var(--text); text-wrap: balance; }
+.kv:first-of-type { margin-top: var(--s-3); padding-top: var(--s-3); border-top: 1px solid var(--line); }
+.threads { display: grid; gap: 10px; }
+.threads li { padding-left: 10px; border-left: 2px solid var(--accent); }
+.threads p { font: 400 var(--fs-md)/1.4 var(--font-ui); color: var(--text); text-wrap: balance; }
+.threads .sub { display: flex; align-items: baseline; gap: var(--s-2); margin-top: 5px; font-size: var(--fs-sm); color: var(--text-2); }
+.commit { display: grid; gap: 7px; justify-items: start; margin-top: var(--s-3); padding: 9px 10px 10px; border: 1px solid color-mix(in srgb, var(--warn) 45%, transparent); border-radius: var(--r-1); background: color-mix(in srgb, var(--warn) 7%, var(--bg-1)); }
+.commit .tag { --c: var(--warn); }
+.commit p { font: 400 var(--fs-md)/1.35 var(--font-ui); color: var(--text); }
+.map { display: block; width: 100%; height: auto; }
+.map text { font: 600 12px var(--font-tech); letter-spacing: .06em; fill: var(--text-2); text-anchor: middle; }
+.map .lk { stroke: var(--line-3); stroke-width: 1.5; fill: none; }
+.map .lk--un { stroke-dasharray: 3 4; stroke: var(--line-2); }
+.map .nd { fill: var(--bg-0); stroke: var(--text-2); stroke-width: 1.5; }
+.map .nd--un { stroke: var(--text-3); stroke-dasharray: 2 3; }
+.map .nd--you { fill: var(--accent); stroke: var(--accent); }
+.map .ring { fill: none; stroke: var(--accent); stroke-width: 1; opacity: .55; }
+.map .you { fill: var(--accent); }
+.map .q { fill: var(--text-3); }
+
+/* ---------- Small phones ---------- */
+@media (max-width: 379.98px) {
+  .strip { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 52px 52px 44px; gap: 5px; padding-left: var(--s-2); padding-right: var(--s-2); }
+  .chip--party { column-gap: 6px; padding: 0 4px 0 6px; }
+  .chip--party .ava { --sz: 24px; }
+  .chip--party .nm { letter-spacing: .04em; }
+  .chip--here .nm { letter-spacing: 0; }
+  .cost > .ic, .hud-place .ic { display: none; }
+  .die { width: 44px; height: 44px; }
+  .roll-body { gap: 10px; }
+  .roll-out > b { font-size: 18px; letter-spacing: .08em; }
+  .sys--bond .seg { display: none; }
+  .p-acts .act { padding: 0 6px; font-size: var(--fs-sm); }
+  .tab { letter-spacing: .01em; }
+}
+@media (max-width: 339.98px) {
+  .strip { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 44px 44px 44px; }
+  .chip--party { column-gap: 5px; padding: 0 3px 0 5px; }
+  .chip--here .nm, .to .lbl { display: none; }
+}
+
+/* ---------- Between phone and desktop: the phone layout, centred on the reading measure ---------- */
+@media (min-width: 700px) and (max-width: 1099.98px) {
+  :root { --fs-story: 18px; }
+  .log-in, .control-in { width: 100%; max-width: var(--w-story); margin-left: auto; margin-right: auto; }
+  .people-list { width: 100%; max-width: calc(var(--w-story) + 2 * var(--s-3)); margin-left: auto; margin-right: auto; }
+  .hud { padding-right: var(--s-4); }
+  .vitals { grid-template-columns: minmax(0, 220px) minmax(0, 220px) auto; justify-content: start; }
+  .sys .seg { margin-left: var(--s-1); }
+  .strip { grid-template-columns: 198px 198px 64px 64px 52px; justify-content: center; }
+  .tabs { grid-template-columns: repeat(5, minmax(0, 120px)); justify-content: center; }
+}
+
+/* ---------- Short viewports (a phone held sideways): the chrome folds so the log keeps its room ---------- */
+@media (max-height: 520px) and (max-width: 1099.98px) {
+  .strip { display: none; }
+  .control-in { max-width: none; }
+  .sugg { display: flex; overflow-x: auto; scrollbar-width: none; }
+  .sugg li { flex: 1 0 auto; }
+  .sugg li + li { border-top: 0; border-left: 1px solid var(--line); }
+  .sugg button { white-space: nowrap; }
+  .sugg button > .ic { display: none; }
+  .tab { min-height: 44px; flex-direction: row; gap: var(--s-2); }
+}
+@media (max-height: 520px) and (min-width: 700px) and (max-width: 1099.98px) {
+  .hud { grid-template-columns: 44px auto minmax(0, 1fr) auto; grid-template-areas: "menu story vit cost" "menu place vit cost"; column-gap: var(--s-3); padding-bottom: var(--s-1); }
+  .vitals { align-self: center; justify-content: end; padding: 0; }
+}
+
+/* ---------- Desktop dashboard ---------- */
+@media (min-width: 1100px) {
+  :root { --fs-story: 18px; }
+  body { grid-template-columns: var(--w-people) minmax(0, 1fr) var(--w-side); grid-template-rows: 56px minmax(0, 1fr); grid-template-areas: "hud hud hud" "people main side"; }
+  .d-only { display: revert; }
+  .p-only { display: none; }
+  .hud { display: flex; align-items: center; gap: var(--s-3); padding: 0 var(--s-3) 0 var(--s-4); }
+  .hud .vitals { display: none; }
+  .brand { flex: none; display: flex; align-items: center; gap: 10px; height: 28px; padding-right: var(--s-4); border-right: 1px solid var(--line-2); font: 700 var(--fs-lg)/1 var(--font-tech); letter-spacing: .22em; text-transform: uppercase; color: var(--text); white-space: nowrap; }
+  .brand svg { color: var(--accent); }
+  .hud-story { flex: 0 1 auto; align-self: center; gap: var(--s-3); margin-left: 0; }
+  .hud-title { font-size: var(--fs-body); }
+  .hud-chap { font-size: var(--fs-sm); color: var(--text-2); }
+  .hud-place { flex: none; align-self: center; margin-left: auto; height: 40px; padding: 0 var(--s-3); border: 1px solid var(--line-2); border-radius: var(--r-2); background: var(--bg-0); font-size: var(--fs-sm); letter-spacing: .06em; }
+  .hud-place .ic { margin-right: 7px; }
+  .cost { flex: none; gap: 14px; min-height: 40px; padding: 0 var(--s-3); cursor: default; }
+  .cost-cell.d-only { display: grid; }
+  .cost-cell .num { white-space: nowrap; }
+  .hud-menu { flex: none; order: 9; width: 40px; height: 40px; border: 1px solid var(--line-3); background: var(--bg-0); }
+  .tabs, .strip { display: none; }
+
+  .people { grid-area: people; display: flex; z-index: auto; border-right: 1px solid var(--line-2); }
+  .people-head { min-height: 44px; padding-right: 14px; border-bottom-color: var(--line-2); }
+  .people-head .x { display: none; }
+  .people-head .lbl { margin-left: auto; }
+  .people-list { padding: var(--s-2) var(--s-3) var(--s-4); }
+  .person { padding: var(--s-3); }
+  .p-head { grid-template-areas: "ava id more" "bond bond bond"; }
+  .p-head .ava { grid-area: ava; }
+  .p-id { grid-area: id; }
+  .p-more, .p-head > .p-talk { grid-area: more; }
+  .act.p-talk { min-width: 80px; }
+  .p-more { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--line-3); border-radius: var(--r-1); color: var(--text-2); background: var(--bg-2); }
+  .p-bond { grid-area: bond; display: flex; align-items: center; gap: 10px; width: auto; margin-top: 10px; }
+  .p-bond .seg { order: 1; flex: 1; height: 10px; --gap: 3px; }
+  .p-bond .num { order: 2; }
+  .p-mem { display: none; }
+  /* companions always show their three named actions; opening a profile adds the shared memories */
+  .act { min-height: 40px; font-size: var(--fs-sm); }
+  .p-acts .act { padding: 0 6px; }
+  body[data-people="open"] .is-focus { border-color: var(--bond); box-shadow: 0 0 0 1px color-mix(in srgb, var(--bond) 22%, transparent), 0 0 20px color-mix(in srgb, var(--bond) 16%, transparent); }
+  body[data-people="open"] .is-focus .p-mem { display: block; }
+  body[data-people="open"] .is-focus .p-more { color: var(--bond); border-color: var(--bond); }
+  body[data-people="open"] .is-focus .p-more .ic { transform: rotate(180deg); }
+
+  .log { padding: 20px var(--s-5) var(--s-5); }
+  .log-in, .control-in { max-width: var(--w-story); margin: 0 auto; }
+  .log-in > * + *, [data-pending] > * + * { margin-top: 14px; }
+  .entry { padding: 14px 20px 15px; }
+  .roll-head { padding-left: 20px; }
+  .roll-body { padding: 14px 20px 12px; gap: var(--s-4); }
+  .roll-foot { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--s-4); padding: 0 20px 14px; }
+  .roll-legend { display: grid; justify-items: end; gap: 3px; margin: 0; }
+  .sys li { gap: 10px; }
+  .sys .tag { width: 52px; }
+  .sys .seg { width: 44px; margin-left: var(--s-1); }
+  .control { padding: var(--s-3) var(--s-5) var(--s-4); }
+  .sugg button { min-height: 40px; }
+
+  .side { grid-area: side; display: flex; flex-direction: column; gap: var(--s-3); min-height: 0; padding: var(--s-3); overflow-y: auto; border-left: 1px solid var(--line-2); scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
+}
+
+/* a wide top bar has room for level pips beside the turn and session figures */
+@media (min-width: 1400px) {
+  .hud { gap: var(--s-4); }
+  .cost-cell { grid-template-columns: auto auto; justify-content: start; align-items: center; column-gap: 6px; }
+  .cost-cell .seg { display: block; width: 28px; min-width: 0; height: 4px; --c: var(--success); }
+}
+
+/* a top bar too narrow for the full chapter line shows the short form instead of cutting it */
+@media (min-width: 1100px) and (max-width: 1319.98px) {
+  .hud-chap .d-only { display: none; }
+  .hud-chap .p-only { display: revert; }
+}
+
+/* narrow desktop windows: the room goes to the story column, not to the side columns */
+@media (min-width: 1100px) and (max-width: 1279.98px) {
+  :root { --w-people: 320px; --w-side: 368px; --fs-story: 17.5px; }
+  .log, .control { padding-left: var(--s-3); padding-right: var(--s-3); }
+  .entry, .roll-body { padding-left: var(--s-4); padding-right: var(--s-4); }
+  .roll-head { padding-left: var(--s-4); }
+  .roll-foot { display: block; padding-left: var(--s-4); padding-right: var(--s-4); }
+  .roll-legend { display: flex; gap: var(--s-2); margin-top: 7px; }
+  .sheet .pnl-h .lbl:not(.dp) { display: none; }
+  .map text { font-size: 13px; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .continue, .act, .chip, .sugg button, .tab, .to, .send, .p-more, .iconbtn { transition: background-color .12s, border-color .12s, color .12s; }
+}
+@media (hover: hover) {
+  .sugg button:hover, .act:hover, .chip:hover, .to:hover, .p-more:hover, .hud-menu:hover { background: var(--bg-3); }
+  .act--pri:hover { background: color-mix(in srgb, var(--bond) 26%, var(--bg-1)); }
+  .continue:hover { background: color-mix(in srgb, var(--accent) 24%, var(--bg-1)); }
+  .send:hover { background: color-mix(in srgb, var(--accent) 82%, #fff); }
+  .iconbtn:hover { color: var(--text); }
+}
+</style>
+</head>
+<body data-mode="continue">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-story" viewBox="0 0 24 24"><path d="M12 7v12M4 5h5a3 3 0 0 1 3 3 3 3 0 0 1 3-3h5v13h-5a3 3 0 0 0-3 2 3 3 0 0 0-3-2H4z"/></symbol>
+    <symbol id="i-people" viewBox="0 0 24 24"><path d="M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 19c0-3 2.7-5 6-5s6 2 6 5M16 5.2a3 3 0 0 1 0 5.6M21 19c0-2.3-1.4-4-3.5-4.7"/></symbol>
+    <symbol id="i-char" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6zM9 12l2.2 2.2L15 10"/></symbol>
+    <symbol id="i-journal" viewBox="0 0 24 24"><path d="M6 4h11a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6zM6 4v16M10 8.5h4.5M10 12h4.5"/></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2zM9 4v14M15 6v14"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M5 12h13M12 6l6 6-6 6"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M6 6l6 6-6 6M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-talk" viewBox="0 0 24 24"><path d="M5 5h14v10h-9l-4 4v-4H5z"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s6-5.6 6-10.5a6 6 0 1 0-12 0C6 15.4 12 21 12 21zM12 12.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></symbol>
+    <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4 17a8 8 0 1 1 16 0M12 17l-4.5-4.5M12 5v2M5.5 11l1.7.7M18.5 11l-1.7.7"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7.5V12l3 2"/></symbol>
+  </defs>
+</svg>
+
+<header class="hud">
+  <button class="iconbtn hud-menu" aria-label="Menu and settings"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-menu"/></svg></button>
+  <div class="brand">
+    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l10 10-10 10L2 12z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 8l4 4-4 4-4-4z" fill="currentColor"/></svg>
+    Bitor Quest
+  </div>
+  <div class="hud-story">
+    <h1 class="hud-title">The Glass Road</h1>
+    <span class="hud-chap"><span class="p-only">Ch 2 · Sc 4</span><span class="d-only">Chapter 2 · "Borrowed Seals" · Scene 4</span></span>
+  </div>
+  <div class="hud-place">
+    <svg class="ic" width="14" height="14" aria-hidden="true"><use href="#i-pin"/></svg>
+    <span class="pl">Lantern Market</span><span class="tm"> · <b>Dusk</b> · Day 12</span>
+  </div>
+  <div class="vitals">
+    <div class="vital vital--hp" role="img" aria-label="Hit points 12 of 15">
+      <span class="lbl">HP</span><span class="num"><b>12</b>/15</span>
+      <i class="seg" style="--max:15;--v:12;--c:var(--hp)"></i>
+    </div>
+    <div class="vital vital--en" role="img" aria-label="Energy 9 of 15">
+      <span class="lbl">Energy</span><span class="num"><b>9</b>/15</span>
+      <i class="seg" style="--max:15;--v:9;--c:var(--energy)"></i>
+    </div>
+    <div class="vital vital--dp" role="img" aria-label="Destiny points 2">
+      <span class="lbl">Destiny</span><span class="num"><b>2</b></span>
+      <span class="pips"><i></i><i></i></span>
+    </div>
+  </div>
+  <button class="cost" aria-label="Cost meter: this turn $0.006, session $0.21, narrator Sonnet 5.5">
+    <svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-gauge"/></svg>
+    <span class="cost-cell"><span class="lbl">Turn</span><i class="seg" style="--v:1"></i><span class="num">$0.006</span></span>
+    <span class="cost-cell d-only"><span class="lbl">Session</span><i class="seg" style="--v:2"></i><span class="num">$0.21</span></span>
+    <span class="cost-cell d-only"><span class="lbl">Narrator</span><span class="num">Sonnet 5.5</span></span>
+  </button>
+</header>
+
+<aside class="people" aria-label="People">
+  <div class="people-head">
+    <svg class="ic" width="20" height="20" aria-hidden="true"><use href="#i-people"/></svg>
+    <h2>People</h2>
+    <span class="lbl">4 here</span>
+    <button class="iconbtn x" data-people-toggle aria-label="Close people panel"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-x"/></svg></button>
+  </div>
+  <div class="people-list">
+    <div class="grp lbl">Your party</div>
+
+    <article class="person is-fav is-focus" style="--c:var(--c-mira)">
+      <div class="p-head">
+        <span class="ava">M</span>
+        <div class="p-id">
+          <h3>Mira <svg class="ic ic--solid" width="14" height="14" role="img" aria-label="Favourite"><use href="#i-star"/></svg><span class="tag" style="--c:var(--success)">Trusts you</span></h3>
+          <p>Scout · <b>Pinned favourite</b></p>
+        </div>
+        <div class="p-bond" data-mira-bond role="img" aria-label="Bond 4 of 5"><span class="lbl">Bond</span><span class="num"><b>4</b>/5</span><i class="seg" style="--v:4"></i></div>
+        <button class="p-more" data-people-toggle aria-label="Show or hide Mira's profile"><svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-down"/></svg></button>
+      </div>
+      <div class="p-detail">
+        <div class="p-mem">
+          <div class="sec lbl">Shared memories</div>
+          <ul class="mem">
+            <li>You shared your rations on the salt flats.</li>
+            <li>You did not use her as bait at the bridge.</li>
+          </ul>
+        </div>
+        <div class="p-acts">
+          <button class="act act--pri"><svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-talk"/></svg><span>Talk</span></button>
+          <button class="act"><span>Spend time together</span></button>
+          <button class="act"><span>Ask about…</span></button>
+        </div>
+      </div>
+    </article>
+
+    <article class="person" style="--c:var(--c-tobin)">
+      <div class="p-head">
+        <span class="ava">T</span>
+        <div class="p-id">
+          <h3>Tobin<span class="tag" style="--c:var(--accent)">Curious</span></h3>
+          <p>Tinkerer's apprentice</p>
+        </div>
+        <div class="p-bond" role="img" aria-label="Bond 1 of 5"><span class="lbl">Bond</span><span class="num"><b>1</b>/5</span><i class="seg" style="--v:1"></i></div>
+        <button class="p-more" data-people-toggle aria-label="Show or hide Tobin's profile"><svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-down"/></svg></button>
+      </div>
+      <div class="p-detail">
+        <div class="p-mem">
+          <div class="sec lbl">Shared memory</div>
+          <ul class="mem">
+            <li>You paid for his broken lens.</li>
+          </ul>
+        </div>
+        <div class="p-acts">
+          <button class="act act--pri"><svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-talk"/></svg><span>Talk</span></button>
+          <button class="act"><span>Spend time together</span></button>
+          <button class="act"><span>Ask about…</span></button>
+        </div>
+      </div>
+    </article>
+
+    <div class="grp lbl">In the scene</div>
+
+    <article class="person" style="--c:var(--c-roth)">
+      <div class="p-head">
+        <span class="ava">R</span>
+        <div class="p-id">
+          <h3>Captain Roth<span class="tag" style="--c:var(--warn)">Wary</span></h3>
+          <p>City Watch · <span class="nw">Not in your party</span></p>
+        </div>
+        <div class="p-bond p-bond--none"><span class="lbl">No bond yet</span><i class="seg" style="--v:0"></i></div>
+      </div>
+      <div class="p-row">
+        <p class="p-note">Suspects a courier carried the forged seal.</p>
+        <button class="act p-talk"><svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-talk"/></svg><span>Talk</span></button>
+      </div>
+    </article>
+
+    <article class="person" style="--c:var(--c-extra)">
+      <div class="p-head">
+        <span class="ava">L</span>
+        <div class="p-id">
+          <h3>Lantern seller</h3>
+          <p>Stranger · No details</p>
+        </div>
+        <button class="act p-talk"><svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-talk"/></svg><span>Talk</span></button>
+      </div>
+    </article>
+  </div>
+</aside>
+
+<main class="story">
+  <div class="log" data-log tabindex="0" aria-label="Story log">
+    <div class="log-in">
+      <h2 class="scene">Scene 4 · Lantern Market · Dusk</h2>
+
+      <div class="entry narr">
+        <p>Paper lanterns sway above the market stalls as the last light drains out of the canal. By the bridge, Captain Roth turns a wax seal over in his gloved hand while two watchmen search a courier's bag.</p>
+      </div>
+
+      <div class="entry say" style="--c:var(--c-mira)">
+        <div class="who"><span class="tag">Mira</span><i>whispering</i></div>
+        <p>"He's checking couriers. If he sees your satchel, we're done. I can draw them off, or you talk your way through."</p>
+      </div>
+
+      <div class="entry say" style="--c:var(--c-tobin)">
+        <div class="who"><span class="tag">Tobin</span></div>
+        <p>"Or we wait for dark. I vote dark."</p>
+      </div>
+
+      <div class="entry cmd">
+        <div class="who"><span class="tag">Aren</span><i>your action</i></div>
+        <span class="prompt" aria-hidden="true">&gt;</span>
+        <p>I walk up to Roth openly and ask whether the bridge is closed, keeping the satchel under my cloak.</p>
+      </div>
+
+      <div class="roll" role="group" aria-label="Dice check result">
+        <div class="roll-head"><span class="lbl">Skill test</span><span class="tag">Medium</span></div>
+        <div class="roll-body">
+          <svg class="die" width="56" height="56" viewBox="0 0 56 56" role="img" aria-label="Die showing 2"><rect x="3.5" y="3.5" width="49" height="49" rx="5"/><circle cx="38.5" cy="17.5" r="5"/><circle cx="17.5" cy="38.5" r="5"/></svg>
+          <div class="roll-what"><b>Manipulation <span>(bluff)</span></b><span>Opposed by Captain Roth</span></div>
+          <div class="roll-out"><b>Success</b><span>Quality <b>2</b></span></div>
+        </div>
+        <div class="roll-foot">
+          <ol class="track" aria-hidden="true"><li class="ok">1</li><li class="ok hit">2</li><li class="ok">3</li><li class="ok lim">4</li><li>5</li><li>6</li></ol>
+          <div class="roll-legend"><span>Needed <b>4 or less</b> on one die</span><span>Rolled <b>2</b></span></div>
+        </div>
+      </div>
+
+      <div class="entry narr">
+        <p>Roth's eyes go from your face to your boots and back. "Bridge is open. Papers are not," he says, but he is already looking past you at a cart with a broken axle. He waves you on.</p>
+      </div>
+
+      <div data-pending>
+        <div class="entry say" style="--c:var(--c-mira)">
+          <div class="who"><span class="tag">Mira</span><i>low, falling in beside you</i></div>
+          <p>"You could have sent me in as the distraction. You didn't." <span class="aside">A pause.</span> "I noticed."</p>
+        </div>
+        <ul class="sys">
+          <li class="sys--bond"><span class="tag">Bond</span><span>Bond with Mira rises from <b>3</b> to <b>4</b>.</span><i class="seg" style="--v:4"></i></li>
+        </ul>
+      </div>
+
+      <div data-pending>
+        <div class="entry narr">
+          <p>Behind you the cart finally gives way, and the whole market turns to look. The bridge ahead is empty, and beyond it the lamps of the Glass Road are being lit one by one.</p>
+        </div>
+        <ul class="sys">
+          <li class="sys--xp"><span class="tag">XP</span><span>+1 experience</span></li>
+          <li class="sys--goal"><span class="tag">Goal</span><span>Goal progress: reach the Glass Road waystation.</span></li>
+          <li class="sys--time"><span class="tag">Time</span><span>10 minutes pass.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="strip" aria-label="People present">
+    <button class="chip chip--party chip--fav" data-people-toggle style="--c:var(--c-mira)" aria-label="Mira, favourite, bond 4 of 5. Open people panel">
+      <span class="ava">M<svg class="ic ic--solid fav" width="13" height="13" aria-hidden="true"><use href="#i-star"/></svg></span>
+      <span class="who2"><span class="nm">Mira</span><span class="bd" data-mira-bond><i class="seg" style="--v:4"></i><span class="num">4</span></span></span>
+    </button>
+    <button class="chip chip--party" data-people-toggle style="--c:var(--c-tobin)" aria-label="Tobin, bond 1 of 5. Open people panel">
+      <span class="ava">T</span>
+      <span class="who2"><span class="nm">Tobin</span><span class="bd"><i class="seg" style="--v:1"></i><span class="num">1</span></span></span>
+    </button>
+    <button class="chip chip--here" data-people-toggle style="--c:var(--c-roth)" aria-label="Captain Roth, no bond yet. Open people panel">
+      <span class="ava">R</span><span class="nm">Roth</span>
+    </button>
+    <button class="chip chip--here" data-people-toggle style="--c:var(--c-extra)" aria-label="Lantern seller. Open people panel">
+      <span class="ava">L</span><span class="nm">Seller</span>
+    </button>
+    <button class="chip chip--all" data-people-toggle aria-label="Open people panel">
+      <svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-up"/></svg><span class="nm">All</span>
+    </button>
+  </div>
+
+  <div class="control">
+    <div class="control-in">
+      <button class="continue" data-continue>
+        <svg class="ic" width="20" height="20" aria-hidden="true"><use href="#i-play"/></svg>
+        Continue
+        <span class="cnt"><b data-continue-count>2</b> left</span>
+      </button>
+      <div class="composer">
+        <ol class="sugg" aria-label="Suggested actions">
+          <li><button><kbd>1</kbd><span>Cross the bridge now</span><svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-chev"/></svg></button></li>
+          <li><button><kbd>2</kbd><span>Ask Mira what she saw at the stalls</span><svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-chev"/></svg></button></li>
+          <li><button><kbd>3</kbd><span>Take a closer look at the cart</span><svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-chev"/></svg></button></li>
+        </ol>
+        <div class="inrow">
+          <button class="to" aria-label="Speaking to everyone. Choose who you address"><span class="lbl">To:</span><b>All</b><svg class="ic" width="14" height="14" aria-hidden="true"><use href="#i-down"/></svg></button>
+          <label class="field"><span class="prompt" aria-hidden="true">&gt;</span><input type="text" placeholder="What do you do?" aria-label="What do you do?" autocomplete="off"></label>
+          <button class="send" aria-label="Send"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-send"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<aside class="side" aria-label="Character, journal and map">
+  <section class="pnl sheet" aria-label="Character">
+    <div class="pnl-h">
+      <svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-char"/></svg>
+      <h2>Aren</h2>
+      <span class="lbl">Character</span>
+      <div class="end">
+        <span class="lbl dp">Destiny</span><span class="pips"><i></i><i></i></span><span class="num">2</span>
+        <span class="tag" style="--c:var(--success)">XP 14</span>
+      </div>
+    </div>
+    <div class="pnl-b">
+      <div class="sheet-vit">
+        <div class="vital vital--hp" role="img" aria-label="Hit points 12 of 15">
+          <span class="lbl">Hit points</span><span class="num"><b>12</b>/15</span>
+          <i class="seg" style="--max:15;--v:12;--c:var(--hp)"></i>
+        </div>
+        <div class="vital vital--en" role="img" aria-label="Energy 9 of 15">
+          <span class="lbl">Energy</span><span class="num"><b>9</b>/15</span>
+          <i class="seg" style="--max:15;--v:9;--c:var(--energy)"></i>
+        </div>
+      </div>
+      <div class="sec lbl">Attributes</div>
+      <dl class="attrs">
+        <div><dt>Strength</dt><dd><i class="seg" style="--v:1"></i><span class="num">1</span></dd></div>
+        <div><dt>Skill</dt><dd><i class="seg" style="--v:3"></i><span class="num">3</span></dd></div>
+        <div><dt>Resistance</dt><dd><i class="seg" style="--v:3"></i><span class="num">3</span></dd></div>
+        <div><dt>Armor</dt><dd><i class="seg" style="--v:1"></i><span class="num">1</span></dd></div>
+        <div><dt>Firepower</dt><dd><i class="seg" style="--v:0"></i><span class="num">0</span></dd></div>
+      </dl>
+      <div class="sec lbl">Paths and abilities<span class="tag" style="--c:var(--accent)">Air 2</span><span class="tag" style="--c:var(--accent)">Light 1</span></div>
+      <ul class="abil">
+        <li>Featherstep<span>Air 1</span></li>
+        <li>Gale Push<span>Air 2</span></li>
+        <li>Glimmer<span>Light 1</span></li>
+      </ul>
+      <div class="kv"><span class="lbl">Advantages</span><span>Quick Reflexes · Patron: Couriers' Guild</span></div>
+      <div class="kv"><span class="lbl">Skills</span><span>Manipulation · Survival</span></div>
+    </div>
+  </section>
+
+  <section class="pnl journal" aria-label="Journal">
+    <div class="pnl-h">
+      <svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-journal"/></svg>
+      <h2>Journal</h2>
+      <div class="end"><span class="lbl">2 threads</span></div>
+    </div>
+    <div class="pnl-b">
+      <ul class="threads">
+        <li>
+          <p>Deliver the sealed letter to the Glass Road waystation.</p>
+          <p class="sub"><span class="tag" style="--c:var(--accent)">Next</span><span>Cross the bridge before the gates close.</span></p>
+        </li>
+        <li>
+          <p>Who copied the baron's seal?</p>
+          <p class="sub"><span class="tag">Clue</span><span>Roth carries a copy.</span></p>
+        </li>
+      </ul>
+      <div class="commit">
+        <span class="tag"><svg class="ic" width="13" height="13" aria-hidden="true"><use href="#i-clock"/></svg>Commitment · Due tonight</span>
+        <p>Meet Tobin's master at the Old Mill.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="pnl" aria-label="Map">
+    <div class="pnl-h">
+      <svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-map"/></svg>
+      <h2>Map</h2>
+      <div class="end"><span class="lbl">Lantern Market</span></div>
+    </div>
+    <div class="pnl-b">
+      <svg class="map" width="352" height="134" viewBox="0 0 352 134" role="img" aria-label="Schematic map. Old Mill links to Lantern Market, where you are. Lantern Market links to Canal Bridge and North Gate. Canal Bridge links to Glass Road Waystation, with one undiscovered place beyond it.">
+        <path class="lk" d="M36 74H296M128 74V26"/>
+        <path class="lk lk--un" d="M296 74L328 34"/>
+        <circle class="nd" cx="36" cy="74" r="6"/>
+        <circle class="ring" cx="128" cy="74" r="12"/>
+        <circle class="nd nd--you" cx="128" cy="74" r="6"/>
+        <circle class="nd" cx="212" cy="74" r="6"/>
+        <circle class="nd" cx="296" cy="74" r="6"/>
+        <circle class="nd" cx="128" cy="26" r="6"/>
+        <circle class="nd nd--un" cx="328" cy="30" r="10"/>
+        <text class="q" x="328" y="34.5">?</text>
+        <text x="36" y="100">Old Mill</text>
+        <text x="128" y="104">Lantern Market</text>
+        <text class="you" x="128" y="121">You are here</text>
+        <text x="212" y="56">Canal Bridge</text>
+        <text x="296" y="100">Glass Road</text>
+        <text x="296" y="116">Waystation</text>
+        <text x="142" y="30" style="text-anchor:start">North Gate</text>
+      </svg>
+    </div>
+  </section>
+</aside>
+
+<nav class="tabs" aria-label="Primary">
+  <button class="tab tab--story" data-people-toggle="close"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-story"/></svg>Story</button>
+  <button class="tab tab--people" data-people-toggle><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-people"/></svg>People</button>
+  <button class="tab"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-char"/></svg>Character</button>
+  <button class="tab"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-journal"/></svg>Journal</button>
+  <button class="tab"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-map"/></svg>Map</button>
+</nav>
+
+<script>
+(function () {
+  var state = new URLSearchParams(location.search).get('state') || 'continue';
+  var pending = Array.prototype.slice.call(document.querySelectorAll('[data-pending]'));
+  var shown = (state === 'input' || state === 'people') ? pending.length : 0;
+  function sync() {
+    pending.forEach(function (el, i) { el.hidden = i >= shown; });
+    var left = pending.length - shown;
+    document.body.dataset.mode = left > 0 ? 'continue' : 'input';
+    document.querySelectorAll('[data-continue-count]').forEach(function (c) { c.textContent = left; });
+    var log = document.querySelector('[data-log]');
+    var newest = null;
+    document.querySelectorAll('[data-log] .entry').forEach(function (el) {
+      el.removeAttribute('data-new');
+      if (!el.closest('[hidden]')) newest = el;
+    });
+    if (newest) newest.setAttribute('data-new', '');
+    // Mira's bond is 3 until the BOND note in the first pending group is revealed, then 4
+    var bond = shown >= 1 ? 4 : 3;
+    document.querySelectorAll('[data-mira-bond]').forEach(function (el) {
+      var seg = el.querySelector('.seg'); if (seg) seg.style.setProperty('--v', bond);
+      var num = el.querySelector('.num b') || el.querySelector('.num'); if (num) num.textContent = bond;
+      if (el.hasAttribute('aria-label')) el.setAttribute('aria-label', 'Bond ' + bond + ' of 5');
+    });
+    var fav = document.querySelector('.chip--fav');
+    if (fav) fav.setAttribute('aria-label', 'Mira, favourite, bond ' + bond + ' of 5. Open people panel');
+    if (log) log.scrollTop = log.scrollHeight;
+  }
+  if (state === 'people') document.body.dataset.people = 'open';
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('[data-continue]')) { shown = Math.min(pending.length, shown + 1); sync(); }
+    var toggle = e.target.closest('[data-people-toggle]');
+    if (toggle) {
+      var open = document.body.dataset.people === 'open';
+      // a profile toggle on another companion's card moves the open profile to that card
+      var card = toggle.closest('.person'), focus = document.querySelector('.person.is-focus');
+      if (card && card !== focus) {
+        if (focus) focus.classList.remove('is-focus');
+        card.classList.add('is-focus');
+        open = false;
+      }
+      // a control marked "close" (the Story tab) only ever closes the panel
+      document.body.dataset.people = (open || toggle.getAttribute('data-people-toggle') === 'close') ? '' : 'open';
+    }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') document.body.dataset.people = '';
+  });
+  sync();
+})();
+</script>
+</body>
+</html>

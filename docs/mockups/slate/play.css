@@ -1,0 +1,196 @@
+/* ==========================================================================
+   Story screen: the layout of the play screen and its relatives (combat, system states).
+   Load after slate.css. Phone: top bar with vitals and people strip, the log, the dock,
+   the navigation. Desktop: rail | people pane | story | context pane.
+   ========================================================================== */
+
+/* Things that only exist once the first pending beat (Mira's bond note) has been revealed */
+body[data-beats="0"] [data-after-bond]{display:none}
+body[data-beats="0"] .btn-moment{border-color:var(--c-line-strong);color:inherit}
+
+.story{grid-row:2;min-height:0;display:flex;flex-direction:column;background:var(--c-story)}
+
+/* ---------- Vitals (phone) ---------- */
+.vitals{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;column-gap:var(--sp-4);padding:1px var(--sp-4) 10px}
+.char-x svg+svg{margin-left:-2px}
+
+/* ---------- People strip (phone) ---------- */
+.strip{display:flex;align-items:flex-start;padding:0 10px 7px;--under:var(--c-chrome)}
+.strip-row{flex:1;min-width:0;display:flex;overflow-x:auto;scrollbar-width:none}
+.strip-row::-webkit-scrollbar{display:none}
+.strip-row .pc:focus-visible{outline-offset:-2px} /* the scroller would clip an outer ring */
+.pc{flex:none;min-width:50px;min-height:44px;padding:3px 5px 2px;display:flex;flex-direction:column;align-items:center;gap:3px;border-radius:var(--r-md);text-align:center}
+.pc-n{font-size:var(--fs-sm);font-weight:600;line-height:15px;white-space:nowrap}
+.pc-m{font-size:var(--fs-xs);line-height:13px;color:var(--c-text-3)}
+.pc .bb{height:13px}
+.pc-scene .pc-n{font-weight:400;color:var(--c-text-2)}
+.strip-sep{flex:none;align-self:stretch;width:1px;margin:5px 3px 15px;background:var(--c-line)}
+.av-all{background:none;color:var(--c-text);box-shadow:inset 0 0 0 1.5px var(--c-line-strong)}
+.pc-all .pc-n{color:var(--c-accent-text)}
+
+/* ---------- Story log ---------- */
+.log{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:var(--sp-4) var(--gut) 18px;scrollbar-width:thin;scrollbar-color:var(--c-line) transparent;-webkit-mask-image:linear-gradient(transparent,#000 12px);mask-image:linear-gradient(transparent,#000 12px)}
+.col{max-width:var(--w-read);min-height:100%;margin:0 auto;display:flex;flex-direction:column;justify-content:flex-end;gap:14px}
+.beat{position:relative;display:flex;flex-direction:column;gap:inherit}
+.beat.is-new::before{content:"";position:absolute;left:-9px;top:3px;bottom:3px;width:2px;border-radius:2px;background:var(--c-accent-text);opacity:.75}
+.scene{display:flex;align-items:center;gap:var(--sp-3);font-size:var(--fs-xs);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--c-text-2);white-space:nowrap}
+.scene::before,.scene::after{content:"";flex:1;height:1px;background:var(--c-line)}
+.narr{font-family:var(--font-story);font-size:var(--fs-story);line-height:var(--lh-story);color:var(--c-text);text-wrap:pretty}
+
+/* A speech bubble is outlined in its speaker's colour, kept quiet by mixing it into the card */
+.say{align-self:flex-start;max-width:95%;padding:10px 14px var(--sp-3);border:1px solid color-mix(in srgb,var(--p,var(--c-line-strong)) 42%,var(--c-card));border-radius:var(--r-lg);background:var(--c-card)}
+.say-h{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:5px;min-height:22px}
+.say-n{font-size:var(--fs-md);color:var(--p)}
+.say-m{font-size:var(--fs-sm);font-style:italic;color:var(--c-text-2)}
+.say p,.act p{font-size:var(--fs-speech);line-height:var(--lh-speech);text-wrap:pretty}
+.aside{font-family:var(--font-story);font-style:italic;line-height:1;color:var(--c-text-2)} /* line-height 1: the serif must not stretch the sans line */
+
+.act{align-self:flex-end;max-width:88%;padding:9px 14px 11px;border:1px solid var(--c-accent-line);border-radius:var(--r-lg) var(--r-lg) 4px var(--r-lg);background:var(--c-accent-tint)}
+.act-h{display:flex;align-items:center;gap:7px;margin-bottom:3px;font-size:var(--fs-sm);font-weight:600;color:var(--c-accent-text)}
+.you{padding:0 6px;border:1px solid var(--c-accent-line);border-radius:var(--r-pill);font-size:var(--fs-xs);line-height:16px;font-weight:400}
+
+/* ---------- Dock: Continue or the input ---------- */
+.dock{flex:none;padding:10px var(--gut);border-top:1px solid var(--c-line);background:var(--c-story)}
+.dock-in{max-width:var(--w-read);margin:0 auto}
+.go{position:relative;width:100%;height:50px;display:flex;align-items:center;justify-content:center;gap:10px;border-radius:var(--r-lg);background:var(--c-accent-fill);color:var(--c-on-accent);font-size:var(--fs-lg);font-weight:600}
+.go:hover{filter:brightness(1.06)}
+.go-n{padding:1px var(--sp-2) 2px;border-radius:var(--r-pill);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c-on-accent) 45%,transparent);font-size:var(--fs-sm)}
+.go kbd{display:none}
+body[data-mode="input"] .go,body[data-mode="continue"] .compose{display:none}
+.sugg{display:flex;flex-wrap:wrap;column-gap:6px;margin:-4px 0 2px}
+.sg{max-width:100%;min-height:44px;display:flex;align-items:center}
+.sg>span{display:flex;align-items:center;gap:6px;min-height:36px;padding:2px 11px;border:1px solid var(--c-line-strong);border-radius:18px;background:var(--c-card);font-size:var(--fs-sm);line-height:1.25}
+.sg-2>span{padding-left:6px}
+.sg:hover>span{border-color:var(--c-accent-text);color:var(--c-accent-text)}
+.field{display:flex;align-items:center;height:50px;padding-right:2px;border:1px solid var(--c-line-strong);border-radius:var(--r-lg);background:var(--c-card)}
+.field:focus-within{border-color:var(--c-accent-text);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 26%,transparent)}
+.to{flex:none;height:48px;display:flex;align-items:center;gap:6px;padding:0 6px 0 var(--sp-3);border-right:1px solid var(--c-line);border-radius:11px 0 0 11px;font-size:var(--fs-md)}
+.to-k{color:var(--c-text-2)}
+.to .i{color:var(--c-text-2)}
+.field input{flex:1;min-width:0;height:48px;padding:0 10px;border:0;outline:0;background:none;font-size:var(--fs-lg)}
+.field input::placeholder{color:var(--c-text-3);opacity:1}
+.send{flex:none;width:44px;height:44px;display:grid;place-items:center;border-radius:var(--r-md);background:var(--c-accent-fill);color:var(--c-on-accent)}
+
+/* ---------- People here: bottom sheet on phone, pane on desktop ---------- */
+.scrim{position:absolute;left:0;top:0;z-index:4;width:100%;height:calc(100% - var(--tab-h));display:none;background:var(--scrim);cursor:default}
+.people{position:absolute;left:0;right:0;bottom:var(--tab-h);z-index:5;max-width:var(--w-read);max-height:calc(100% - var(--tab-h) - 56px);margin:0 auto;display:none;flex-direction:column;border-top:1px solid var(--c-line);border-radius:16px 16px 0 0;background:var(--c-pane);box-shadow:var(--shadow-sheet)}
+body[data-people="open"] .scrim{display:block}
+body[data-people="open"] .people{display:flex}
+.people-h{position:relative;flex:none;display:flex;align-items:center;gap:var(--sp-2);padding:10px 6px 0 var(--sp-4)}
+.people-h::before{content:"";position:absolute;top:7px;left:50%;width:36px;height:4px;margin-left:-18px;border-radius:2px;background:var(--c-line-strong)}
+.people-h h2{font-size:var(--fs-lg);font-weight:600}
+.people-n{flex:1;font-size:var(--fs-sm);color:var(--c-text-2)}
+.people-b{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:var(--sp-2);padding:0 var(--sp-3) 14px}
+.talk-sm{flex:none;padding:0 14px}
+/* a person's name opens their profile */
+a.person-id{display:flex;flex-direction:column;justify-content:center;min-height:44px;border-radius:var(--r-sm)}
+a.person-id:hover .person-name{text-decoration:underline}
+
+/* ---------- Desktop-only parts are hidden until the desktop layout ---------- */
+.ctx,.person-foot{display:none}
+
+/* ---------- Phone and tablet only ---------- */
+@media (max-width:1099.98px){
+  /* something changed with someone: Mira's bond rose in this passage */
+  body:not([data-beats="0"]):not([data-people="open"]) .tab[data-nav-item="people"] .tab-i::after{content:"";position:absolute;top:1px;right:10px;width:9px;height:9px;border-radius:50%;background:var(--p-mira);box-shadow:0 0 0 2px var(--c-chrome)}
+}
+@media (max-width:699.98px),(min-width:1100px) and (max-width:1279.98px){
+  /* narrow columns keep two rows: the short suggestions share row one and wrap inside their pill before a third row is needed */
+  .sugg{display:grid;grid-template-columns:auto auto;justify-content:start}
+  .sg-2{order:1;grid-column:1/-1;justify-self:start}
+  .sg>span{text-wrap:pretty}
+}
+@media (max-width:699.98px){
+  /* phone: the People sheet always rises to just under the top bar, so its edge never cuts through the meters */
+  .people{height:calc(100% - var(--tab-h) - 56px)}
+}
+@media (min-width:700px) and (max-width:1099.98px){
+  /* tablet: the top bar, meters, people strip and tabs line up with the centred reading column */
+  .bar,.vitals,.strip{max-width:calc(var(--w-read) + 2*var(--gut));margin-inline:auto}
+  .nav{padding-inline:max(var(--sp-1),calc(50% - var(--w-read)/2 - var(--gut)))}
+}
+@media (max-width:379.98px){
+  .sugg{column-gap:var(--sp-1)}
+  .sg>span{padding:2px var(--sp-2)}
+  .sg-2>span{padding-left:6px}
+}
+
+/* ==========================================================================
+   Desktop: icon rail | people | story | context
+   ========================================================================== */
+@media (min-width:1100px){
+  :root{--w-read:592px}
+  /* 592px keeps the 18px serif at about 70 characters a line; the panes are 360 | fluid | 368 */
+  .app{grid-template-columns:72px 360px minmax(0,1fr) 368px}
+  .vitals,.strip,.people-h::before,.people .close,.talk-sm,body[data-people="open"] .scrim{display:none}
+
+  /* top bar aligned to the panes below; the title and the place line up with the reading column */
+  .bar{grid-template-columns:432px minmax(0,1fr) 368px}
+  .bar-mid{padding:0 max(var(--gut),calc(50% - var(--w-read)/2))}
+
+  /* people pane */
+  .people{position:static;grid-column:2;grid-row:2;display:flex;max-width:none;max-height:none;min-height:0;margin:0;border-top:0;border-right:1px solid var(--c-line);border-radius:0;box-shadow:none}
+  .people-h{padding:14px var(--sp-4) 2px}
+  .av-l{--z:40px}
+  .person-detail{display:none}
+  body[data-people="open"] .is-focus .person-detail{display:block}
+  .person-foot{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:9px;border-top:1px solid var(--c-line)}
+  .person-foot .link{height:22px}
+  body[data-people="open"] .is-focus .chev{transform:rotate(180deg)}
+  body[data-people="open"] .is-focus .foot-talk{visibility:hidden}
+  body[data-people="open"] .person.is-focus{border-color:color-mix(in srgb,var(--p) 46%,var(--c-card))}
+  .acts{flex-wrap:wrap}
+  .acts .btn-primary{flex:1 0 100%}
+
+  /* story */
+  .story{grid-column:3;grid-row:2}
+  .log{padding:18px var(--gut) var(--sp-4)}
+  .col{gap:var(--sp-4)}
+  .say{max-width:570px}
+  .act{max-width:500px}
+  .check{width:100%;max-width:450px}
+  .dock{padding:10px var(--gut) 14px}
+  .go{height:48px}
+  .go kbd{position:absolute;right:14px;top:50%;display:block;margin-top:-11px;padding:0 7px;border-radius:5px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c-on-accent) 45%,transparent);font:600 var(--fs-xs)/22px var(--font-ui)}
+  .sugg{margin:-2px 0 var(--sp-1)}
+  .sg{min-height:42px}
+  .sg>span{min-height:34px}
+  .field{height:52px}
+  .to,.field input{height:50px}
+
+  /* context pane */
+  .ctx{grid-column:4;grid-row:2;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:var(--sp-3);border-left:1px solid var(--c-line);background:var(--c-pane);scrollbar-width:thin;scrollbar-color:var(--c-line) transparent}
+  .ctx .meters,.ctx .stats,.ctx .facts,.ctx .due{margin-top:var(--sp-3)}
+  .char-id{display:flex;align-items:center;gap:10px}
+  .char-n{font-size:var(--fs-lg);font-weight:600;line-height:20px}
+  .char-s{font-size:var(--fs-sm);line-height:16px;color:var(--c-text-2)}
+  .char-x{display:flex;gap:var(--sp-4);margin-left:auto}
+  .char-x dt{font-size:var(--fs-xs);line-height:15px;color:var(--c-text-2)}
+  .char-x dd{display:flex;align-items:center;font-size:var(--fs-md);line-height:19px;font-weight:600;font-variant-numeric:tabular-nums}
+  .char-x dd span{margin-left:5px}
+  .char-x .i{margin-left:-1px;color:var(--c-text)}
+}
+/* Narrow desktop: slimmer side panes so the story keeps a readable measure; the map moves to its tab */
+@media (min-width:1100px) and (max-width:1279.98px){
+  :root{--gut:var(--sp-5)}
+  .app{grid-template-columns:72px 264px minmax(0,1fr) 336px}
+  .bar{grid-template-columns:auto minmax(0,1fr) auto}
+  .bar-mid{padding:0 var(--sp-5)}
+  .person-top{flex-wrap:wrap}
+  .bond{flex:1 0 100%;display:flex;align-items:center;justify-content:space-between}
+  .card-map{display:none}
+}
+/* Short desktop windows: the map schematic no longer fits under the journal, so it stays behind its tab */
+@media (min-width:1100px) and (max-height:869.98px){
+  .card-map{display:none}
+}
+
+/* ---------- Motion ---------- */
+@media (prefers-reduced-motion:no-preference){
+  .is-new{animation:rise .18s ease-out}
+  @keyframes rise{from{opacity:.4;transform:translateY(6px)}to{opacity:1;transform:none}}
+}
+@media (prefers-reduced-motion:no-preference) and (max-width:1099.98px){
+  body.is-live[data-people="open"] .people{animation:sheet .2s ease-out}
+  @keyframes sheet{from{opacity:.6;transform:translateY(24px)}to{opacity:1;transform:none}}
+}

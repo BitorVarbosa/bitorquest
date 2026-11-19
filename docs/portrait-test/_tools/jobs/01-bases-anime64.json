@@ -1,0 +1,62 @@
+[
+  {
+    "out": "front/base-pixen.png",
+    "route": "/create-image-pixen",
+    "body": {
+      "description": "anime style character face portrait, bust of a completely bald young adult with an androgynous face, hairless smooth scalp, large anime eyes, facing the viewer straight on, symmetrical front view, neutral expression, head and shoulders, plain grey tunic, flat cel shading, clean dark outline",
+      "image_size": { "width": 64, "height": 64 },
+      "no_background": true,
+      "seed": 7
+    }
+  },
+  {
+    "out": "threequarter/base-pixen.png",
+    "route": "/create-image-pixen",
+    "body": {
+      "description": "anime style RPG Maker faceset portrait, bust of a completely bald young adult with an androgynous face, hairless smooth scalp, large anime eyes, three-quarter view, head turned to the right, neutral expression, head and shoulders, plain grey tunic, flat cel shading, clean dark outline",
+      "image_size": { "width": 64, "height": 64 },
+      "no_background": true,
+      "seed": 7
+    }
+  },
+  {
+    "out": "closeup/base-pixen.png",
+    "route": "/create-image-pixen",
+    "body": {
+      "description": "anime style close-up face portrait of a completely bald young adult with an androgynous face, hairless smooth scalp, large anime eyes, the face fills the frame, facing the viewer straight on, symmetrical front view, neutral expression, flat cel shading, clean dark outline",
+      "image_size": { "width": 64, "height": 64 },
+      "no_background": true,
+      "seed": 7
+    }
+  },
+  {
+    "out": "front/base-pixflux.png",
+    "route": "/create-image-pixflux",
+    "body": {
+      "description": "anime style character face portrait, bust of a completely bald young adult with an androgynous face, hairless smooth scalp, large anime eyes, facing the viewer straight on, symmetrical front view, neutral expression, head and shoulders, plain grey tunic, flat cel shading, clean dark outline",
+      "image_size": { "width": 64, "height": 64 },
+      "no_background": true,
+      "seed": 7
+    }
+  },
+  {
+    "out": "threequarter/base-pixflux.png",
+    "route": "/create-image-pixflux",
+    "body": {
+      "description": "anime style RPG Maker faceset portrait, bust of a completely bald young adult with an androgynous face, hairless smooth scalp, large anime eyes, three-quarter view, head turned to the right, neutral expression, head and shoulders, plain grey tunic, flat cel shading, clean dark outline",
+      "image_size": { "width": 64, "height": 64 },
+      "no_background": true,
+      "seed": 7
+    }
+  },
+  {
+    "out": "closeup/base-pixflux.png",
+    "route": "/create-image-pixflux",
+    "body": {
+      "description": "anime style close-up face portrait of a completely bald young adult with an androgynous face, hairless smooth scalp, large anime eyes, the face fills the frame, facing the viewer straight on, symmetrical front view, neutral expression, flat cel shading, clean dark outline",
+      "image_size": { "width": 64, "height": 64 },
+      "no_background": true,
+      "seed": 7
+    }
+  }
+]

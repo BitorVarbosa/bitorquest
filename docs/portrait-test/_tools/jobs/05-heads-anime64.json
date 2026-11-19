@@ -1,0 +1,122 @@
+[
+  {
+    "out": "front/head-woman.png",
+    "route": "/edit-image-pixen",
+    "body": {
+      "description": "turn this character into an adult woman with a clearly feminine face, long eyelashes, fuller lips and a soft narrow jaw; keep the character bald; keep the pose, head position, framing, clothes and art style exactly the same",
+      "image": "@front/head.png",
+      "no_background": true,
+      "seed": 7
+    }
+  },
+  {
+    "out": "front/head-child.png",
+    "route": "/edit-image-pixen",
+    "body": {
+      "description": "turn this character into a small child about seven years old with round chubby cheeks and very large eyes; keep the character bald; keep the pose, head position, framing, clothes and art style exactly the same",
+      "image": "@front/head.png",
+      "no_background": true,
+      "seed": 7
+    }
+  },
+  {
+    "out": "front/head-oldman.png",
+    "route": "/edit-image-pixen",
+    "body": {
+      "description": "turn this character into an elderly old man with deep wrinkles, sunken cheeks and thick grey eyebrows; keep the character bald; keep the pose, head position, framing, clothes and art style exactly the same",
+      "image": "@front/head.png",
+      "no_background": true,
+      "seed": 7
+    }
+  },
+  {
+    "out": "front/head-oldwoman.png",
+    "route": "/edit-image-pixen",
+    "body": {
+      "description": "turn this character into an elderly old woman with wrinkles, sagging cheeks, thin lips and a gentle face; keep the character bald; keep the pose, head position, framing, clothes and art style exactly the same",
+      "image": "@front/head.png",
+      "no_background": true,
+      "seed": 7
+    }
+  },
+  {
+    "out": "threequarter/head-woman.png",
+    "route": "/edit-image-pixen",
+    "body": {
+      "description": "turn this character into an adult woman with a clearly feminine face, long eyelashes, fuller lips and a soft narrow jaw; keep the character bald; keep the pose, head position, framing, clothes and art style exactly the same",
+      "image": "@threequarter/head.png",
+      "no_background": true,
+      "seed": 7
+    }
+  },
+  {
+    "out": "threequarter/head-child.png",
+    "route": "/edit-image-pixen",
+    "body": {
+      "description": "turn this character into a small child about seven years old with round chubby cheeks and very large eyes; keep the character bald; keep the pose, head position, framing, clothes and art style exactly the same",
+      "image": "@threequarter/head.png",
+      "no_background": true,
+      "seed": 7
+    }
+  },
+  {
+    "out": "threequarter/head-oldman.png",
+    "route": "/edit-image-pixen",
+    "body": {
+      "description": "turn this character into an elderly old man with deep wrinkles, sunken cheeks and thick grey eyebrows; keep the character bald; keep the pose, head position, framing, clothes and art style exactly the same",
+      "image": "@threequarter/head.png",
+      "no_background": true,
+      "seed": 7
+    }
+  },
+  {
+    "out": "threequarter/head-oldwoman.png",
+    "route": "/edit-image-pixen",
+    "body": {
+      "description": "turn this character into an elderly old woman with wrinkles, sagging cheeks, thin lips and a gentle face; keep the character bald; keep the pose, head position, framing, clothes and art style exactly the same",
+      "image": "@threequarter/head.png",
+      "no_background": true,
+      "seed": 7
+    }
+  },
+  {
+    "out": "closeup/head-woman.png",
+    "route": "/edit-image-pixen",
+    "body": {
+      "description": "turn this character into an adult woman with a clearly feminine face, long eyelashes, fuller lips and a soft narrow jaw; keep the character bald; keep the pose, head position, framing, clothes and art style exactly the same",
+      "image": "@closeup/head.png",
+      "no_background": true,
+      "seed": 7
+    }
+  },
+  {
+    "out": "closeup/head-child.png",
+    "route": "/edit-image-pixen",
+    "body": {
+      "description": "turn this character into a small child about seven years old with round chubby cheeks and very large eyes; keep the character bald; keep the pose, head position, framing, clothes and art style exactly the same",
+      "image": "@closeup/head.png",
+      "no_background": true,
+      "seed": 7
+    }
+  },
+  {
+    "out": "closeup/head-oldman.png",
+    "route": "/edit-image-pixen",
+    "body": {
+      "description": "turn this character into an elderly old man with deep wrinkles, sunken cheeks and thick grey eyebrows; keep the character bald; keep the pose, head position, framing, clothes and art style exactly the same",
+      "image": "@closeup/head.png",
+      "no_background": true,
+      "seed": 7
+    }
+  },
+  {
+    "out": "closeup/head-oldwoman.png",
+    "route": "/edit-image-pixen",
+    "body": {
+      "description": "turn this character into an elderly old woman with wrinkles, sagging cheeks, thin lips and a gentle face; keep the character bald; keep the pose, head position, framing, clothes and art style exactly the same",
+      "image": "@closeup/head.png",
+      "no_background": true,
+      "seed": 7
+    }
+  }
+]

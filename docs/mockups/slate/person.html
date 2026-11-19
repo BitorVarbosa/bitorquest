@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitor Quest - Mira</title>
+<link rel="stylesheet" href="slate.css">
+<style>
+/* One person's profile. Order: where the bond stands, the waiting moment, what to do, then why.
+   The second state is the full shared history. */
+.st{display:flex;flex-direction:column;gap:inherit}
+.crumb .link .i{margin-left:-4px}
+.row .row-t,.row .row-s{display:block}
+
+/* Header: who this is, and the pin */
+.prof-h{display:flex;align-items:center;gap:var(--sp-3)}
+.prof-h h1{font-size:var(--fs-2xl);font-weight:600;line-height:1.2;letter-spacing:-.01em}
+.prof-h p{color:var(--c-text-2)}
+.prof-h .inline{margin-top:6px}
+.pin{align-self:flex-start}
+.pin[aria-pressed="true"]{border-color:color-mix(in srgb,var(--c-gold) 45%,var(--c-card));color:var(--c-gold)}
+body[data-pin="on"] .pin-off,body[data-pin="off"] .pin-on{display:none}
+
+/* The bond, large: number, stage, what is left, the bar and the five stage names */
+.bondc{display:grid;gap:10px}
+.bondc-top{display:flex;align-items:baseline;flex-wrap:wrap;gap:0 var(--sp-2)}
+.bondc-n{color:var(--c-text-2)}
+.bondc-n b{font-size:var(--fs-2xl);line-height:30px;color:var(--c-text)}
+.bondc-s{font-size:var(--fs-xl);font-weight:600;color:var(--p)}
+.bondc-next{margin-left:auto;font-size:var(--fs-sm);color:var(--c-text-2)}
+.stages{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--sp-1);justify-items:center;margin-top:-4px;font-size:var(--fs-xs);line-height:16px;color:var(--c-text-3);white-space:nowrap}
+.stages .was{color:var(--c-text-2)}
+.stages .on{font-weight:600;color:var(--p)}
+.att{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-1) var(--sp-2);padding-top:10px;border-top:1px solid var(--c-line);font-size:var(--fs-sm);color:var(--c-text-2)}
+.att-k{min-width:56px}
+
+/* What to do next */
+.next .moment{margin-bottom:0}
+.next .acts{margin-top:var(--sp-2)}
+
+/* What a stage gives */
+.perks{display:grid;gap:6px;line-height:20px}
+.perks li{display:flex;gap:var(--sp-2)}
+.perks .i{margin-top:2px;color:var(--p)}
+.perk-next{display:flex;gap:var(--sp-2);margin-top:var(--sp-3);padding-top:10px;border-top:1px solid var(--c-line);font-size:var(--fs-sm);line-height:19px;color:var(--c-text-2);text-wrap:pretty}
+.perk-next .i{margin-top:2px}
+.perk-next b{color:var(--c-text)}
+
+/* Memories: the second group is what the player chose to keep */
+.kept{margin-top:var(--sp-2);padding-top:var(--sp-3);border-top:1px solid var(--c-line)}
+.kept .mem-k{display:flex;align-items:center;justify-content:space-between}
+.card .mem-more{margin-bottom:-6px}
+.tag-unk{background:none;box-shadow:inset 0 0 0 1px var(--c-line-strong);color:var(--c-text-2)}
+.card .help{margin-top:10px}
+.scenes p{line-height:20px}
+.scenes .tag{margin-left:var(--sp-1)}
+
+/* History: a running total, then every moment by chapter and day */
+.sum{display:grid;gap:var(--sp-3)}
+.sum-who{display:flex;align-items:center;gap:10px}
+.eq{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto minmax(0,1fr);gap:var(--sp-2);align-items:start}
+.eq div{display:grid;gap:2px;font-size:var(--fs-xs);line-height:15px;color:var(--c-text-2)}
+.eq b{font-size:var(--fs-2xl);line-height:28px;font-variant-numeric:tabular-nums;color:var(--c-text)}
+.eq .eq-part b{color:var(--p)}
+.eq-op{font-size:var(--fs-xl);line-height:28px;color:var(--c-text-3)}
+.by-ch{padding-top:var(--sp-3);border-top:1px solid var(--c-line)}
+.by-ch dd{justify-content:space-between}
+.legend{display:grid;gap:6px;font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.legend li{display:flex;align-items:center;gap:var(--sp-2)}
+.legend .dot{flex:none;width:9px;height:9px;margin:0 3px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--p)}
+.legend .dot.full{background:var(--p)}
+.legend .i{color:var(--c-gold)}
+.hl{gap:0}
+.hl li{display:flex;align-items:center;gap:var(--sp-2);min-height:44px}
+.hl li::before{top:50%;margin-top:-5px}
+.hl .ev-t{flex:1;min-width:0;padding:var(--sp-1) 0;line-height:19px;text-wrap:pretty}
+.hl .big .ev-t{font-weight:600}
+.hl .mem-x{min-width:26px;text-align:right;font-size:var(--fs-md)}
+.hl .lost{--p:var(--c-err)}
+.hl .day{justify-content:space-between;align-items:flex-end;min-height:30px;padding-bottom:var(--sp-1);font-size:var(--fs-xs);font-weight:600;letter-spacing:.04em;color:var(--c-text-2)}
+.hl .day:first-child{min-height:20px}
+.hl .day::before,.hl .mark::before{display:none}
+.hl .day span+span{font-weight:400;letter-spacing:0}
+.hl .mark{min-height:36px}
+.keep{margin-right:-10px;color:var(--c-text-3)}
+.keep[aria-pressed="true"]{color:var(--c-gold)}
+.keep[aria-pressed="true"] .i{fill:currentColor;stroke:none}
+
+@media (max-width:1099.98px){
+  /* one column: the cards of both columns flow as one list, and what the stage means moves up under the actions */
+  .prof>div{display:contents}
+  .prof .bondc,.prof .next{order:-2}
+  .prof .means{order:-1}
+  .legend{display:flex;flex-wrap:wrap;gap:6px var(--sp-4);padding:0 var(--sp-1)}
+}
+@media (min-width:1100px){
+  .prof-h{gap:var(--sp-4)}
+  .hl li{min-height:36px}
+  .keep{margin-right:-6px}
+  .sum-side{position:sticky;top:var(--sp-6)}
+  .legend{padding:var(--sp-3) 14px;border:1px solid var(--c-line);border-radius:var(--r-lg);background:var(--c-card)}
+}
+</style>
+</head>
+<body data-shell="story" data-page="people" data-title="Profile" data-back="people.html" data-state="profile" data-pin="on" data-kind="friendship">
+
+<div class="app">
+  <header class="top"><div class="bar" data-bar></div></header>
+  <nav class="nav" data-nav></nav>
+
+  <main class="page">
+    <div class="page-col who-mira">
+
+      <!-- ===================== Profile ===================== -->
+      <div class="st" data-show="profile">
+        <p class="crumb only-desktop"><a class="link" href="people.html"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-left"/></svg>People</a></p>
+
+        <header class="prof-h">
+          <span class="av av-xl" aria-hidden="true">M</span>
+          <div class="grow">
+            <h1>Mira</h1>
+            <p>Scout<span class="only-desktop"> · with you since Day 3</span></p>
+            <div class="inline"><span class="tag">Friendship</span><span class="tag">In your party</span></div>
+          </div>
+          <button class="btn btn-fit pin" data-pin-toggle aria-pressed="true" title="Pinned people stay at the top of People, and the story gives you more ways to reach them">
+            <svg class="i i-f pin-on" width="16" height="16" aria-hidden="true"><use href="#i-star"/></svg><span class="pin-on">Pinned</span>
+            <svg class="i pin-off" width="16" height="16" aria-hidden="true"><use href="#i-star"/></svg><span class="pin-off">Pin</span>
+          </button>
+        </header>
+
+        <div class="split stack prof">
+
+          <!-- Main column: where it stands, what to do, why -->
+          <div class="stack">
+            <section class="card bondc" aria-label="Your bond with Mira">
+              <div class="bondc-top">
+                <p class="bondc-n"><b class="num">64</b> of 100</p>
+                <p class="bondc-s">Close</p>
+                <p class="bondc-next">16 to Devoted</p>
+              </div>
+              <span class="bb bb-xl" role="img" aria-label="Bond 64 of 100, Close"><i style="--f:1"></i><i style="--f:1"></i><i style="--f:1"></i><i style="--f:.2"></i><i></i></span>
+              <ol class="stages" aria-hidden="true"><li class="was">Acquaintance</li><li class="was">Friendly</li><li class="was">Trusted</li><li class="on">Close</li><li>Devoted</li></ol>
+              <div class="att"><span class="att-k">Attitude</span><span class="mood">Trusts you</span><span>since the bridge</span></div>
+            </section>
+
+            <section class="next" aria-label="What to do next">
+              <p class="moment"><svg class="i i-f" width="16" height="16" aria-hidden="true"><use href="#i-spark"/></svg><span><b>New stage: Close</b>Mira wants a moment with you. Spend time together to hear it.</span></p>
+              <div class="acts">
+                <a class="btn btn-primary" href="play.html?state=input"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-chat"/></svg>Talk</a>
+                <button class="btn btn-moment" data-open="time"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-spark"/></svg>Spend time together</button>
+                <button class="btn" data-open="ask">Ask about…</button>
+              </div>
+            </section>
+
+            <section class="card">
+              <header class="card-h"><h2 class="card-t">Moments that mattered</h2></header>
+              <ul class="mem">
+                <li><span>You did not use her as bait at the bridge.</span><span class="mem-x"><b>+12</b> · today</span></li>
+                <li><span>You shared your rations on the salt flats.</span><span class="mem-x"><b>+8</b> · Day 9</span></li>
+                <li><span>You told her what you were really carrying.</span><span class="mem-x"><b>+8</b> · Day 6</span></li>
+              </ul>
+              <button class="mem-more" data-go="history"><span>and 14 smaller moments</span><span class="mem-all">See all<svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-right"/></svg></span></button>
+              <div class="kept">
+                <h3 class="mem-k"><span class="pinned"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-star"/></svg>Kept by you</span><span>1 of 3</span></h3>
+                <ul class="mem">
+                  <li><span>She laughed at your terrible map.</span><span class="mem-x"><b>+1</b> · Day 4</span></li>
+                </ul>
+                <button class="mem-more" data-go="history"><span>Room for two more</span><span class="mem-all">Choose<svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-right"/></svg></span></button>
+              </div>
+            </section>
+
+            <section class="card">
+              <header class="card-h"><h2 class="card-t">Her scenes</h2><span class="t-xs t-2">One for each stage</span></header>
+              <ol class="tl scenes">
+                <li class="big"><p><b>Friendly</b> <span class="tl-k">· Day 4</span></p><p class="t-2">She showed you how to read the flats.</p></li>
+                <li class="big"><p><b>Trusted</b> <span class="tl-k">· Day 8</span></p><p class="t-2">She told you why she left the Watch.</p></li>
+                <li><p><b>Close</b><span class="tag tag-accent">Waiting</span></p><p class="t-2">Plays when you spend time together.</p></li>
+                <li style="--p:var(--c-text-3)"><p class="t-3">Devoted <span class="tl-k">· at 80</span></p></li>
+              </ol>
+            </section>
+          </div>
+
+          <!-- Side column: the facts -->
+          <div class="stack">
+            <section class="card means">
+              <header class="card-h"><h2 class="card-t">What Close means</h2><span class="t-xs t-2">Stage 4 of 5</span></header>
+              <ul class="perks">
+                <li><svg class="i i-s" width="16" height="16" aria-hidden="true"><use href="#i-check"/></svg><span>She opens a personal quest.</span></li>
+                <li><svg class="i i-s" width="16" height="16" aria-hidden="true"><use href="#i-check"/></svg><span>She helps you in a test, once per scene.</span></li>
+                <li><svg class="i i-s" width="16" height="16" aria-hidden="true"><use href="#i-check"/></svg><span>She confides secrets.</span></li>
+              </ul>
+              <p class="perk-next"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-lock"/></svg><span><b>Devoted</b>, 16 more: she would take serious risks for you and act as one with you in a crisis.</span></p>
+            </section>
+
+            <section class="card">
+              <header class="card-h"><h2 class="card-t">What she values</h2><span class="t-xs t-2">2 of 3 known</span></header>
+              <div class="inline"><span class="tag"><b>Loyalty</b></span><span class="tag"><b>Plain speaking</b></span><span class="tag tag-unk">Not discovered yet</span></div>
+              <p class="help">What you do for one of these counts for half as much again. Going against one costs bond, even if you meant well.</p>
+            </section>
+
+            <section class="card">
+              <header class="card-h"><h2 class="card-t">About her</h2><span class="t-xs t-2">What Aren knows</span></header>
+              <dl class="kv">
+                <div><dt>Work</dt><dd>Scout, hired at the North Gate.</dd></div>
+                <div><dt>Before</dt><dd>Left the City Watch two years ago.</dd></div>
+                <div><dt>Knows</dt><dd>The salt flats, better than the roads.</dd></div>
+                <div><dt>Can teach</dt><dd>Windcaller’s Ear, an Air ability.</dd></div>
+              </dl>
+            </section>
+
+            <section class="card">
+              <header class="card-h"><h2 class="card-t">What she knows about you</h2></header>
+              <ul class="mem">
+                <li><span>Knows you carry the sealed letter.</span><span class="mem-x">you told her · Day 6</span></li>
+                <li><span>Saw you bluff Captain Roth.</span><span class="mem-x">today</span></li>
+              </ul>
+              <p class="help">As far as you can tell.</p>
+            </section>
+
+            <section class="card">
+              <header class="card-h"><h2 class="card-t">In the party</h2></header>
+              <dl class="kv">
+                <div><dt>In a fight</dt><dd>Fights beside you with a bow.</dd></div>
+                <div><dt>In a test</dt><dd>Helps once per scene.</dd></div>
+              </dl>
+            </section>
+
+            <section class="card card-flush">
+              <div class="row">
+                <span class="grow">
+                  <span class="row-s">Kind of bond</span>
+                  <span class="row-t">Friendship</span>
+                  <span class="row-s" data-when="kind=interest">You showed interest. Mira has not answered yet.</span>
+                </span>
+                <button class="btn btn-fit btn-quiet" data-open="romance" data-when="kind=friendship"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-heart"/></svg>Show romantic interest</button>
+                <button class="btn btn-fit btn-quiet" data-set="kind=friendship" data-when="kind=interest">Take it back</button>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== Full shared history ===================== -->
+      <div class="st" data-show="history">
+        <p class="crumb"><button class="link link-tap" data-go="profile"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-left"/></svg>Mira’s profile</button></p>
+
+        <header class="page-h only-desktop">
+          <div>
+            <h1>Your history with Mira</h1>
+            <p>Everything that moved the bond, newest first</p>
+          </div>
+        </header>
+
+        <div class="split-l stack">
+
+          <!-- The running total -->
+          <aside class="stack sum-side">
+            <section class="card sum" aria-label="How the bond adds up">
+              <div class="sum-who">
+                <span class="av av-l" aria-hidden="true">M</span>
+                <div class="grow">
+                  <div class="bond-l"><b>Close</b><span><b>64</b>/100</span></div>
+                  <div class="t-sm t-2">17 moments since Day 3</div>
+                </div>
+              </div>
+              <span class="bb bb-xl" role="img" aria-label="Bond 64 of 100, Close"><i style="--f:1"></i><i style="--f:1"></i><i style="--f:1"></i><i style="--f:.2"></i><i></i></span>
+              <div class="eq" role="group" aria-label="64 is 28 from three moments that mattered plus 36 from fourteen smaller ones">
+                <div><b>64</b>bond now</div>
+                <span class="eq-op" aria-hidden="true">=</span>
+                <div class="eq-part"><b>28</b>three moments that mattered</div>
+                <span class="eq-op" aria-hidden="true">+</span>
+                <div class="eq-part"><b>36</b>fourteen smaller ones</div>
+              </div>
+              <dl class="kv by-ch">
+                <div><dt>Chapter 1</dt><dd><span>Days 3–8</span><span class="num">0 → 40</span></dd></div>
+                <div><dt>Chapter 2</dt><dd><span>Days 9–12, so far</span><span class="num">40 → 64</span></dd></div>
+              </dl>
+            </section>
+            <ul class="legend">
+              <li><span class="dot full" aria-hidden="true"></span>Mattered</li>
+              <li><span class="dot" aria-hidden="true"></span>Smaller</li>
+              <li><svg class="i i-f" width="15" height="15" aria-hidden="true"><use href="#i-star"/></svg><span>Kept on her profile · <b data-kept>1</b> of 3</span></li>
+            </ul>
+          </aside>
+
+          <!-- Every moment, by chapter and day -->
+          <div class="stack-l">
+            <section class="sec">
+              <div class="sec-h"><h2>Chapter 2 · “Borrowed Seals” · so far</h2><span class="t-sm t-2 num">40 → 64</span></div>
+              <div class="card">
+                <ol class="tl hl">
+                  <li class="day"><span>Day 12 · today</span><span class="num">52 → 64</span></li>
+                  <li class="mark"><span class="note note-moment"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-spark"/></svg><span><b>Close</b> reached · her scene is waiting</span></span></li>
+                  <li class="big"><p class="ev-t">You did not use her as bait at the bridge.</p><span class="mem-x"><b>+12</b></span><button class="ib keep" data-keep aria-pressed="false" aria-label="Keep this moment on her profile"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-star"/></svg></button></li>
+                  <li class="day"><span>Day 11</span><span class="num">51 → 52</span></li>
+                  <li><p class="ev-t">You remembered how she takes her tea.</p><span class="mem-x"><b>+1</b></span><button class="ib keep" data-keep aria-pressed="false" aria-label="Keep this moment on her profile"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-star"/></svg></button></li>
+                  <li class="day"><span>Day 10</span><span class="num">48 → 51</span></li>
+                  <li><p class="ev-t">You stood the dawn watch so she could sleep.</p><span class="mem-x"><b>+3</b></span><button class="ib keep" data-keep aria-pressed="false" aria-label="Keep this moment on her profile"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-star"/></svg></button></li>
+                  <li class="day"><span>Day 9</span><span class="num">40 → 48</span></li>
+                  <li class="big"><p class="ev-t">You shared your rations on the salt flats.</p><span class="mem-x"><b>+8</b></span><button class="ib keep" data-keep aria-pressed="false" aria-label="Keep this moment on her profile"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-star"/></svg></button></li>
+                </ol>
+              </div>
+            </section>
+
+            <section class="sec">
+              <div class="sec-h"><h2>Chapter 1 · “The Sealed Letter”</h2><span class="t-sm t-2 num">0 → 40</span></div>
+              <div class="card">
+                <ol class="tl hl">
+                  <li class="day"><span>Day 8</span><span class="num">35 → 40</span></li>
+                  <li class="mark"><span class="note note-moment"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-spark"/></svg><span><b>Trusted</b> reached · she told you why she left the Watch</span></span></li>
+                  <li><p class="ev-t">You offered her the chance to walk away before the cordon closed.</p><span class="mem-x"><b>+5</b></span><button class="ib keep" data-keep aria-pressed="false" aria-label="Keep this moment on her profile"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-star"/></svg></button></li>
+                  <li class="day"><span>Day 7</span><span class="num">36 → 35</span></li>
+                  <li><p class="ev-t">You bought the bowstrings back and said so plainly.</p><span class="mem-x"><b>+3</b></span><button class="ib keep" data-keep aria-pressed="false" aria-label="Keep this moment on her profile"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-star"/></svg></button></li>
+                  <li class="lost"><p class="ev-t">You sold her spare bowstrings without asking. <span class="tag tag-err">Loss</span></p><span class="mem-x"><b class="loss">−4</b></span><button class="ib keep" data-keep aria-pressed="false" aria-label="Keep this moment on her profile"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-star"/></svg></button></li>
+                  <li class="day"><span>Day 6</span><span class="num">25 → 36</span></li>
+                  <li><p class="ev-t">You showed her the copied seal and asked what she made of it.</p><span class="mem-x"><b>+3</b></span><button class="ib keep" data-keep aria-pressed="false" aria-label="Keep this moment on her profile"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-star"/></svg></button></li>
+                  <li class="big"><p class="ev-t">You told her what you were really carrying.</p><span class="mem-x"><b>+8</b></span><button class="ib keep" data-keep aria-pressed="false" aria-label="Keep this moment on her profile"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-star"/></svg></button></li>
+                  <li class="day"><span>Day 5</span><span class="num">20 → 25</span></li>
+                  <li><p class="ev-t">You carried the water for both of you on the long stretch.</p><span class="mem-x"><b>+2</b></span><button class="ib keep" data-keep aria-pressed="false" aria-label="Keep this moment on her profile"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-star"/></svg></button></li>
+                  <li><p class="ev-t">You asked about the Watch, and let it go when she changed the subject.</p><span class="mem-x"><b>+3</b></span><button class="ib keep" data-keep aria-pressed="false" aria-label="Keep this moment on her profile"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-star"/></svg></button></li>
+                  <li class="day"><span>Day 4</span><span class="num">12 → 20</span></li>
+                  <li class="mark"><span class="note note-moment"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-spark"/></svg><span><b>Friendly</b> reached · she showed you how to read the flats</span></span></li>
+                  <li><p class="ev-t">You mended her boot strap at the midday halt.</p><span class="mem-x"><b>+3</b></span><button class="ib keep" data-keep aria-pressed="false" aria-label="Keep this moment on her profile"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-star"/></svg></button></li>
+                  <li><p class="ev-t">You let her lead across the sinkholes instead of arguing.</p><span class="mem-x"><b>+4</b></span><button class="ib keep" data-keep aria-pressed="false" aria-label="Keep this moment on her profile"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-star"/></svg></button></li>
+                  <li><p class="ev-t">She laughed at your terrible map.</p><span class="mem-x"><b>+1</b></span><button class="ib keep" data-keep aria-pressed="true" aria-label="Kept on her profile. Tap to stop keeping it"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-star"/></svg></button></li>
+                  <li class="day"><span>Day 3 · you met</span><span class="num">0 → 12</span></li>
+                  <li><p class="ev-t">You shared a fire and traded stories until late.</p><span class="mem-x"><b>+5</b></span><button class="ib keep" data-keep aria-pressed="false" aria-label="Keep this moment on her profile"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-star"/></svg></button></li>
+                  <li><p class="ev-t">You told her plainly that the job might be dangerous.</p><span class="mem-x"><b>+4</b></span><button class="ib keep" data-keep aria-pressed="false" aria-label="Keep this moment on her profile"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-star"/></svg></button></li>
+                  <li><p class="ev-t">You hired her at the North Gate and paid her price without haggling.</p><span class="mem-x"><b>+3</b></span><button class="ib keep" data-keep aria-pressed="false" aria-label="Keep this moment on her profile"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-star"/></svg></button></li>
+                </ol>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div class="modal-scrim"></div>
+
+  <!-- Time together: a scene for two -->
+  <div class="modal who-mira" data-modal="time" role="dialog" aria-label="Spend time with Mira">
+    <header class="modal-h"><h2>Spend time with Mira</h2><button class="ib" data-close aria-label="Close"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <div class="modal-b">
+      <p class="moment" style="margin:0"><svg class="i i-f" width="16" height="16" aria-hidden="true"><use href="#i-spark"/></svg><span><b>Her moment plays here</b>She reached Close today and has something to say to you.</span></p>
+      <p class="t-2">A scene for the two of you. It takes about an hour of the evening and adds a little to the bond, once a day at most.</p>
+      <div class="card card-flush">
+        <a class="row" href="play.html?state=input"><span class="grow"><span class="row-t">Share a meal at the market stalls</span></span><span class="row-end"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span></a>
+        <a class="row" href="play.html?state=input"><span class="grow"><span class="row-t">Walk along the canal</span></span><span class="row-end"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span></a>
+        <a class="row" href="play.html?state=input"><span class="grow"><span class="row-t">Ask her to teach you</span><span class="row-s">Windcaller’s Ear, an Air ability she knows</span></span><span class="row-end"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span></a>
+        <a class="row" href="play.html?state=input"><span class="grow"><span class="row-t">Something else…</span><span class="row-s">Describe it in the story</span></span><span class="row-end"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span></a>
+      </div>
+      <div class="due">
+        <div class="due-k"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-clock"/></svg>Commitment · due tonight</div>
+        <p>Meet Tobin’s master at the Old Mill. An hour here leaves less of the evening for it.</p>
+      </div>
+    </div>
+    <footer class="modal-f"><button class="btn" data-close>Not now</button></footer>
+  </div>
+
+  <!-- Things to ask her about -->
+  <div class="modal who-mira" data-modal="ask" role="dialog" aria-label="Ask Mira about">
+    <header class="modal-h"><h2>Ask Mira about…</h2><button class="ib" data-close aria-label="Close"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <div class="modal-b">
+      <p class="t-2">What you know enough about to ask. Now that you are Close, she confides more than she used to.</p>
+      <div class="card card-flush">
+        <a class="row" href="play.html?state=input"><span class="grow"><span class="row-t">Her years in the City Watch</span><span class="row-s">She left two years ago</span></span><span class="row-end"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span></a>
+        <a class="row" href="play.html?state=input"><span class="grow"><span class="row-t">Captain Roth</span><span class="row-s">He carries a copy of the seal</span></span><span class="row-end"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span></a>
+        <a class="row" href="play.html?state=input"><span class="grow"><span class="row-t">The copied seal</span><span class="row-s">The wax on the Brinehold copy was still soft</span></span><span class="row-end"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span></a>
+        <a class="row" href="play.html?state=input"><span class="grow"><span class="row-t">Something else…</span><span class="row-s">Write your own question</span></span><span class="row-end"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Romance is a kind of bond the player can ask for; the character decides -->
+  <div class="modal who-mira" data-modal="romance" role="dialog" aria-label="Show romantic interest in Mira">
+    <header class="modal-h"><h2>Show romantic interest in Mira</h2><button class="ib" data-close aria-label="Close"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <div class="modal-b">
+      <p class="t-2">This tells the story that Aren is interested in her. From now on he may act on it, and she will notice.</p>
+      <p class="moment" style="margin:0"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-heart"/></svg><span><b>Mira decides whether she returns it</b>Not everyone falls for the protagonist. She answers in the story, in her own time, and her answer may be no.</span></p>
+      <dl class="kv">
+        <div><dt>If she does</dt><dd>The kind of bond becomes Romance. The bond stays at 64, Close. Different scenes come up.</dd></div>
+        <div><dt>If she does not</dt><dd>You stay friends, and she will say so plainly.</dd></div>
+      </dl>
+      <p class="t-sm t-2">Romance is turned on in this story’s tone settings. You can take your interest back at any time.</p>
+    </div>
+    <footer class="modal-f">
+      <button class="btn" data-close>Not now</button>
+      <button class="btn btn-primary" data-set="kind=interest" data-close>Show interest</button>
+    </footer>
+  </div>
+</div>
+
+<script src="slate.js"></script>
+<script>
+/* The phone top bar follows the state: in the history, its title names the history and its arrow goes back to the profile. */
+(function () {
+  var d = document, body = d.body;
+  var title = d.querySelector('.story-title .only-phone'), back = d.querySelector('.bar .menu');
+  function sync() {
+    var hist = Slate.state() === 'history';
+    if (title) title.textContent = hist ? 'History with Mira' : 'Profile';
+    if (back) back.setAttribute('aria-label', hist ? 'Back to Mira’s profile' : 'Back to People');
+  }
+  var pin = d.querySelector('[data-pin-toggle]');
+  if (pin) pin.setAttribute('aria-pressed', body.getAttribute('data-pin') === 'on');
+  window.addEventListener('slate:state', sync);
+  if (back) back.addEventListener('click', function (e) {
+    if (Slate.state() !== 'history') return;
+    e.preventDefault();
+    Slate.setState('profile');
+    d.querySelector('.page').scrollTop = 0;
+  });
+  d.addEventListener('click', function (e) {
+    var el;
+    if ((el = e.target.closest('[data-pin-toggle]'))) {
+      var on = body.getAttribute('data-pin') !== 'on';
+      body.setAttribute('data-pin', on ? 'on' : 'off');
+      el.setAttribute('aria-pressed', on);
+    }
+    if ((el = e.target.closest('[data-keep]'))) {
+      var keep = el.getAttribute('aria-pressed') !== 'true';
+      if (keep && d.querySelectorAll('[data-keep][aria-pressed="true"]').length >= 3) return; // three at most
+      el.setAttribute('aria-pressed', keep);
+      d.querySelector('[data-kept]').textContent = d.querySelectorAll('[data-keep][aria-pressed="true"]').length;
+    }
+  });
+  sync();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+/* The character sheet. From docs/mockups/slate/character.html, built from Slate tokens.
+   Class names carry a chr- prefix: every screen's stylesheet is loaded together, and plain names such as
+   .sum, .lvl or .id mean something else on other screens. */
+.chr{display:flex;flex-direction:column;gap:inherit}
+
+/* Who the character is */
+.chr-id{display:flex;align-items:center;gap:var(--sp-4);min-width:0}
+.chr-id-tags{margin-top:var(--sp-2)}
+.chr-id-tags:empty{display:none}
+
+/* How they are right now: hit points, energy, destiny, experience */
+.chr-vit{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px var(--sp-4);padding:14px}
+.chr-vit>.btn{grid-column:1/-1}
+.chr-vit-k{font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.chr-vit-v{display:flex;align-items:center;gap:6px;min-height:24px;font-size:var(--fs-sm);color:var(--c-text-2);white-space:nowrap}
+.chr-vit-v b{font-size:var(--fs-xl);line-height:24px;color:var(--c-text)}
+.chr-vit .gems{margin-top:0}
+.chr-vit .gems .spent{color:var(--c-text-3)}
+/* Vital: a large hit point or energy meter */
+.chr-vital .m-top{align-items:baseline;font-size:var(--fs-sm)}
+.chr-vital .m-v b{font-size:var(--fs-xl);line-height:24px}
+.chr-vital .track{height:10px;border-radius:5px}
+
+/* Trait row (an attribute or a path): the name and one line on the left; pips and the level, or the
+   change and a Raise button when experience is spent, on the right. */
+.chr-trait .row-t{font-weight:600}
+.chr-trait .row-end{gap:10px}
+.chr-trait .row-s{text-wrap:pretty}
+.chr-lv{min-width:13px;font-size:var(--fs-xl);font-weight:600;line-height:1;text-align:right;font-variant-numeric:tabular-nums;color:var(--c-text)}
+.chr-trait.is-zero .row-t{color:var(--c-text-2)}
+.chr-trait.is-zero .row-s,.chr-trait.is-zero .chr-lv,.chr-lv.zero{color:var(--c-text-3)}
+.chr .pips i.above{background:none;box-shadow:inset 0 0 0 1px var(--c-line)}            /* above this story's limit */
+.chr-chg{margin-left:var(--sp-1);font-weight:400;font-variant-numeric:tabular-nums;color:var(--c-text-2);white-space:nowrap}
+.chr-chg b{color:var(--c-text)}
+.chr-cost{display:inline-flex;align-items:center;gap:2px;font-weight:400;font-variant-numeric:tabular-nums;color:var(--c-text-2)}
+.chr-xp{font-size:var(--fs-xl);color:var(--c-text)}
+/* An advantage or a drawback: a row that opens to say what it does */
+.chr-tr{border-top:1px solid var(--c-line)}
+.chr-tr:first-child{border-top:0}
+.chr-tr>.row{border-top:0;text-align:left}
+.chr-tr .chev{color:var(--c-text-3)}
+.chr-tr.is-open .chev{transform:rotate(180deg)}
+.chr-tr.is-open>.row{background:var(--c-raised)}
+.chr-tr-b{display:grid;gap:var(--sp-2);padding:2px 14px 14px;background:var(--c-raised);line-height:20px;text-wrap:pretty}
+.chr-tr-how{display:flex;align-items:flex-start;gap:6px;font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.chr-tr-how .i{flex:none;margin-top:1px;color:var(--c-text-3)}
+:root[data-motion="on"] .chr-tr .chev{transition:transform .18s ease-out}
+:root[data-motion="on"] .chr-tr-b{animation:chr-tr-in .2s ease-out both}
+@keyframes chr-tr-in{from{opacity:0;transform:translateY(-4px)}}
+.chr-plain{min-height:46px}                                                              /* a row that is only a name */
+
+/* A fight number written as a sum */
+.chr-calcs{display:grid;gap:10px}
+.chr-calc{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:center;gap:var(--sp-2);font-size:var(--fs-sm)}
+.chr-calc>span:first-child{color:var(--c-text-2)}
+.chr-sum{display:flex;align-items:center;gap:6px}
+.chr-sum .stat{min-width:66px}
+.chr-op{font-size:var(--fs-lg);color:var(--c-text-3)}
+.chr-die{display:grid;grid-template:none;place-items:center;padding:0;font-size:var(--fs-lg);font-weight:700;line-height:1;color:var(--c-pip)}
+
+/* Ability card: name, path and tier, energy cost, what it does, and foot lines */
+.chr-abil{display:grid;grid-template-rows:auto 1fr;gap:6px}
+.chr-abil-h{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-1) var(--sp-2)}
+.chr-abil-c{display:inline-flex;align-items:center;gap:3px;margin-left:auto;font-size:var(--fs-sm);font-weight:600;white-space:nowrap}
+.chr-abil-c .i{color:var(--c-en)}
+.chr-abil-d{line-height:20px;color:var(--c-text-2)}
+.chr-abil-f{display:flex;align-items:flex-start;gap:6px;margin-top:2px;font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.chr-abil-f .i{margin-top:1px;color:var(--c-text-3)}
+
+/* Inventory */
+.chr-inv{gap:var(--sp-5);align-items:start}
+.chr-inv-h{display:inline-flex;align-items:center;gap:6px}
+/* An item of power: its button, with why it cannot be used now under it when it cannot. */
+.chr-relic{display:flex;flex-direction:column;align-items:flex-end;gap:2px;max-width:12rem;text-align:right}
+.chr-relic-h{padding:var(--sp-2) var(--sp-3) 0}
+.chr-purse{color:var(--c-gold)}
+.chr-after{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-2)}
+
+@media (min-width:1100px){
+  .chr-vit{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto auto auto;align-items:center;gap:var(--sp-6);padding:var(--sp-4) var(--sp-5)}
+  .chr-vit>.btn{grid-column:auto}
+}
+
+/* ---- Kept apart from the story screen ----
+   styles/play.css is loaded for the whole app. On a PC it lays .app out for the story screen (four columns,
+   a top bar aligned to its panes). This screen is a page: the rules below give it the page layout of
+   slate.css back. They do nothing once play.css is scoped. */
+@media (min-width:1100px){
+  .app:has(.chr){grid-template-columns:72px minmax(0,1fr)}
+  .app:has(.chr) .bar{grid-template-columns:auto minmax(0,1fr) auto}
+  .app:has(.chr) .bar-mid{padding:0 var(--sp-6)}
+}
+
+/* Learning something that was found: the button, what the roll needs, and the roll that was made */
+.chr-learn{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2) var(--sp-3);margin-top:var(--sp-1)}
+.chr-learn-r{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.chr-learn-r b{color:var(--c-text)}
+.chr-how{text-wrap:pretty}

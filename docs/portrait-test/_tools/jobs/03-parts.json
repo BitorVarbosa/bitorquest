@@ -1,0 +1,407 @@
+[
+  {
+    "out": "front/raw/hair-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "short spiky bright red hair",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@front/head.png",
+      "mask_image": "@front/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/raw/hair-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "long straight black hair hanging down past the ears to the shoulders",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@front/head.png",
+      "mask_image": "@front/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/raw/hair-c.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "big curly blonde hair",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@front/head.png",
+      "mask_image": "@front/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/raw/eyes-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "narrow stern brown eyes under thick dark angry eyebrows",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@front/head.png",
+      "mask_image": "@front/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/raw/eyes-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "large bright blue friendly eyes with thin arched eyebrows",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@front/head.png",
+      "mask_image": "@front/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/raw/eyes-c.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "tired half-closed green eyes with heavy bags and bushy grey eyebrows",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@front/head.png",
+      "mask_image": "@front/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/raw/mouth-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "thin lips pressed into a stern closed mouth",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@front/head.png",
+      "mask_image": "@front/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/raw/mouth-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "wide happy grin showing white teeth",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@front/head.png",
+      "mask_image": "@front/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/raw/mouth-c.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "mouth wide open shouting in surprise",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@front/head.png",
+      "mask_image": "@front/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/raw/hair-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "short spiky bright red hair",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@threequarter/head.png",
+      "mask_image": "@threequarter/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/raw/hair-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "long straight black hair hanging down past the ears to the shoulders",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@threequarter/head.png",
+      "mask_image": "@threequarter/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/raw/hair-c.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "big curly blonde hair",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@threequarter/head.png",
+      "mask_image": "@threequarter/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/raw/eyes-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "narrow stern brown eyes under thick dark angry eyebrows",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@threequarter/head.png",
+      "mask_image": "@threequarter/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/raw/eyes-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "large bright blue friendly eyes with thin arched eyebrows",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@threequarter/head.png",
+      "mask_image": "@threequarter/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/raw/eyes-c.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "tired half-closed green eyes with heavy bags and bushy grey eyebrows",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@threequarter/head.png",
+      "mask_image": "@threequarter/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/raw/mouth-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "thin lips pressed into a stern closed mouth",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@threequarter/head.png",
+      "mask_image": "@threequarter/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/raw/mouth-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "wide happy grin showing white teeth",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@threequarter/head.png",
+      "mask_image": "@threequarter/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/raw/mouth-c.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "mouth wide open shouting in surprise",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@threequarter/head.png",
+      "mask_image": "@threequarter/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/raw/hair-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "short spiky bright red hair",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@closeup/head.png",
+      "mask_image": "@closeup/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/raw/hair-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "long straight black hair hanging down past the ears to the shoulders",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@closeup/head.png",
+      "mask_image": "@closeup/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/raw/hair-c.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "big curly blonde hair",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@closeup/head.png",
+      "mask_image": "@closeup/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/raw/eyes-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "narrow stern brown eyes under thick dark angry eyebrows",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@closeup/head.png",
+      "mask_image": "@closeup/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/raw/eyes-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "large bright blue friendly eyes with thin arched eyebrows",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@closeup/head.png",
+      "mask_image": "@closeup/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/raw/eyes-c.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "tired half-closed green eyes with heavy bags and bushy grey eyebrows",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@closeup/head.png",
+      "mask_image": "@closeup/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/raw/mouth-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "thin lips pressed into a stern closed mouth",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@closeup/head.png",
+      "mask_image": "@closeup/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/raw/mouth-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "wide happy grin showing white teeth",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@closeup/head.png",
+      "mask_image": "@closeup/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/raw/mouth-c.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "mouth wide open shouting in surprise",
+      "image_size": {
+        "width": 128,
+        "height": 128
+      },
+      "inpainting_image": "@closeup/head.png",
+      "mask_image": "@closeup/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  }
+]

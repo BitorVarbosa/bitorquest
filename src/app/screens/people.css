@@ -1,0 +1,56 @@
+/* People: everyone the protagonist knows, one .person card each; the whole card opens the profile.
+   From docs/mockups/slate/people.html, built from Slate tokens. Class names carry a ppl- prefix and rules
+   on shared classes are scoped under .ppl: every screen's stylesheet is loaded together. */
+.ppl{display:flex;flex-direction:column;gap:inherit}
+.who-none{--p:var(--c-text-2)}                    /* someone with no colour of their own */
+.ppl-grief{--p:var(--c-err)}                      /* a grievance or a hostile attitude, in the error colour */
+
+/* Find someone */
+.ppl-find{display:grid;gap:var(--sp-1)}
+.ppl-find-i{flex:none;width:42px;display:grid;place-items:center;color:var(--c-text-2)}
+.ppl-find .input{padding-left:0}
+
+/* The card */
+.ppl .person{display:flex;flex-direction:column}
+.ppl-link{flex:1 0 auto;display:block;margin:calc(-1*var(--sp-3));padding:var(--sp-3);border-radius:inherit}
+.ppl .person:has(>a.ppl-link:hover){border-color:color-mix(in srgb,var(--p,var(--c-text-3)) 46%,var(--c-card))}
+.ppl-kind{font-weight:600;color:var(--p,var(--c-text))}
+.ppl-link .moment{margin:10px 0 0}
+.ppl .person-detail .moment{margin-bottom:0}
+.ppl .person-detail .acts{margin-top:var(--sp-2)}
+.ppl .person-detail .acts:first-child{margin-top:0}
+.ppl .empty p{text-wrap:balance}
+.ppl-reset{align-self:flex-start}
+
+/* How bonds work: one line per stage */
+.ppl-stages{display:grid;gap:10px}
+.ppl-stages li{display:flex;align-items:center;gap:var(--sp-3);font-size:var(--fs-md);line-height:20px}
+.ppl-stages .num{margin-left:auto;font-size:var(--fs-sm);color:var(--c-text-2)}
+
+@media (max-width:1099.98px){
+  .ppl .page-h{align-items:center}
+}
+@media (min-width:1100px){
+  .ppl-find{grid-template-columns:minmax(0,340px) minmax(0,1fr);align-items:center;gap:var(--sp-4)}
+  /* the waiting moment and its button share a row, so the cards of a pair stay about the same height */
+  .ppl-wait{display:flex;align-items:center;gap:var(--sp-2)}
+  .ppl-wait .moment{flex:1}
+  .ppl-wait .acts{flex:none;margin-top:0}
+  .ppl .person-detail .acts{justify-content:flex-end}
+  .ppl .person-detail .btn{flex:none;padding:0 var(--sp-4)}
+}
+
+/* ---- Kept apart from the story screen ----
+   styles/play.css is loaded for the whole app. On a PC it lays .app out for the story screen (four columns,
+   a top bar aligned to its panes), hides .person-detail and reshapes the person card. This screen is a page:
+   the rules below give it the page layout of slate.css back. They do nothing once play.css is scoped. */
+.ppl .person-top{flex-wrap:nowrap}
+.ppl .bond{flex:none;display:grid}
+.ppl .av-l{--z:44px}
+@media (min-width:1100px){
+  .app:has(.ppl){grid-template-columns:72px minmax(0,1fr)}
+  .app:has(.ppl) .bar{grid-template-columns:auto minmax(0,1fr) auto}
+  .app:has(.ppl) .bar-mid{padding:0 var(--sp-6)}
+  .ppl .person-detail{display:block}
+  .ppl .person-detail.ppl-wait{display:flex}
+}

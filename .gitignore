@@ -1,0 +1,13 @@
+# Third-party rulebooks (copyrighted, personally watermarked PDFs), their text
+# extracts and internal digests. Never commit these.
+docs/rulebooks/
+
+# Mockup screenshots: regenerated with docs/mockups/_tools/shoot-all.mjs
+docs/mockups/*/shots/
+
+# Dependencies and build output
+node_modules/
+dist/
+
+# Screenshots of the prototype: regenerated with docs/mockups/_tools/shoot.mjs
+docs/prototype-shots/

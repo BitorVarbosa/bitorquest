@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitor Quest - Spend experience</title>
+<link rel="stylesheet" href="slate.css">
+<style>
+/* ==== Character components: identical in character.html, advance.html and character-new.html ==== */
+/* Trait row (an attribute or a path): a .row with the name and one line on the left and the value on the right:
+   pips and a number on the sheet, a stepper in the editor, the change when experience is spent. */
+.trait .row-t,.opt .row-t{font-weight:600}
+.trait .row-end{gap:10px}
+.trait .row-s,.opt .row-s{text-wrap:pretty}
+.lvl{min-width:13px;font-size:var(--fs-xl);font-weight:600;line-height:1;text-align:right;font-variant-numeric:tabular-nums;color:var(--c-text)}
+.trait.is-zero .row-t{color:var(--c-text-2)}
+.trait.is-zero .row-s,.trait.is-zero .lvl,.lvl.zero{color:var(--c-text-3)}
+.pips i.cap{background:none;box-shadow:inset 0 0 0 1px var(--c-line)}            /* above this story's cap */
+.pips i.next{background:none;box-shadow:inset 0 0 0 1.5px var(--c-accent-text)}  /* what a raise would add */
+.pips i.new{background:var(--c-gold)}                                            /* just gained */
+.chg{font-weight:400;font-variant-numeric:tabular-nums;color:var(--c-text-2);white-space:nowrap}
+.chg b{color:var(--c-text)}
+/* Ability card: name, path and tier, energy cost, what it does, and an optional foot line */
+.abil{display:grid;grid-template-rows:auto 1fr;gap:6px}
+.abil-h{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-1) var(--sp-2)}
+.abil-c{display:inline-flex;align-items:center;gap:3px;margin-left:auto;font-size:var(--fs-sm);font-weight:600;white-space:nowrap}
+.abil-c .i{color:var(--c-en)}
+.abil-d{line-height:20px;color:var(--c-text-2)}
+.abil-f{display:flex;align-items:flex-start;gap:6px;margin-top:2px;font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.abil-f .i{margin-top:1px;color:var(--c-text-3)}
+.abil-f .i.ok{color:var(--c-ok)}
+.abil-f .av,.abil-f .tag{margin:-2px 0}
+.abil.is-locked .card-n{color:var(--c-text-2)}
+/* Vital: a large hit point or energy meter */
+.vital .m-top{align-items:baseline;font-size:var(--fs-sm)}
+.vital .m-v b{font-size:var(--fs-xl);line-height:24px}
+.vital .track{height:10px;border-radius:5px}
+/* A fight number written as a sum; the die that is still to be rolled is the white die with a question mark */
+.calcs{display:grid;gap:10px}
+.calc{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:center;gap:var(--sp-2);font-size:var(--fs-sm)}
+.calc>span:first-child{color:var(--c-text-2)}
+.sum{display:flex;align-items:center;gap:6px}
+.sum .stat{min-width:66px}
+.sum .op{font-size:var(--fs-lg);color:var(--c-text-3)}
+.die-q{display:grid;grid-template:none;place-items:center;padding:0;font-size:var(--fs-lg);font-weight:700;line-height:1;color:var(--c-pip)}
+/* Option row: a .row that is ticked or not (things to buy with points or experience) */
+.opt{align-items:flex-start}
+.opt .row-t,.opt .row-s{display:block}
+.opt-box{flex:none;width:22px;height:22px;display:grid;place-items:center;border-radius:var(--r-sm);box-shadow:inset 0 0 0 1.5px var(--c-line-strong);color:transparent}
+.opt[aria-pressed="true"],.opt[aria-pressed="true"]:hover{background:var(--c-accent-tint)}
+.opt[aria-pressed="true"]+.opt[aria-pressed="true"]{border-top-color:var(--c-accent-line)}
+.opt[aria-pressed="true"] .opt-box{background:var(--c-accent-fill);box-shadow:none;color:var(--c-on-accent)}
+.opt[disabled]{pointer-events:none}
+.opt[disabled] .row-t{color:var(--c-text-2)}
+.opt[disabled] .row-s{color:var(--c-text-3)}
+.opt[disabled] .opt-box{box-shadow:none;color:var(--c-text-3)}
+.opt-why{display:flex;align-items:center;gap:var(--sp-1);margin-top:3px;font-size:var(--fs-xs);line-height:16px;color:var(--c-text-2)}
+/* The budget rides in the flow footer on a phone, so it stays in view while the page scrolls */
+.flow-foot{flex-wrap:wrap}
+.foot-budget{flex:1 0 100%;font-size:var(--fs-sm)}
+/* Who the character is */
+.id{display:flex;align-items:center;gap:var(--sp-4);min-width:0}
+.id-tags{margin-top:var(--sp-2)}
+
+/* ==== Spending experience only ==== */
+.steps-2{grid-template-columns:repeat(2,1fr) 2px repeat(4,1fr)}   /* a target of 2: the shared .steps is drawn for a target of 4 */
+.chosen{display:grid;gap:6px;line-height:20px}
+.chosen .total{margin-top:2px;padding-top:var(--sp-2);border-top:1px solid var(--c-line)}
+.done-h{display:flex;align-items:center;gap:var(--sp-3)}
+.done-i{flex:none;width:44px;height:44px;display:grid;place-items:center;border-radius:50%;background:color-mix(in srgb,var(--c-ok) 16%,var(--c-card));color:var(--c-ok)}
+.check.is-rolling~.alert-ok{visibility:hidden}   /* the result is not announced while the die is in the air */
+@media (min-width:1100px){
+  .side{position:sticky;top:var(--sp-6)}
+}
+</style>
+</head>
+<body data-shell="flow" data-title="Spend experience" data-sub="Aren · The Glass Road" data-back="character.html" data-state="spend">
+
+<div class="app">
+  <header class="top"><div class="bar" data-bar></div></header>
+  <nav class="nav" data-nav></nav>
+
+  <main class="page">
+    <div class="page-col">
+
+      <!-- ===== Spend: choose what to buy ===== -->
+      <header class="page-h" data-show="spend">
+        <div>
+          <h1><span class="num">14</span> experience to spend</h1>
+          <p>Aren has earned 35 in this story and spent 21 so far.</p>
+        </div>
+      </header>
+
+      <div class="split stack-l" data-show="spend">
+        <div class="stack-l">
+
+          <section class="sec">
+            <div class="sec-h"><h2>Raise an attribute</h2><span class="t-xs t-2">10 experience each</span></div>
+            <div class="card card-flush">
+              <button class="row trait opt" type="button" aria-pressed="false" data-cost="10" data-name="Strength 1 → 2">
+                <span class="opt-box" aria-hidden="true"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span class="grow"><span class="row-t">Strength <span class="chg">1 → <b>2</b></span></span><span class="row-s">Attack with the short blade 4 → 5, plus the die.</span></span>
+                <span class="row-end"><span class="only-desktop"><span class="pips" aria-hidden="true"><i class="on"></i><i class="next"></i><i></i><i></i><i></i></span></span><span class="tag"><svg class="i i-s" width="12" height="12" aria-hidden="true"><use href="#i-spark"/></svg><b class="num">10</b></span></span>
+              </button>
+              <button class="row trait opt" type="button" aria-pressed="false" data-cost="10" data-name="Skill 3 → 4">
+                <span class="opt-box" aria-hidden="true"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span class="grow"><span class="row-t">Skill <span class="chg">3 → <b>4</b></span></span><span class="row-s">Attack, defence and initiative +1. Skill tests succeed on one more number.</span></span>
+                <span class="row-end"><span class="only-desktop"><span class="pips" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="next"></i><i></i></span></span><span class="tag"><svg class="i i-s" width="12" height="12" aria-hidden="true"><use href="#i-spark"/></svg><b class="num">10</b></span></span>
+              </button>
+              <button class="row trait opt" type="button" aria-pressed="false" data-cost="10" data-name="Resistance 3 → 4">
+                <span class="opt-box" aria-hidden="true"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span class="grow"><span class="row-t">Resistance <span class="chg">3 → <b>4</b></span></span><span class="row-s">Hit points and energy 15 → 20.</span></span>
+                <span class="row-end"><span class="only-desktop"><span class="pips" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="next"></i><i></i></span></span><span class="tag"><svg class="i i-s" width="12" height="12" aria-hidden="true"><use href="#i-spark"/></svg><b class="num">10</b></span></span>
+              </button>
+              <button class="row trait opt" type="button" aria-pressed="false" data-cost="10" data-name="Armor 1 → 2">
+                <span class="opt-box" aria-hidden="true"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span class="grow"><span class="row-t">Armor <span class="chg">1 → <b>2</b></span></span><span class="row-s">Defence 4 → 5, plus the die.</span></span>
+                <span class="row-end"><span class="only-desktop"><span class="pips" aria-hidden="true"><i class="on"></i><i class="next"></i><i></i><i></i><i></i></span></span><span class="tag"><svg class="i i-s" width="12" height="12" aria-hidden="true"><use href="#i-spark"/></svg><b class="num">10</b></span></span>
+              </button>
+              <button class="row trait opt" type="button" aria-pressed="false" data-cost="10" data-name="Firepower 0 → 1">
+                <span class="opt-box" aria-hidden="true"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span class="grow"><span class="row-t">Firepower <span class="chg">0 → <b>1</b></span></span><span class="row-s">A first ranged attack: Firepower 1 + Skill 3, plus the die.</span></span>
+                <span class="row-end"><span class="only-desktop"><span class="pips" aria-hidden="true"><i class="next"></i><i></i><i></i><i></i><i></i></span></span><span class="tag"><svg class="i i-s" width="12" height="12" aria-hidden="true"><use href="#i-spark"/></svg><b class="num">10</b></span></span>
+              </button>
+            </div>
+          </section>
+
+          <section class="sec">
+            <div class="sec-h"><h2>Raise a path</h2><span class="t-xs t-2">10 each · no higher than 3 in this story</span></div>
+            <div class="card card-flush">
+              <button class="row trait opt" type="button" aria-pressed="false" data-cost="10" data-name="Air 2 → 3">
+                <span class="opt-box" aria-hidden="true"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span class="grow"><span class="row-t">Air <span class="chg">2 → <b>3</b></span></span><span class="row-s">Reaches this story’s cap. Tier 3 abilities of the wind can then be learned.</span></span>
+                <span class="row-end"><span class="only-desktop"><span class="pips" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="next"></i><i class="cap"></i><i class="cap"></i></span></span><span class="tag"><svg class="i i-s" width="12" height="12" aria-hidden="true"><use href="#i-spark"/></svg><b class="num">10</b></span></span>
+              </button>
+              <button class="row trait opt" type="button" aria-pressed="true" data-cost="10" data-name="Light 1 → 2">
+                <span class="opt-box" aria-hidden="true"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span class="grow"><span class="row-t">Light <span class="chg">1 → <b>2</b></span></span><span class="row-s">Unlocks Lantern Veil, which you found in Brinehold.</span></span>
+                <span class="row-end"><span class="only-desktop"><span class="pips" aria-hidden="true"><i class="on"></i><i class="next"></i><i></i><i class="cap"></i><i class="cap"></i></span></span><span class="tag"><svg class="i i-s" width="12" height="12" aria-hidden="true"><use href="#i-spark"/></svg><b class="num">10</b></span></span>
+              </button>
+              <button class="row trait opt" type="button" aria-pressed="false" data-cost="10" data-name="A new path 0 → 1">
+                <span class="opt-box" aria-hidden="true"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span class="grow"><span class="row-t">A new path <span class="chg">0 → <b>1</b></span></span><span class="row-s">Fire, Water, Earth or Dark. Its abilities still have to be found.</span></span>
+                <span class="row-end"><span class="only-desktop"><span class="pips" aria-hidden="true"><i class="next"></i><i></i><i></i><i class="cap"></i><i class="cap"></i></span></span><span class="tag"><svg class="i i-s" width="12" height="12" aria-hidden="true"><use href="#i-spark"/></svg><b class="num">10</b></span></span>
+              </button>
+            </div>
+          </section>
+
+          <section class="sec">
+            <div class="sec-h"><h2>Learn an ability</h2><span class="t-xs t-2">1 each, and a test</span></div>
+            <div class="card card-flush">
+              <button class="row opt" type="button" aria-pressed="true" data-cost="1" data-name="Windcaller’s Ear">
+                <span class="opt-box" aria-hidden="true"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span class="grow"><span class="row-t">Windcaller’s Ear <span class="tag">Air <b>2</b></span></span><span class="row-s">Hear a conversation carried on the wind. Mira can teach it.</span></span>
+                <span class="row-end"><span class="tag"><svg class="i i-s" width="12" height="12" aria-hidden="true"><use href="#i-spark"/></svg><b class="num">1</b></span></span>
+              </button>
+              <button class="row opt" type="button" aria-pressed="false" disabled>
+                <span class="opt-box" aria-hidden="true"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-lock"/></svg></span>
+                <span class="grow"><span class="row-t">Lantern Veil <span class="tag">Light <b>2</b></span></span><span class="row-s">Fold the light around something small, so that a passing glance slides over it.</span><span class="opt-why">Locked: needs Light 2 and you have Light 1. Raise Light first.</span></span>
+                <span class="row-end"><span class="tag"><svg class="i i-s" width="12" height="12" aria-hidden="true"><use href="#i-spark"/></svg><b class="num">1</b></span></span>
+              </button>
+            </div>
+          </section>
+
+          <section class="sec">
+            <div class="sec-h"><h2>Buy an advantage</h2><span class="t-xs t-2">10 for each point it is worth</span></div>
+            <div class="card card-flush">
+              <button class="row opt" type="button" aria-pressed="false" data-cost="10" data-name="Keen Senses">
+                <span class="opt-box" aria-hidden="true"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span class="grow"><span class="row-t">Keen Senses</span><span class="row-s">+1 to tests of noticing, searching and listening.</span></span>
+                <span class="row-end"><span class="tag"><svg class="i i-s" width="12" height="12" aria-hidden="true"><use href="#i-spark"/></svg><b class="num">10</b></span></span>
+              </button>
+              <button class="row opt" type="button" aria-pressed="false" data-cost="10" data-name="Tough">
+                <span class="opt-box" aria-hidden="true"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span class="grow"><span class="row-t">Tough</span><span class="row-s">The first blow that lands in a fight does 1 less damage.</span></span>
+                <span class="row-end"><span class="tag"><svg class="i i-s" width="12" height="12" aria-hidden="true"><use href="#i-spark"/></svg><b class="num">10</b></span></span>
+              </button>
+              <button class="row opt" type="button" aria-pressed="false" disabled>
+                <span class="opt-box" aria-hidden="true"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-lock"/></svg></span>
+                <span class="grow"><span class="row-t">Lucky</span><span class="row-s">Reroll one die in every scene.</span><span class="opt-why">Too expensive: it costs 20 and you have 14.</span></span>
+                <span class="row-end"><span class="tag"><svg class="i i-s" width="12" height="12" aria-hidden="true"><use href="#i-spark"/></svg><b class="num">20</b></span></span>
+              </button>
+              <button class="row opt" type="button" aria-pressed="false" disabled>
+                <span class="opt-box" aria-hidden="true"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-lock"/></svg></span>
+                <span class="grow"><span class="row-t">Ally</span><span class="row-s">A capable friend who comes when you call.</span><span class="opt-why">Too expensive: it costs 20 and you have 14.</span></span>
+                <span class="row-end"><span class="tag"><svg class="i i-s" width="12" height="12" aria-hidden="true"><use href="#i-spark"/></svg><b class="num">20</b></span></span>
+              </button>
+              <button class="row opt" type="button" aria-pressed="false" disabled>
+                <span class="opt-box" aria-hidden="true"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-lock"/></svg></span>
+                <span class="grow"><span class="row-t">Wealthy</span><span class="row-s">Money stops being a problem in most towns.</span><span class="opt-why">Too expensive: it costs 20 and you have 14.</span></span>
+                <span class="row-end"><span class="tag"><svg class="i i-s" width="12" height="12" aria-hidden="true"><use href="#i-spark"/></svg><b class="num">20</b></span></span>
+              </button>
+            </div>
+          </section>
+        </div>
+
+        <aside class="stack side">
+          <section class="card stack">
+            <h2 class="card-t">This spend</h2>
+            <ul class="chosen" data-chosen>
+              <li class="between"><span>Light 1 → 2</span><b class="num">10</b></li>
+              <li class="between"><span>Windcaller’s Ear</span><b class="num">1</b></li>
+            </ul>
+            <div class="only-desktop">
+              <div class="budget" data-budget style="--v:78.6%">
+                <div class="between"><span><b class="num" data-out="sum">11</b> of 14 experience</span><span class="t-2 num" data-out="left">3 left</span></div>
+                <div class="track"><i></i></div>
+              </div>
+            </div>
+            <p class="help">Learning an ability needs a test: you roll for Windcaller’s Ear on the next screen.</p>
+          </section>
+
+          <section class="card">
+            <div class="card-h"><h2 class="card-t">Spent so far</h2><span class="t-xs t-2">21 of 35 earned</span></div>
+            <ul class="chosen">
+              <li class="between"><span>Resistance 2 → 3 <span class="t-2">· Day 8</span></span><b class="num">10</b></li>
+              <li class="between"><span>Air 1 → 2 <span class="t-2">· Day 10</span></span><b class="num">10</b></li>
+              <li class="between"><span>Gale Push learned <span class="t-2">· Day 10</span></span><b class="num">1</b></li>
+            </ul>
+          </section>
+
+          <div class="alert">
+            <svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-info"/></svg>
+            <div><b>No need to spend it all</b><p>What you keep can be spent in the moment while you play: an automatic success, a critical hit, or a quick recovery.</p></div>
+          </div>
+        </aside>
+      </div>
+
+      <!-- ===== Learn: the test for the ability ===== -->
+      <header class="page-h" data-show="learn">
+        <div>
+          <h1>Learning Windcaller’s Ear</h1>
+          <p>Mira teaches you · 1 experience and a test</p>
+        </div>
+      </header>
+
+      <div class="split stack-l" data-show="learn">
+        <div class="stack-l">
+          <article class="card abil who-mira">
+            <div class="abil-h"><h2 class="card-n">Windcaller’s Ear</h2><span class="tag">Air <b>2</b></span><span class="abil-c"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-bolt"/></svg>2 energy</span></div>
+            <p class="abil-d">Hear a conversation carried on the wind.</p>
+            <p class="abil-f"><span class="av av-s" aria-hidden="true">M</span><span>Taught by Mira</span></p>
+            <p class="abil-f"><svg class="i ok" width="16" height="16" aria-hidden="true"><use href="#i-ok-circle"/></svg><span>Needs Air 2 · you have it</span></p>
+          </article>
+
+          <section class="check" aria-label="Dice check result">
+            <header class="check-h">
+              <span class="check-k"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-dice"/></svg>Skill test</span>
+              <span class="badge"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg>Success</span>
+            </header>
+            <p class="check-t"><b>Skill</b> <span>(learning an ability)</span> <span class="tag">Medium</span></p>
+            <div class="roll">
+              <button class="die" data-die data-autoroll data-learn-die data-face="2" aria-label="Rolled 2. Roll it again to watch"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></button>
+              <div>
+                <ol class="steps steps-2" aria-hidden="true"><li class="in">1</li><li class="in hit">2</li><li class="lim"></li><li>3</li><li>4</li><li>5</li><li>6</li></ol>
+                <p class="scale-cap">Needed 2 or less · rolled <b>2</b></p>
+              </div>
+              <div class="stat q"><span>Quality</span><b>2</b></div>
+            </div>
+            <p class="check-f"><span>Skill <b>3</b>, medium, no matching skill: 3&nbsp;−&nbsp;1&nbsp;=&nbsp;<b>2</b></span></p>
+          </section>
+
+          <div class="alert alert-ok">
+            <svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-ok-circle"/></svg>
+            <div><b>Learned</b><p>Windcaller’s Ear is on your sheet. Each use costs 2 energy.</p></div>
+          </div>
+        </div>
+
+        <aside class="stack side">
+          <div class="alert">
+            <svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-info"/></svg>
+            <div><b>If the roll had failed</b><p>The 1 experience would have been spent all the same, and Windcaller’s Ear would have stayed found, not learned. You could try again another day, for 1 more.</p></div>
+          </div>
+
+          <section class="card stack">
+            <h2 class="card-t">This spend</h2>
+            <ul class="chosen">
+              <li class="between"><span>Light 1 → 2 <span class="t-2">· done</span></span><b class="num">10</b></li>
+              <li class="between"><span>Windcaller’s Ear <span class="t-2">· learned</span></span><b class="num">1</b></li>
+              <li class="between total"><span>11 of 14 experience</span><span class="t-2 num">3 left</span></li>
+            </ul>
+          </section>
+        </aside>
+      </div>
+
+      <!-- ===== Done ===== -->
+      <header class="page-h" data-show="done">
+        <div class="done-h">
+          <span class="done-i" aria-hidden="true"><svg class="i" width="26" height="26" aria-hidden="true"><use href="#i-check"/></svg></span>
+          <div>
+            <h1>11 experience spent</h1>
+            <p>3 left to spend · the sheet is up to date</p>
+          </div>
+        </div>
+      </header>
+
+      <div class="split stack-l" data-show="done">
+        <div class="stack-l">
+          <section class="sec">
+            <div class="sec-h"><h2>What changed on the sheet</h2></div>
+            <div class="stack">
+            <div class="card card-flush">
+              <div class="row trait">
+                <div class="grow"><div class="row-t">Light <span class="chg">1 → <b>2</b></span></div><div class="row-s">Light, sight and illusion. Tier 2 abilities are now within reach.</div></div>
+                <div class="row-end"><span class="pips" role="img" aria-label="2, the cap is 3"><i class="on"></i><i class="new"></i><i></i><i class="cap"></i><i class="cap"></i></span><b class="lvl">2</b></div>
+              </div>
+            </div>
+              <article class="card abil who-mira">
+                <div class="abil-h"><h3 class="card-n">Windcaller’s Ear</h3><span class="tag">Air <b>2</b></span><span class="abil-c"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-bolt"/></svg>2 energy</span></div>
+                <p class="abil-d">Hear a conversation carried on the wind.</p>
+                <p class="abil-f"><span class="tag tag-ok">Learned</span><span>from Mira, today</span></p>
+              </article>
+              <article class="card abil">
+                <div class="abil-h"><h3 class="card-n">Lantern Veil</h3><span class="tag">Light <b>2</b></span><span class="abil-c"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-bolt"/></svg>2 energy</span></div>
+                <p class="abil-d">Fold the light around something small, so that a passing glance slides over it.</p>
+                <p class="abil-f"><span class="tag tag-accent">Can be learned now</span><span>1 experience and a test</span></p>
+              </article>
+            </div>
+          </section>
+        </div>
+
+        <aside class="stack side">
+          <section class="card stack">
+            <h2 class="card-t">Experience</h2>
+            <ul class="chosen">
+              <li class="between"><span>Before</span><b class="num">14</b></li>
+              <li class="between"><span>Light 1 → 2</span><span class="num">−10</span></li>
+              <li class="between"><span>Windcaller’s Ear</span><span class="num">−1</span></li>
+              <li class="between total"><span>Left to spend</span><b class="num">3</b></li>
+            </ul>
+            <p class="help">35 earned in this story, 32 spent. What is left can also go on an automatic success, a critical hit or a quick recovery while you play.</p>
+          </section>
+        </aside>
+      </div>
+
+    </div>
+  </main>
+
+  <div class="flow-foot">
+    <div class="budget foot-budget only-phone" data-budget data-show="spend" style="--v:78.6%">
+      <div class="between"><span><b class="num" data-out="sum">11</b> of 14 experience</span><span class="t-2 num" data-out="left">3 left</span></div>
+      <div class="track"><i></i></div>
+    </div>
+    <a class="btn" href="character.html" data-show="spend">Cancel</a>
+    <button class="btn btn-primary" type="button" data-go="learn" data-spend data-show="spend"><span>Spend <span data-out="sum">11</span> experience</span></button>
+    <button class="btn btn-primary" type="button" data-go="done" data-show="learn">Continue</button>
+    <a class="btn" href="character.html?state=abilities" data-show="done">See abilities</a>
+    <a class="btn btn-primary" href="character.html" data-show="done">Back to the sheet</a>
+  </div>
+</div>
+
+<script src="slate.js"></script>
+<script>
+/* Ticking options keeps the count: the list of what is chosen, the budget bar and the button. */
+(function () {
+  var d = document, TOTAL = 14;
+  function all(sel) { return [].slice.call(d.querySelectorAll(sel)); }
+  function recalc() {
+    var picked = all('.opt[data-cost][aria-pressed="true"]');
+    var sum = picked.reduce(function (n, o) { return n + Number(o.getAttribute('data-cost')); }, 0);
+    var left = TOTAL - sum;
+    all('[data-out="sum"]').forEach(function (el) { el.textContent = sum; });
+    all('[data-out="left"]').forEach(function (el) {
+      el.textContent = left < 0 ? (-left) + ' over' : left + ' left';
+      el.classList.toggle('t-err', left < 0);
+      el.classList.toggle('t-2', left >= 0);
+    });
+    all('[data-budget]').forEach(function (el) {
+      el.style.setProperty('--v', Math.min(100, Math.round(1000 * sum / TOTAL) / 10) + '%');
+      el.classList.toggle('is-over', left < 0);
+    });
+    all('[data-spend]').forEach(function (b) { b.disabled = sum === 0 || left < 0; });
+    all('[data-chosen]').forEach(function (list) {
+      list.textContent = '';
+      picked.forEach(function (o) {
+        var li = d.createElement('li'), name = d.createElement('span'), cost = d.createElement('b');
+        li.className = 'between'; cost.className = 'num';
+        name.textContent = o.getAttribute('data-name'); cost.textContent = o.getAttribute('data-cost');
+        li.appendChild(name); li.appendChild(cost); list.appendChild(li);
+      });
+      if (!picked.length) {
+        var none = d.createElement('li'); none.className = 't-2'; none.textContent = 'Nothing chosen yet.'; list.appendChild(none);
+      }
+    });
+  }
+  d.addEventListener('click', function (e) {
+    var o = e.target.closest('.opt[data-cost]');
+    if (!o || o.disabled) return;
+    o.setAttribute('aria-pressed', o.getAttribute('aria-pressed') !== 'true');
+    recalc();
+  });
+  // Arriving at the test from the list of options: let the die roll once.
+  window.addEventListener('slate:state', function (e) {
+    if (e.detail === 'learn') setTimeout(function () { Slate.roll(d.querySelector('[data-learn-die]')); }, 350);
+  });
+  recalc();
+})();
+</script>
+</body>
+</html>

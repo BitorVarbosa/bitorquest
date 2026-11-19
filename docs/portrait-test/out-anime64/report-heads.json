@@ -1,0 +1,146 @@
+{
+  "front/woman": {
+    "leaksOutsideMask": 0,
+    "erasedHeadPixels": 0,
+    "bytes": [
+      274,
+      238,
+      485,
+      480,
+      1143,
+      674
+    ]
+  },
+  "front/child": {
+    "leaksOutsideMask": 0,
+    "erasedHeadPixels": 0,
+    "bytes": [
+      210,
+      211,
+      449,
+      392,
+      1009,
+      1206
+    ]
+  },
+  "front/oldman": {
+    "leaksOutsideMask": 0,
+    "erasedHeadPixels": 24,
+    "bytes": [
+      267,
+      231,
+      500,
+      503,
+      674,
+      758
+    ]
+  },
+  "front/oldwoman": {
+    "leaksOutsideMask": 0,
+    "erasedHeadPixels": 37,
+    "bytes": [
+      295,
+      327,
+      468,
+      537,
+      924,
+      1104
+    ]
+  },
+  "threequarter/woman": {
+    "leaksOutsideMask": 0,
+    "erasedHeadPixels": 4,
+    "bytes": [
+      231,
+      210,
+      384,
+      421,
+      1042,
+      721
+    ]
+  },
+  "threequarter/child": {
+    "leaksOutsideMask": 0,
+    "erasedHeadPixels": 3,
+    "bytes": [
+      204,
+      255,
+      379,
+      369,
+      957,
+      957
+    ]
+  },
+  "threequarter/oldman": {
+    "leaksOutsideMask": 0,
+    "erasedHeadPixels": 10,
+    "bytes": [
+      268,
+      240,
+      463,
+      478,
+      553,
+      917
+    ]
+  },
+  "threequarter/oldwoman": {
+    "leaksOutsideMask": 0,
+    "erasedHeadPixels": 12,
+    "bytes": [
+      230,
+      232,
+      374,
+      403,
+      801,
+      807
+    ]
+  },
+  "closeup/woman": {
+    "leaksOutsideMask": 0,
+    "erasedHeadPixels": 3,
+    "bytes": [
+      328,
+      344,
+      666,
+      650,
+      1535,
+      929
+    ]
+  },
+  "closeup/child": {
+    "leaksOutsideMask": 0,
+    "erasedHeadPixels": 0,
+    "bytes": [
+      264,
+      280,
+      438,
+      434,
+      1001,
+      1294
+    ]
+  },
+  "closeup/oldman": {
+    "leaksOutsideMask": 0,
+    "erasedHeadPixels": 18,
+    "bytes": [
+      332,
+      232,
+      778,
+      766,
+      832,
+      1284
+    ]
+  },
+  "closeup/oldwoman": {
+    "leaksOutsideMask": 0,
+    "erasedHeadPixels": 23,
+    "bytes": [
+      390,
+      372,
+      735,
+      698,
+      1234,
+      1358
+    ]
+  }
+}

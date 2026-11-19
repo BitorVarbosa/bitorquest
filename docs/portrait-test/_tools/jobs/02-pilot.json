@@ -1,0 +1,36 @@
+[
+  {
+    "out": "pilot/hair-inpaint.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "short spiky bright red hair",
+      "image_size": { "width": 128, "height": 128 },
+      "inpainting_image": "@front/head.png",
+      "mask_image": "@front/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "pilot/hair-edit-pixen.png",
+    "route": "/edit-image-pixen",
+    "body": {
+      "description": "give him short spiky bright red hair; keep the face, expression and clothes exactly the same",
+      "image": "@front/head.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "pilot/eyes-inpaint.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "large bright blue friendly eyes with thin arched eyebrows",
+      "image_size": { "width": 128, "height": 128 },
+      "inpainting_image": "@front/head.png",
+      "mask_image": "@front/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  }
+]

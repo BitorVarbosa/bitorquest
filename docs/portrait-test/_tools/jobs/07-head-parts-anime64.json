@@ -1,0 +1,1082 @@
+[
+  {
+    "out": "front/woman/raw/hair-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "long wavy pink anime hair falling past the shoulders",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@front/head-woman.png",
+      "mask_image": "@front/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/woman/raw/hair-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "short blue bob cut anime hair",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@front/head-woman.png",
+      "mask_image": "@front/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/woman/raw/eyes-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "large sparkling violet anime eyes with long eyelashes",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@front/head-woman.png",
+      "mask_image": "@front/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/woman/raw/eyes-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "narrow sharp golden anime eyes with long eyelashes, confident look",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@front/head-woman.png",
+      "mask_image": "@front/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/woman/raw/mouth-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "small gentle closed smile with soft pink lips",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@front/head-woman.png",
+      "mask_image": "@front/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/woman/raw/mouth-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "open laughing mouth",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@front/head-woman.png",
+      "mask_image": "@front/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/child/raw/hair-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "messy short brown anime hair with a cowlick",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@front/head-child.png",
+      "mask_image": "@front/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/child/raw/hair-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "orange anime hair in two short pigtails",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@front/head-child.png",
+      "mask_image": "@front/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/child/raw/eyes-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "huge round shiny brown anime eyes, innocent look",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@front/head-child.png",
+      "mask_image": "@front/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/child/raw/eyes-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "eyes squeezed shut into happy curved arcs, cheerful",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@front/head-child.png",
+      "mask_image": "@front/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/child/raw/mouth-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "tiny closed smile",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@front/head-child.png",
+      "mask_image": "@front/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/child/raw/mouth-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "big open laughing mouth with one missing tooth",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@front/head-child.png",
+      "mask_image": "@front/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/oldman/raw/hair-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "balding head with thin white hair only on the sides",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@front/head-oldman.png",
+      "mask_image": "@front/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/oldman/raw/hair-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "long grey anime hair tied back",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@front/head-oldman.png",
+      "mask_image": "@front/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/oldman/raw/eyes-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "small squinting eyes under bushy white eyebrows, wrinkled skin",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@front/head-oldman.png",
+      "mask_image": "@front/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/oldman/raw/eyes-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "sharp narrow grey eyes under thick white eyebrows, stern, wrinkled skin",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@front/head-oldman.png",
+      "mask_image": "@front/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/oldman/raw/mouth-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "thin frowning closed mouth, wrinkled skin",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@front/head-oldman.png",
+      "mask_image": "@front/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/oldman/raw/mouth-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "long white mustache covering the mouth",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@front/head-oldman.png",
+      "mask_image": "@front/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/oldwoman/raw/hair-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "grey anime hair tied up in a neat bun",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@front/head-oldwoman.png",
+      "mask_image": "@front/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/oldwoman/raw/hair-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "short curly white anime hair",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@front/head-oldwoman.png",
+      "mask_image": "@front/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/oldwoman/raw/eyes-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "gentle closed smiling eyes with wrinkles and thin grey eyebrows",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@front/head-oldwoman.png",
+      "mask_image": "@front/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/oldwoman/raw/eyes-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "small round kind blue eyes with wrinkles",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@front/head-oldwoman.png",
+      "mask_image": "@front/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/oldwoman/raw/mouth-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "soft kind closed smile, wrinkled skin",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@front/head-oldwoman.png",
+      "mask_image": "@front/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/oldwoman/raw/mouth-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "small pursed thin lips, wrinkled skin",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@front/head-oldwoman.png",
+      "mask_image": "@front/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/woman/raw/hair-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "long wavy pink anime hair falling past the shoulders",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@threequarter/head-woman.png",
+      "mask_image": "@threequarter/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/woman/raw/hair-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "short blue bob cut anime hair",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@threequarter/head-woman.png",
+      "mask_image": "@threequarter/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/woman/raw/eyes-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "large sparkling violet anime eyes with long eyelashes",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@threequarter/head-woman.png",
+      "mask_image": "@threequarter/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/woman/raw/eyes-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "narrow sharp golden anime eyes with long eyelashes, confident look",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@threequarter/head-woman.png",
+      "mask_image": "@threequarter/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/woman/raw/mouth-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "small gentle closed smile with soft pink lips",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@threequarter/head-woman.png",
+      "mask_image": "@threequarter/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/woman/raw/mouth-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "open laughing mouth",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@threequarter/head-woman.png",
+      "mask_image": "@threequarter/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/child/raw/hair-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "messy short brown anime hair with a cowlick",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@threequarter/head-child.png",
+      "mask_image": "@threequarter/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/child/raw/hair-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "orange anime hair in two short pigtails",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@threequarter/head-child.png",
+      "mask_image": "@threequarter/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/child/raw/eyes-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "huge round shiny brown anime eyes, innocent look",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@threequarter/head-child.png",
+      "mask_image": "@threequarter/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/child/raw/eyes-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "eyes squeezed shut into happy curved arcs, cheerful",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@threequarter/head-child.png",
+      "mask_image": "@threequarter/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/child/raw/mouth-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "tiny closed smile",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@threequarter/head-child.png",
+      "mask_image": "@threequarter/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/child/raw/mouth-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "big open laughing mouth with one missing tooth",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@threequarter/head-child.png",
+      "mask_image": "@threequarter/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/oldman/raw/hair-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "balding head with thin white hair only on the sides",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@threequarter/head-oldman.png",
+      "mask_image": "@threequarter/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/oldman/raw/hair-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "long grey anime hair tied back",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@threequarter/head-oldman.png",
+      "mask_image": "@threequarter/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/oldman/raw/eyes-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "small squinting eyes under bushy white eyebrows, wrinkled skin",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@threequarter/head-oldman.png",
+      "mask_image": "@threequarter/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/oldman/raw/eyes-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "sharp narrow grey eyes under thick white eyebrows, stern, wrinkled skin",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@threequarter/head-oldman.png",
+      "mask_image": "@threequarter/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/oldman/raw/mouth-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "thin frowning closed mouth, wrinkled skin",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@threequarter/head-oldman.png",
+      "mask_image": "@threequarter/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/oldman/raw/mouth-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "long white mustache covering the mouth",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@threequarter/head-oldman.png",
+      "mask_image": "@threequarter/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/oldwoman/raw/hair-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "grey anime hair tied up in a neat bun",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@threequarter/head-oldwoman.png",
+      "mask_image": "@threequarter/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/oldwoman/raw/hair-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "short curly white anime hair",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@threequarter/head-oldwoman.png",
+      "mask_image": "@threequarter/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/oldwoman/raw/eyes-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "gentle closed smiling eyes with wrinkles and thin grey eyebrows",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@threequarter/head-oldwoman.png",
+      "mask_image": "@threequarter/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/oldwoman/raw/eyes-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "small round kind blue eyes with wrinkles",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@threequarter/head-oldwoman.png",
+      "mask_image": "@threequarter/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/oldwoman/raw/mouth-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "soft kind closed smile, wrinkled skin",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@threequarter/head-oldwoman.png",
+      "mask_image": "@threequarter/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "threequarter/oldwoman/raw/mouth-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "small pursed thin lips, wrinkled skin",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@threequarter/head-oldwoman.png",
+      "mask_image": "@threequarter/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/woman/raw/hair-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "long wavy pink anime hair falling past the shoulders",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@closeup/head-woman.png",
+      "mask_image": "@closeup/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/woman/raw/hair-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "short blue bob cut anime hair",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@closeup/head-woman.png",
+      "mask_image": "@closeup/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/woman/raw/eyes-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "large sparkling violet anime eyes with long eyelashes",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@closeup/head-woman.png",
+      "mask_image": "@closeup/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/woman/raw/eyes-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "narrow sharp golden anime eyes with long eyelashes, confident look",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@closeup/head-woman.png",
+      "mask_image": "@closeup/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/woman/raw/mouth-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "small gentle closed smile with soft pink lips",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@closeup/head-woman.png",
+      "mask_image": "@closeup/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/woman/raw/mouth-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "open laughing mouth",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@closeup/head-woman.png",
+      "mask_image": "@closeup/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/child/raw/hair-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "messy short brown anime hair with a cowlick",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@closeup/head-child.png",
+      "mask_image": "@closeup/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/child/raw/hair-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "orange anime hair in two short pigtails",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@closeup/head-child.png",
+      "mask_image": "@closeup/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/child/raw/eyes-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "huge round shiny brown anime eyes, innocent look",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@closeup/head-child.png",
+      "mask_image": "@closeup/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/child/raw/eyes-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "eyes squeezed shut into happy curved arcs, cheerful",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@closeup/head-child.png",
+      "mask_image": "@closeup/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/child/raw/mouth-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "tiny closed smile",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@closeup/head-child.png",
+      "mask_image": "@closeup/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/child/raw/mouth-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "big open laughing mouth with one missing tooth",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@closeup/head-child.png",
+      "mask_image": "@closeup/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/oldman/raw/hair-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "balding head with thin white hair only on the sides",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@closeup/head-oldman.png",
+      "mask_image": "@closeup/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/oldman/raw/hair-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "long grey anime hair tied back",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@closeup/head-oldman.png",
+      "mask_image": "@closeup/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/oldman/raw/eyes-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "small squinting eyes under bushy white eyebrows, wrinkled skin",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@closeup/head-oldman.png",
+      "mask_image": "@closeup/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/oldman/raw/eyes-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "sharp narrow grey eyes under thick white eyebrows, stern, wrinkled skin",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@closeup/head-oldman.png",
+      "mask_image": "@closeup/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/oldman/raw/mouth-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "thin frowning closed mouth, wrinkled skin",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@closeup/head-oldman.png",
+      "mask_image": "@closeup/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/oldman/raw/mouth-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "long white mustache covering the mouth",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@closeup/head-oldman.png",
+      "mask_image": "@closeup/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/oldwoman/raw/hair-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "grey anime hair tied up in a neat bun",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@closeup/head-oldwoman.png",
+      "mask_image": "@closeup/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/oldwoman/raw/hair-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "short curly white anime hair",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@closeup/head-oldwoman.png",
+      "mask_image": "@closeup/mask-hair.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/oldwoman/raw/eyes-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "gentle closed smiling eyes with wrinkles and thin grey eyebrows",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@closeup/head-oldwoman.png",
+      "mask_image": "@closeup/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/oldwoman/raw/eyes-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "small round kind blue eyes with wrinkles",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@closeup/head-oldwoman.png",
+      "mask_image": "@closeup/mask-eyes.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/oldwoman/raw/mouth-a.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "soft kind closed smile, wrinkled skin",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@closeup/head-oldwoman.png",
+      "mask_image": "@closeup/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "closeup/oldwoman/raw/mouth-b.png",
+    "route": "/inpaint",
+    "body": {
+      "description": "small pursed thin lips, wrinkled skin",
+      "image_size": {
+        "width": 64,
+        "height": 64
+      },
+      "inpainting_image": "@closeup/head-oldwoman.png",
+      "mask_image": "@closeup/mask-mouth.png",
+      "no_background": true,
+      "seed": 21
+    }
+  }
+]

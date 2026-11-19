@@ -1,0 +1,46 @@
+[
+  {
+    "out": "pilot/oldman-init120.png",
+    "route": "/create-image-pixflux",
+    "body": {
+      "description": "anime style character face portrait of a completely bald elderly old man with deep wrinkles, sunken cheeks and thick grey eyebrows, hairless smooth scalp, anime eyes, facing the viewer straight on, symmetrical front view, head and shoulders, plain grey tunic, neutral expression, flat cel shading, clean dark outline",
+      "image_size": { "width": 64, "height": 64 },
+      "init_image": "@front/head.png",
+      "init_image_strength": 120,
+      "no_background": true,
+      "seed": 7
+    }
+  },
+  {
+    "out": "pilot/oldman-init40.png",
+    "route": "/create-image-pixflux",
+    "body": {
+      "description": "anime style character face portrait of a completely bald elderly old man with deep wrinkles, sunken cheeks and thick grey eyebrows, hairless smooth scalp, anime eyes, facing the viewer straight on, symmetrical front view, head and shoulders, plain grey tunic, neutral expression, flat cel shading, clean dark outline",
+      "image_size": { "width": 64, "height": 64 },
+      "init_image": "@front/head.png",
+      "init_image_strength": 40,
+      "no_background": true,
+      "seed": 7
+    }
+  },
+  {
+    "out": "pilot/oldman-edit.png",
+    "route": "/edit-image-pixen",
+    "body": {
+      "description": "turn this character into an elderly old man with deep wrinkles, sunken cheeks and thick grey eyebrows; keep him bald; keep the pose, head position, framing, clothes and art style exactly the same",
+      "image": "@front/head.png",
+      "no_background": true,
+      "seed": 7
+    }
+  },
+  {
+    "out": "pilot/child-edit.png",
+    "route": "/edit-image-pixen",
+    "body": {
+      "description": "turn this character into a small child about seven years old with round chubby cheeks and very large eyes; keep the character bald; keep the pose, head position, framing, clothes and art style exactly the same",
+      "image": "@front/head.png",
+      "no_background": true,
+      "seed": 7
+    }
+  }
+]

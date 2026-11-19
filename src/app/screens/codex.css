@@ -1,0 +1,41 @@
+/* Codex: the Journal's index of what the protagonist has discovered. From the Codex section of
+   docs/mockups/slate/journal.html, built from Slate tokens. Every rule is scoped to .cdx, the wrapper. */
+.cdx{display:flex;flex-direction:column;gap:var(--sp-4);min-width:0}
+
+/* Find something: a search field, then one chip per kind with how many entries it holds */
+.cdx-bar{display:grid;gap:var(--sp-1);min-width:0}
+.cdx-find-i{flex:none;width:42px;display:grid;place-items:center;color:var(--c-text-2)}
+.cdx .cdx-bar .input{padding-left:0}
+/* the kinds wrap instead of scrolling sideways: every count stays in view, which is what the counts are for */
+.cdx .chips{min-width:0;flex-wrap:wrap;overflow:visible}
+.cdx .chip b{font-weight:400;font-variant-numeric:tabular-nums;color:var(--c-text-2)}
+.cdx .chip[aria-pressed="true"] b{font-weight:600;color:inherit}
+
+/* An entry: a round mark or the person's avatar, the name with a small label, a line of text, a quiet line of facts */
+.cdx-list{display:grid;grid-template-columns:minmax(0,1fr)}
+.cdx-n{display:flex;align-items:center;flex-wrap:wrap;gap:2px 7px;font-size:var(--fs-lg);font-weight:600;line-height:22px;overflow-wrap:anywhere}
+.cdx-n .tag{font-weight:400}
+.cdx-n .num{font-weight:400;color:var(--c-text-2)}
+.cdx-r .row-s{margin-top:1px;text-wrap:pretty;overflow-wrap:anywhere}
+.cdx-m{display:block;margin-top:1px;font-size:var(--fs-xs);line-height:17px;color:var(--c-text-3);overflow-wrap:anywhere}
+.cdx-i{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--c-raised);color:var(--c-text-2)}
+.cdx-r>.i{color:var(--c-text-3)}
+.cdx-more{flex:none}
+
+/* Nothing matches */
+.cdx-none{align-items:flex-start}
+.cdx-none p{max-width:var(--w-read);font-size:var(--fs-md);line-height:20px;text-wrap:pretty}
+
+/* From a tablet up (where .grid-2 also takes two columns): two columns of entries. The lines are drawn under
+   and beside each entry, so an odd one out at the end still closes the row above it; a kind with a single
+   entry gives it the whole width */
+@media (min-width:700px){
+  .cdx-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cdx-list .row{border-top:0;border-bottom:1px solid var(--c-line)}
+  .cdx-list .row:nth-child(odd){border-right:1px solid var(--c-line)}
+  .cdx-list .row:last-child,.cdx-list .row:nth-last-child(2):nth-child(odd){border-bottom:0}
+  .cdx-list .row:only-child{grid-column:1/-1;border-right:0}
+}
+@media (min-width:1100px){
+  .cdx-bar{grid-template-columns:300px minmax(0,1fr);align-items:center;gap:var(--sp-4)}
+}

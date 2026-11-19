@@ -1,0 +1,74 @@
+/* Recap: "Previously…", where the story stands before going back into it. From docs/mockups/slate/recap.html,
+   built from Slate tokens. Story text is serif and reads down the main column; the facts sit beside it on a PC.
+   Every rule is scoped to .rcp, the screen's wrapper. */
+.rcp{display:flex;flex-direction:column;gap:inherit}
+.rcp .page-h p{max-width:var(--w-read);text-wrap:pretty}
+.rcp-cols{row-gap:var(--sp-5)}
+.rcp-main,.rcp-side{display:flex;flex-direction:column;gap:var(--sp-5);min-width:0}
+.rcp-more{flex:none}
+.rcp-link{align-self:flex-start;text-align:left}
+.rcp-quiet{font-size:var(--fs-md);line-height:20px;color:var(--c-text-2);text-wrap:pretty}
+
+/* The story, to read: one block per chapter, in the order they happened */
+.rcp-tale{display:grid;gap:var(--sp-4);min-width:0}
+.rcp-tale>*{min-width:0}
+.rcp .t-story{white-space:pre-line;overflow-wrap:anywhere}
+.rcp-main .t-story,.rcp-lines p{max-width:var(--w-read)}       /* on a tablet the column is wider than a line should be */
+.rcp-ch{display:grid;gap:var(--sp-1)}
+.rcp-ch-h{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:0 var(--sp-3)}
+.rcp-ch-h h3{line-height:20px}
+.rcp-ch-h span{font-size:var(--fs-xs);line-height:20px;color:var(--c-text-2);font-variant-numeric:tabular-nums}
+/* chapters further back: a line each, set a little smaller */
+.rcp-early{display:grid;gap:var(--sp-2);justify-items:start}
+.rcp-lines{display:grid;gap:10px;padding-left:var(--sp-3);border-left:2px solid var(--c-line)}
+.rcp-lines p{margin-top:1px;font-family:var(--font-story);font-size:var(--fs-lg);line-height:1.5;color:var(--c-text-2);text-wrap:pretty}
+
+/* A roll remembered: the die, what it was for, the outcome */
+.rcp-roll{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2) var(--sp-3);padding:10px var(--sp-3);border:1px solid var(--c-line);border-radius:var(--r-lg);background:var(--c-card);font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2);font-variant-numeric:tabular-nums}
+.rcp-roll-t{flex:1 1 130px;min-width:0;text-wrap:pretty}
+.rcp-roll-t b{display:block;font-size:var(--fs-md);line-height:20px;color:var(--c-text)}
+.rcp-roll .badge{margin-left:auto}
+/* on a phone the die is a full tap target: pressing it rolls it again */
+.rcp-roll .die-s{width:44px;height:44px;padding:7px;border-radius:10px}
+.rcp-roll .die-s i{width:7px;height:7px}
+/* how bonds moved in that scene: the chips of the story log; someone with no colour of their own gets a neutral one */
+.rcp .note-bond:not([class*="who-"]){--p:var(--c-text-2)}
+/* the scene being played has no summary yet: where it is, and the last thing the narrator wrote */
+.rcp-stop{display:grid;gap:var(--sp-1);padding-left:var(--sp-3);border-left:2px solid var(--c-accent-line)}
+.rcp-stop-k{font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+
+/* The facts, to check */
+.rcp-i{color:var(--c-accent-text)}
+.rcp-gain{font-size:var(--fs-lg);font-weight:600;color:var(--c-text);font-variant-numeric:tabular-nums;white-space:nowrap}
+.rcp-side .row-s{text-wrap:pretty}
+.rcp-bonds{display:grid;gap:var(--sp-2)}
+a.rcp-p{display:block}
+.rcp-p:not([class*="who-"]){--p:var(--c-text-2)}           /* someone with no colour of their own */
+a.rcp-p:hover{border-color:color-mix(in srgb,var(--p) 46%,var(--c-card))}
+.rcp-p .person-note{font-variant-numeric:tabular-nums}
+.rcp-up{color:var(--p)}
+.rcp-loss{color:var(--c-err)}
+.rcp-p .moment{margin:10px 0 0}
+.rcp-grief{--p:var(--c-err)}
+
+/* Going back into the story. From 700px the button stands in the page header. On a phone it stays in reach
+   in a bar above the navigation, as the mockup's footer does: the bar sticks to the bottom of the page,
+   reaches both edges, and its bottom margin takes back the page's own bottom padding so it rests on the navigation. */
+.rcp-foot{position:sticky;bottom:0;z-index:2;display:flex;margin:0 calc(-1*var(--gut)) calc(-1*var(--sp-6));padding:10px var(--gut);border-top:1px solid var(--c-line);background:var(--c-chrome)}
+/* the other bars turn into veils over a gradient or a moving backdrop; this one has text passing under it, so it stays solid */
+@media (max-width:699.98px){
+  .rcp .rcp-go{display:none}
+}
+@media (min-width:700px){
+  .rcp-foot{display:none}
+}
+@media (min-width:1100px){
+  .rcp-roll .die-s{width:36px;height:36px;padding:6px;border-radius:8px}
+  .rcp-roll .die-s i{width:6px;height:6px}
+}
+
+/* Meanwhile, elsewhere: the talk of the place, one item to a line with where it is from */
+.rcp-news{display:grid;gap:var(--sp-3)}
+.rcp-news li{display:grid;gap:var(--sp-1)}
+.rcp-news p{line-height:20px;text-wrap:pretty}
+.rcp-also{margin-top:10px;padding-top:10px;border-top:1px solid var(--c-line);font-size:var(--fs-sm);line-height:19px;color:var(--c-text-2)}

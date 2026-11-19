@@ -1,0 +1,46 @@
+{
+  "size": 128,
+  "layouts": {
+    "front": {
+      "label": "Front bust",
+      "masks": {
+        "hair": [[0, 0, 128, 41], [0, 41, 38, 55], [90, 41, 38, 55]],
+        "eyes": [[40, 42, 48, 18]],
+        "mouth": [[48, 72, 32, 14]]
+      }
+    },
+    "threequarter": {
+      "label": "3/4 bust",
+      "masks": {
+        "hair": [[0, 0, 128, 46], [0, 46, 50, 54], [98, 46, 30, 40]],
+        "eyes": [[56, 47, 40, 17]],
+        "mouth": [[62, 75, 28, 13]]
+      }
+    },
+    "closeup": {
+      "label": "Front close-up",
+      "masks": {
+        "hair": [[0, 0, 128, 53], [0, 53, 26, 57], [102, 53, 26, 57]],
+        "eyes": [[28, 54, 70, 22]],
+        "mouth": [[44, 94, 40, 18]]
+      }
+    }
+  },
+  "sets": {
+    "hair": {
+      "a": "short spiky bright red hair",
+      "b": "long straight black hair hanging down past the ears to the shoulders",
+      "c": "big curly blonde hair"
+    },
+    "eyes": {
+      "a": "narrow stern brown eyes under thick dark angry eyebrows",
+      "b": "large bright blue friendly eyes with thin arched eyebrows",
+      "c": "tired half-closed green eyes with heavy bags and bushy grey eyebrows"
+    },
+    "mouth": {
+      "a": "thin lips pressed into a stern closed mouth",
+      "b": "wide happy grin showing white teeth",
+      "c": "mouth wide open shouting in surprise"
+    }
+  }
+}

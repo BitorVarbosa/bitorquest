@@ -1,0 +1,120 @@
+/* A new story whose first scene has not been told yet */
+.begin{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--sp-3)}
+
+/* ==========================================================================
+   The story log and its dock: what was added after the first playtest.
+   Asides (questions to the narrator), the line that marks where new text begins, the Continue
+   button, gestures inside speech, and the motion of the log.
+   Built from Slate's tokens. Motion is on only under :root[data-motion="on"].
+   "Out of the story" is always gold and dashed, so it can never be mistaken for the story itself.
+   ========================================================================== */
+
+/* ---------- A gesture inside a spoken line ----------
+   "I'd have done the same." A dry breath, almost a laugh. "That's why I believe you."
+   Spoken words keep the text colour; the gesture between them is serif, italic and quieter, with a
+   trace of the speaker's colour. */
+.say-g{font-family:var(--font-story);font-style:italic;line-height:1;color:color-mix(in srgb,var(--p,var(--c-text-2)) 30%,var(--c-text-2))}
+
+/* ---------- Out of the story: a question to the narrator and its answer ---------- */
+.out-q{align-self:flex-end;max-width:88%;padding:9px 14px 11px;border:1px dashed color-mix(in srgb,var(--c-gold) 60%,var(--c-card));border-radius:var(--r-lg) var(--r-lg) 4px var(--r-lg);background:color-mix(in srgb,var(--c-gold) 8%,var(--c-card))}
+.out-a{align-self:flex-start;max-width:95%;display:grid;gap:6px;padding:10px 14px var(--sp-3);border:1px dashed color-mix(in srgb,var(--c-gold) 48%,var(--c-card));border-radius:var(--r-lg);background:color-mix(in srgb,var(--c-gold) 5%,var(--c-card))}
+.out-h{display:flex;align-items:center;flex-wrap:wrap;gap:3px 6px;font-size:var(--fs-sm);font-weight:600;line-height:18px;color:var(--c-gold)}
+.out-q .out-h{margin-bottom:3px}
+.out-tag{padding:0 6px;border:1px solid color-mix(in srgb,var(--c-gold) 50%,transparent);border-radius:var(--r-pill);font-size:var(--fs-xs);line-height:16px;font-weight:400}
+.out-q p,.out-a p{font-size:var(--fs-speech);line-height:var(--lh-speech);text-wrap:pretty}
+.out-q.is-unsent{background:none}
+.out-q .act-f{border-top-color:color-mix(in srgb,var(--c-gold) 45%,var(--c-card))}
+.out-wait{display:flex;align-items:center;gap:10px;color:var(--c-text-2)}
+.out-wait .dots i{background:var(--c-gold)}
+/* the game asks what the player meant, before anything happens */
+.ask .ask-q{font-weight:600}
+.out-a .ask-f{font-size:var(--fs-sm);line-height:19px;color:var(--c-text-2)}
+.ask-f .link{display:inline-flex;min-height:28px}
+.act-f b{color:var(--c-text)}
+
+/* the input, while it is set to the narrator */
+.to-out,.to-out .to-k,.to-out .i{color:var(--c-gold)}
+.to-out .to-k{opacity:.85}
+.field.is-out{border-style:dashed;border-color:color-mix(in srgb,var(--c-gold) 72%,var(--c-card));background:color-mix(in srgb,var(--c-gold) 6%,var(--c-card))}
+.field.is-out:focus-within{border-color:var(--c-gold);box-shadow:0 0 0 3px color-mix(in srgb,var(--c-gold) 24%,transparent)}
+.field.is-out .send{background:var(--c-gold);color:var(--c-story)}
+.out-bar{display:flex;align-items:center;gap:var(--sp-2);min-height:44px;margin:-6px 2px 0;font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.out-bar>.i{flex:none;color:var(--c-gold)}
+.out-bar>span{flex:1;min-width:0}
+.out-bar b{color:var(--c-gold)}
+.out-bar .link{flex:none;min-height:44px;padding:0 var(--sp-1)}
+.av-out{color:var(--c-gold);background:color-mix(in srgb,var(--c-gold) 14%,var(--c-card));box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--c-gold) 50%,var(--c-card))}
+.row-out .row-s{text-wrap:pretty}
+.modal-b>.t-caps{margin:var(--sp-1) 2px calc(-1*var(--sp-1))}
+/* answers offered under the game's question */
+.sugg-ans .sg>span{border-color:color-mix(in srgb,var(--c-gold) 60%,var(--c-card));font-weight:600}
+
+/* ---------- Where the new text begins ----------
+   After Continue, a thin line is drawn at the top of the passage that just arrived, and the view is
+   brought to it. The line stays until the next Continue or the next action. */
+.newmark{flex:none;height:1px;margin:3px 0;background:linear-gradient(90deg,var(--c-accent-text),var(--c-accent-text) 75%,transparent);opacity:.85;transform-origin:left center}
+/* more to read: a small cue where the eyes are; the big button is in the dock */
+.more-cue{align-self:center;flex:none;width:56px;height:32px;display:grid;place-items:center;border-radius:var(--r-pill);color:var(--c-accent-text);background:var(--c-accent-tint);box-shadow:inset 0 0 0 1px var(--c-accent-line)}
+.more-cue:hover{filter:brightness(1.1)}
+.more-cue.is-wait{cursor:default}                       /* the rest of the reply is still being written: same shape and place, dots for the arrow */
+.more-cue.is-wait:hover{filter:none}
+
+/* ---------- Continue ----------
+   A light sweeps across it from left to right, the arrow nudges forward, and a ring breathes out
+   from it, so that it is noticed without being stared at. With motion off it is the plain button. */
+.go{overflow:hidden;isolation:isolate}
+.go::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(100deg,transparent 32%,rgba(255,255,255,.34) 50%,transparent 68%);transform:translateX(-101%)}
+.go-i{flex:none}
+
+
+@media (min-width:1100px){
+  .out-q{max-width:500px}
+  .out-a{max-width:570px}
+  .out-bar{min-height:32px;margin:-2px 2px 2px}
+  .out-bar .link{min-height:0}
+}
+
+/* ==========================================================================
+   Motion of the log. One switch: :root[data-motion="on"].
+   ========================================================================== */
+:root[data-motion="on"] .newmark{animation:mark-draw .5s cubic-bezier(.2,.7,.3,1) both}
+@keyframes mark-draw{from{transform:scaleX(0);opacity:0}to{transform:scaleX(1);opacity:.85}}
+
+/* a passage revealed by Continue arrives beat by beat, top to bottom */
+:root[data-motion="on"] .is-fresh{animation:fresh .46s cubic-bezier(.2,.7,.3,1) both;animation-delay:calc(min(var(--i,0),6)*90ms + 140ms)}
+@keyframes fresh{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* what the player just sent settles into place */
+:root[data-motion="on"] .pop{animation:pop-in .22s cubic-bezier(.2,.8,.3,1.2) both;transform-origin:100% 100%}
+@keyframes pop-in{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}
+:root[data-motion="on"] .out-a.is-live{animation:fresh .3s ease-out both}   /* the box appears once, when the narrator starts to answer; the answer then arrives inside it */
+
+/* Continue */
+:root[data-motion="on"] .go{animation:go-in .24s ease-out both,go-ring 2.6s ease-out .5s infinite}
+:root[data-motion="on"] .go::before{animation:go-sweep 2.6s ease-in-out .3s infinite}
+:root[data-motion="on"] .go .go-i{animation:go-nudge 1.3s ease-in-out infinite}
+:root[data-motion="on"] .go:disabled,:root[data-motion="on"] .go:disabled::before{animation:none}
+@keyframes go-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes go-sweep{0%{transform:translateX(-101%)}60%,100%{transform:translateX(101%)}}
+@keyframes go-nudge{0%,100%{transform:none}50%{transform:translateX(5px)}}
+@keyframes go-ring{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--c-accent-fill) 60%,transparent)}70%,100%{box-shadow:0 0 0 9px transparent}}
+:root[data-motion="on"] .more-cue{animation:fresh .3s ease-out .5s both}
+:root[data-motion="on"] .more-cue:is(.is-now,.is-wait){animation:none}   /* it takes the place of the dots that were already there */
+:root[data-motion="on"] .more-cue .i{animation:more-bob 1.3s ease-in-out infinite}
+@keyframes more-bob{0%,100%{transform:translateY(-1px)}50%{transform:translateY(3px)}}
+
+
+/* a test lands: the card answers the result, a soft glow for a success, a short shake for a failure */
+:root[data-motion="on"] .check.is-good{animation:land-good .7s ease-out}
+:root[data-motion="on"] .check.is-bad{animation:land-bad .38s ease-out}
+@keyframes land-good{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--c-ok) 55%,transparent);border-color:var(--c-ok)}100%{box-shadow:0 0 0 12px transparent}}
+@keyframes land-bad{0%,100%{transform:none}20%{transform:translateX(-5px)}45%{transform:translateX(4px)}70%{transform:translateX(-2px)}}
+
+/* suggested actions and answers arrive one after another */
+:root[data-motion="on"] .sugg .sg{animation:fresh .28s ease-out both}
+:root[data-motion="on"] .sugg .sg:nth-child(2){animation-delay:60ms}
+:root[data-motion="on"] .sugg .sg:nth-child(3){animation-delay:120ms}
+
+/* the input changes colour, not place, when it is turned to the narrator */
+:root[data-motion="on"] .field{transition:border-color .16s ease-out,background-color .16s ease-out,box-shadow .16s ease-out}
+:root[data-motion="on"] .out-bar{animation:fresh .2s ease-out both}

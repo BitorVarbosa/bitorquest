@@ -1,0 +1,727 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitor Quest - A fight</title>
+<link rel="stylesheet" href="slate.css">
+<link rel="stylesheet" href="play.css">
+<style>
+/* Combat: the play screen during a fight. The people strip and pane list the combatants in turn order,
+   the log shows each exchange as a card with both dice, and the dock holds the actions of a turn.
+   States: turn (round 2, your turn), resolve (your attack lands), down (0 hit points), won. */
+
+/* Aren's meters per state: 11/15 and 9/15, then 0/15 and 7/15, then 9/15 and 7/15 */
+body{--hp:73.33%;--en:60%}
+body[data-state="down"]{--hp:0%;--en:46.67%}
+body[data-state="won"]{--hp:60%;--en:46.67%}
+.blk{display:block}
+
+/* Condition: opponents are described by a word, never by hit points */
+.cond{font-weight:600;white-space:nowrap}
+b.cond-1,.cond-1{color:var(--c-gold)}          /* Hurt */
+b.cond-2,.cond-2{color:var(--c-err)}           /* Badly hurt, down (you) */
+b.cond-3,.cond-3{color:var(--c-text-3)}        /* Down, fled, gone */
+.lv-0{--m:var(--c-ok)}.lv-1{--m:var(--c-gold)}.lv-2{--m:var(--c-err)}
+.pips.lv i{width:12px;height:5px}
+
+/* Turn order: a number on each fighter, a ring on whoever is acting */
+.ord{position:absolute;right:-5px;bottom:-3px;min-width:17px;height:17px;padding:0 var(--sp-1);border-radius:var(--r-pill);background:var(--under,var(--c-chrome));box-shadow:inset 0 0 0 1px var(--c-line-strong);font-size:var(--fs-xs);font-weight:600;line-height:17px;text-align:center;color:var(--c-text-2)}
+body[data-state="won"] .ord{display:none}
+body[data-state="turn"] .c-aren .av,body[data-state="resolve"] .c-aren .av{box-shadow:inset 0 0 0 1.5px var(--c-accent-text),0 0 0 1.5px var(--under,var(--c-chrome)),0 0 0 3px var(--c-accent-text)}
+body[data-state="turn"] .c-aren .ord,body[data-state="resolve"] .c-aren .ord{background:var(--c-accent-fill);box-shadow:none;color:var(--c-on-accent)}
+.pc-m.is-now{font-weight:600;color:var(--c-accent-text)}
+.pc.c-aren{min-width:62px}                     /* wide enough for "Your turn", so the row does not shift between states */
+.pc .av-anon,.person .av-anon,.note .av-anon,.over-l .av-anon,.tg-b .av-anon{font-weight:600}
+.av-s.av-anon{border-width:1px}
+
+/* The fight pane */
+.order{display:flex;flex-wrap:wrap;gap:0 6px;margin:2px var(--sp-1) 0;font-size:var(--fs-sm);line-height:20px;color:var(--c-text-2);font-variant-numeric:tabular-nums}
+.order li+li::before{content:"\203A";margin-right:6px;color:var(--c-text-3)}
+body[data-state="turn"] .order .o-aren,body[data-state="resolve"] .order .o-aren{font-weight:600;color:var(--c-accent-text)}
+body[data-state="turn"] .person.c-aren,body[data-state="resolve"] .person.c-aren{border-color:var(--c-accent-line)}
+.tg{display:none;color:var(--c-accent-text)}
+body[data-state="turn"][data-target="knife"] .c-knife .tg,body[data-state="turn"][data-target="cudgel"] .c-cudgel .tg{display:block}
+body[data-state="turn"][data-target="knife"] .person.c-knife,body[data-state="turn"][data-target="cudgel"] .person.c-cudgel{border-color:var(--c-accent-line)}
+.person .bond-l .i{color:var(--c-hp)}
+.ctx .facts .tag .i{margin-right:-2px;color:var(--c-en)}
+
+/* Round marker in the log */
+.scene.round{letter-spacing:.07em}
+.round .now{color:var(--c-accent-text)}
+
+/* What an action cost, in the corner of the player's bubble */
+.act-cost{display:inline-flex;align-items:center;gap:3px;margin-left:auto;padding-left:var(--sp-3);font-size:var(--fs-xs);font-weight:400;color:var(--c-text-2)}
+.act-cost .i{color:var(--c-en)}
+/* a bond note with its reason on a second line */
+.notes{align-items:flex-start}
+.note-2{flex-wrap:wrap}
+.note-why{flex:none;width:0;min-width:100%;margin-top:-3px;padding:0 0 2px 28px;font-size:var(--fs-xs);line-height:16px;color:var(--c-text-2)} /* width 0: the reason takes its own line without widening the note */
+
+/* An attack exchange: two dice, two sums, one difference */
+.vs{display:grid;gap:var(--sp-2)}
+.vs-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:var(--sp-3)}
+.vs-k{display:block;font-size:var(--fs-md);font-weight:600;line-height:20px}
+.vs-sum{display:block;font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2);font-variant-numeric:tabular-nums}
+.vs-sum b{color:var(--c-text)}
+.vs-row .stat{min-width:66px}
+.clash .check-f{flex-wrap:wrap;gap:2px 6px;padding-top:10px;border-top:1px solid var(--c-line);font-variant-numeric:tabular-nums}
+.clash .check-f .i{color:var(--c-hp)}
+.clash.is-rolling .stat b,.clash.is-rolling .vs-sum b,.clash.is-rolling .check-f{visibility:hidden}
+
+/* Down: the choice between a destiny point and the death test */
+.fate{display:grid;gap:var(--sp-3);border-color:color-mix(in srgb,var(--c-err) 45%,var(--c-card))}
+.fate-h{display:flex;align-items:flex-start;gap:10px}
+.fate-h .i{margin-top:3px;color:var(--c-hp)}
+.fate-t{font-size:var(--fs-lg);font-weight:600;line-height:22px}
+.fate-s{font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.fate .choice-m{display:flex;align-items:center;gap:0;color:var(--c-text)}
+.fate .choice-m svg+svg{margin-left:-2px}
+.fate .tag{margin-top:6px;white-space:normal;height:auto;min-height:22px;line-height:16px;padding-block:3px}
+
+/* Won: what became of everyone */
+.over-l{display:grid}
+.over-l li{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--c-line);font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.over-l li:first-child{padding-top:0;border-top:0}
+.over-l .n{display:block;font-size:var(--fs-md);font-weight:600;line-height:20px;color:var(--c-text)}
+.over-m{padding-top:var(--sp-3);border-top:1px solid var(--c-line)}
+.over .card-h{margin-bottom:var(--sp-3)}
+
+/* Dock: target, actions, and still a text field */
+.tgt{display:flex;align-items:center;gap:var(--sp-2)}
+.tgt-k{flex:none;font-size:var(--fs-xs);font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--c-text-2)}
+.tg-b{flex:1 1 0;min-width:0;height:44px;display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-2);border:1px solid var(--c-line-strong);border-radius:var(--r-md);background:var(--c-card)}
+.tg-b:hover{border-color:var(--c-accent-text)}
+.tg-b.is-on{border-color:var(--c-accent-text);background:var(--c-accent-tint);box-shadow:inset 0 0 0 1px var(--c-accent-text)}
+.tg-x{flex:1;min-width:0;display:grid;font-size:var(--fs-xs);line-height:15px;color:var(--c-text-2)}
+.tg-x b{font-size:var(--fs-sm);line-height:17px;color:var(--c-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tg-b>.i{display:none;color:var(--c-accent-text)}
+.tg-b.is-on>.i{display:block}
+.cmds{display:grid;gap:var(--sp-2);margin:var(--sp-2) 0}
+.cmd-row{display:flex;gap:var(--sp-2)}
+.cmd-row .btn{flex:1 1 0}
+.cmd-row .btn-primary{flex:2 1 0}
+.cmd-n{font-weight:400;opacity:.8}
+.field input{padding-left:14px}
+
+/* Sheets: abilities, items, talk or flee */
+.pick .row{align-items:flex-start;text-align:left}
+.pick .row-t{display:flex;align-items:center;flex-wrap:wrap;gap:2px var(--sp-2);font-weight:600}
+.pick .row-end{align-self:center;gap:var(--sp-1);font-weight:600;white-space:nowrap;color:var(--c-text)}
+.pick .row-end .i{color:var(--c-en)}
+.pick .use{color:var(--c-accent-text)}
+.modal-h .tag .i{color:var(--c-en)}
+.modal-h .tag.t-hp .i{color:var(--c-hp)}
+
+@media (min-width:1100px){
+  .fate,.over{width:100%;max-width:520px}
+  .tg-b{height:40px}
+  .ctx .rule{margin-top:10px}
+}
+</style>
+</head>
+<body data-shell="story" data-page="story" data-title="The Glass Road" data-cost data-state="turn" data-mode="input" data-beats="0" data-target="knife" data-fate="destiny">
+
+<div class="app">
+
+  <!-- ===== Top bar ===== -->
+  <header class="top">
+    <div class="bar" data-bar></div>
+
+    <div class="vitals" role="group" aria-label="Aren">
+      <div class="hp" style="--v:var(--hp)">
+        <div class="m-top"><span class="m-k"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-heart"/></svg>HP</span><span class="m-v"><b data-show="turn resolve">11</b><b data-show="down">0</b><b data-show="won">9</b>/15</span></div>
+        <div class="track"><i></i></div>
+      </div>
+      <div class="en" style="--v:var(--en)">
+        <div class="m-top"><span class="m-k"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-bolt"/></svg>Energy</span><span class="m-v"><b data-show="turn resolve">9</b><b data-show="down won">7</b>/15</span></div>
+        <div class="track"><i></i></div>
+      </div>
+      <div class="destiny">
+        <div class="m-top"><span class="m-k">Destiny</span><span class="m-v"><b>2</b></span></div>
+        <div class="gems" aria-hidden="true"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-gem"/></svg><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-gem"/></svg></div>
+      </div>
+    </div>
+
+    <!-- The fighters, in turn order: your side, then the other side -->
+    <div class="strip" role="group" aria-label="The fight, in turn order">
+      <div class="strip-row">
+        <button class="pc c-aren" data-people-toggle title="Aren, acts first">
+          <span class="av av-you" aria-hidden="true">A<span class="ord">1</span></span>
+          <span class="pc-n">Aren</span>
+          <span class="pc-m is-now" data-show="turn">Your turn</span>
+          <span class="pc-m is-now" data-show="resolve">Acting</span>
+          <span class="pc-m cond-2" data-show="down">Down</span>
+          <span class="pc-m" data-show="won">You</span>
+        </button>
+        <button class="pc who-mira" data-people-toggle title="Mira, acts second">
+          <span class="av" aria-hidden="true">M<span class="fav"><svg class="i i-f" width="11" height="11" aria-hidden="true"><use href="#i-star"/></svg></span><span class="ord">2</span></span>
+          <span class="pc-n">Mira</span>
+          <span class="pc-m">Unhurt</span>
+        </button>
+        <span class="strip-sep" aria-hidden="true"></span>
+        <button class="pc pc-scene c-knife" data-people-toggle title="Hooded knifeman, acts third">
+          <span class="av av-anon" aria-hidden="true">K<span class="ord">3</span></span>
+          <span class="pc-n">Knifeman</span>
+          <span class="pc-m cond-1" data-show="turn">Hurt</span>
+          <span class="pc-m cond-2" data-show="resolve">Badly hurt</span>
+          <span class="pc-m" data-show="down won">Down</span>
+        </button>
+        <button class="pc pc-scene c-cudgel" data-people-toggle title="Man with a cudgel, acts fourth">
+          <span class="av av-anon" aria-hidden="true">C<span class="ord">4</span></span>
+          <span class="pc-n">Cudgel man</span>
+          <span class="pc-m" data-show="turn resolve">Unhurt</span>
+          <span class="pc-m cond-1" data-show="down">Hurt</span>
+          <span class="pc-m" data-show="won">Fled</span>
+        </button>
+      </div>
+      <button class="pc pc-all" data-people-toggle aria-expanded="false" aria-label="Open the fight panel">
+        <span class="av av-all" aria-hidden="true"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span>
+        <span class="pc-n"><span data-show="turn resolve">Round 2</span><span data-show="down">Round 4</span><span data-show="won">Over</span></span>
+        <span class="pc-m">Details</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== Primary navigation ===== -->
+  <nav class="nav" data-nav></nav>
+
+  <!-- ===== The fight: both sides ===== -->
+  <button class="scrim" type="button" data-people-toggle tabindex="-1" aria-hidden="true"></button>
+  <aside class="people" aria-label="The fight">
+    <header class="people-h">
+      <h2>The fight</h2>
+      <span class="people-n"><span data-show="turn">Round 2 · your turn</span><span data-show="resolve">Round 2 · Mira is next</span><span data-show="down">Round 4 · Aren is down</span><span data-show="won">Over · won in 3 rounds</span></span>
+      <button class="ib close" data-people-toggle aria-label="Close the fight panel"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </header>
+    <div class="people-b">
+      <ol class="order" aria-label="Turn order" data-show="turn resolve down">
+        <li class="o-aren">1 Aren</li><li>2 Mira</li><li>3 Knifeman</li><li>4 Cudgel man</li>
+      </ol>
+
+      <h3 class="grp"><span>Your side</span><span data-show="turn resolve">2 fighting</span><span data-show="down">1 fighting</span><span data-show="won">Both standing</span></h3>
+
+      <article class="person c-aren">
+        <div class="person-top">
+          <span class="av av-l av-you" aria-hidden="true">A<span class="ord">1</span></span>
+          <div class="person-id">
+            <div class="person-name">Aren <span class="you">You</span></div>
+            <div class="person-role">Courier · short blade</div>
+          </div>
+          <div class="bond">
+            <span class="tag tag-accent" data-show="turn">Your turn</span>
+            <span class="tag tag-accent" data-show="resolve">Acting</span>
+            <b class="cond cond-2 t-sm" data-show="down">Down</b>
+            <div class="bond-l"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-heart"/></svg><span><b data-show="turn resolve">11</b><b data-show="down">0</b><b data-show="won">9</b>/15</span></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="person who-mira">
+        <div class="person-top">
+          <span class="av av-l" aria-hidden="true">M<span class="fav"><svg class="i i-f" width="11" height="11" aria-hidden="true"><use href="#i-star"/></svg></span><span class="ord">2</span></span>
+          <a class="person-id" href="person.html" title="Open Mira’s profile">
+            <div class="person-name">Mira</div>
+            <div class="person-role">Scout · bow</div>
+          </a>
+          <div class="bond" data-show="turn resolve down">
+            <div class="bond-l"><b class="cond">Unhurt</b></div>
+            <span class="pips lv lv-0" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></span>
+          </div>
+          <div class="bond" data-show="won">
+            <div class="bond-l"><b>Close</b><span><b>68</b>/100</span></div>
+            <span class="bb bb-l" role="img" aria-label="Bond 68 of 100, Close"><i style="--f:1"></i><i style="--f:1"></i><i style="--f:1"></i><i style="--f:.4"></i><i></i></span>
+            <span class="mood">+4 · fought beside you</span>
+          </div>
+        </div>
+        <p class="person-note" data-show="turn resolve">Shoots from behind you. Her arrow hit the knifeman in round 1.</p>
+        <p class="person-note" data-show="down">Still on her feet, an arrow on the string.</p>
+        <p class="person-note" data-show="won">Unhurt. Two arrows spent.</p>
+      </article>
+
+      <article class="person who-tobin">
+        <div class="person-top">
+          <span class="av av-l" aria-hidden="true">T</span>
+          <div class="person-id">
+            <div class="person-name">Tobin</div>
+            <div class="person-role">Tinkerer’s apprentice</div>
+          </div>
+          <div class="bond"><small>Staying back</small><small>Not a fighter</small></div>
+        </div>
+      </article>
+
+      <h3 class="grp"><span>Against you</span><span data-show="turn resolve">2 fighting</span><span data-show="down">1 fighting</span><span data-show="won">None left</span></h3>
+
+      <article class="person c-knife">
+        <div class="person-top">
+          <span class="av av-l av-anon" aria-hidden="true">K<span class="ord">3</span></span>
+          <div class="person-id">
+            <div class="person-name">Hooded knifeman <svg class="i tg" width="16" height="16" role="img" aria-label="Your target"><use href="#i-target"/></svg></div>
+            <div class="person-role">Kessa’s man · knife</div>
+          </div>
+          <div class="bond" data-show="turn">
+            <div class="bond-l"><b class="cond cond-1">Hurt</b></div>
+            <span class="pips lv lv-1" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i></span>
+          </div>
+          <div class="bond" data-show="resolve">
+            <div class="bond-l"><b class="cond cond-2">Badly hurt</b></div>
+            <span class="pips lv lv-2" aria-hidden="true"><i class="on"></i><i></i><i></i></span>
+          </div>
+          <div class="bond" data-show="down won">
+            <div class="bond-l"><b class="cond cond-3">Down</b></div>
+            <span class="pips lv" aria-hidden="true"><i></i><i></i><i></i></span>
+          </div>
+        </div>
+        <p class="person-note" data-show="turn resolve">Fast, and already inside your reach.</p>
+        <p class="person-note" data-show="down won">Out cold on the planks.</p>
+      </article>
+
+      <article class="person c-cudgel">
+        <div class="person-top">
+          <span class="av av-l av-anon" aria-hidden="true">C<span class="ord">4</span></span>
+          <div class="person-id">
+            <div class="person-name">Man with a cudgel <svg class="i tg" width="16" height="16" role="img" aria-label="Your target"><use href="#i-target"/></svg></div>
+            <div class="person-role">Kessa’s man · cudgel</div>
+          </div>
+          <div class="bond" data-show="turn resolve">
+            <div class="bond-l"><b class="cond">Unhurt</b></div>
+            <span class="pips lv lv-0" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></span>
+          </div>
+          <div class="bond" data-show="down">
+            <div class="bond-l"><b class="cond cond-1">Hurt</b></div>
+            <span class="pips lv lv-1" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i></span>
+          </div>
+          <div class="bond" data-show="won">
+            <div class="bond-l"><b class="cond cond-3">Fled</b></div>
+          </div>
+        </div>
+        <p class="person-note" data-show="turn resolve">Slow and heavy. Circling toward Mira.</p>
+        <p class="person-note" data-show="down">Standing over you.</p>
+        <p class="person-note" data-show="won">Ran for the far bank.</p>
+      </article>
+
+      <h3 class="grp"><span>Watching</span><span>1</span></h3>
+
+      <article class="person">
+        <div class="person-top">
+          <span class="av av-l" aria-hidden="true">K</span>
+          <div class="person-id">
+            <div class="person-name">Warden Kessa</div>
+            <div class="person-role">The baron’s agent</div>
+          </div>
+          <div class="bond">
+            <span class="mood">Hostile</span>
+            <small data-show="turn resolve down">Not in the fight</small>
+            <small data-show="won">Gone</small>
+          </div>
+        </div>
+        <p class="person-note" data-show="turn resolve down">Watches from the far bank with her arms folded.</p>
+        <p class="person-note" data-show="won">Left before it ended. She knows which way you are going.</p>
+      </article>
+    </div>
+  </aside>
+
+  <!-- ===== Story ===== -->
+  <main class="story">
+    <div class="log" data-log role="log" aria-label="Story">
+      <div class="col">
+        <h2 class="scene">Scene 5 · Canal Bridge · Night</h2>
+
+        <!-- Round 1 and the start of round 2 -->
+        <p class="narr" data-show="turn resolve">Halfway across, two men step out from between the lamp posts: one hooded, a knife held low; one broad, a cudgel resting on his shoulder. On the far bank a woman in a grey coat watches with her arms folded. Warden Kessa.</p>
+
+        <h3 class="scene round" data-show="turn resolve">Round 1</h3>
+
+        <article class="act" aria-label="Your action" data-show="turn resolve">
+          <header class="act-h">Aren <span class="you">You</span></header>
+          <p>I draw my blade, keep Tobin behind me, and tell them to let us pass.</p>
+        </article>
+
+        <p class="narr" data-show="turn resolve">Neither man answers. Mira’s bowstring does: her arrow takes the hooded man high in the shoulder. He comes on anyway, straight at you.</p>
+
+        <div class="notes" data-show="turn resolve">
+          <span class="note who-mira"><span class="av av-s" aria-hidden="true">M</span><span>Mira’s arrow hits · the hooded knifeman is <b class="cond-1">Hurt</b></span></span>
+        </div>
+
+        <section class="check clash" aria-label="Attack: the hooded knifeman against Aren" data-show="turn resolve">
+          <header class="check-h">
+            <span class="check-k"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-sword"/></svg>Attack · round 1</span>
+            <span class="badge badge-fail">1 damage</span>
+          </header>
+          <p class="check-t"><b>Hooded knifeman</b> <span>attacks you</span> <span class="tag">Knife</span></p>
+          <div class="vs">
+            <div class="vs-row">
+              <button class="die die-foe" data-die data-face="4" aria-label="The knifeman rolled 4. Roll it again to watch"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></button>
+              <div><span class="vs-k">His attack</span><span class="vs-sum">Strength and Skill 3 + die <b>4</b></span></div>
+              <div class="stat"><span>Attack</span><b>7</b></div>
+            </div>
+            <div class="vs-row">
+              <button class="die" data-die data-face="2" aria-label="You rolled 2. Roll it again to watch"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></button>
+              <div><span class="vs-k">Your defence</span><span class="vs-sum">Armor 1 + Skill 3 + die <b>2</b></span></div>
+              <div class="stat"><span>Defence</span><b>6</b></div>
+            </div>
+          </div>
+          <p class="check-f"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-heart"/></svg><span>7 − 6 = <b>1 damage</b></span><span>· hit points 12 → <b>11</b></span></p>
+        </section>
+
+        <p class="narr" data-show="turn resolve">The knife opens a shallow line across your forearm. The man with the cudgel circles wide, toward Mira.</p>
+
+        <h3 class="scene round" data-show="turn resolve"><span>Round 2<span class="now" data-show="turn"> · your turn</span></span></h3>
+
+        <!-- Your attack, resolved -->
+        <article class="act" aria-label="Your action" data-show="resolve">
+          <header class="act-h">Aren <span class="you">You</span></header>
+          <p>I attack the hooded knifeman with my short blade.</p>
+        </article>
+
+        <section class="check clash" aria-label="Attack: Aren against the hooded knifeman" data-show="resolve" data-clash="resolve">
+          <header class="check-h">
+            <span class="check-k"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-sword"/></svg>Attack · round 2</span>
+            <span class="badge"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg>Hit · 4 damage</span>
+          </header>
+          <p class="check-t"><b>You attack</b> <span>the hooded knifeman</span> <span class="tag">Short blade</span></p>
+          <div class="vs">
+            <div class="vs-row">
+              <button class="die" data-die data-autoroll data-face="5" aria-label="You rolled 5. Roll it again to watch"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></button>
+              <div><span class="vs-k">Your attack</span><span class="vs-sum">Strength 1 + Skill 3 + die <b>5</b></span></div>
+              <div class="stat"><span>Attack</span><b>9</b></div>
+            </div>
+            <div class="vs-row">
+              <button class="die die-foe" data-die data-autoroll data-face="2" aria-label="The knifeman rolled 2. Roll it again to watch"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></button>
+              <div><span class="vs-k">His defence</span><span class="vs-sum">Armor and Skill 3 + die <b>2</b></span></div>
+              <div class="stat"><span>Defence</span><b>5</b></div>
+            </div>
+          </div>
+          <p class="check-f"><span>9 − 5 = <b>4 damage</b></span><span>· the knifeman is now <b class="cond-2">Badly hurt</b></span></p>
+        </section>
+
+        <p class="narr" data-show="resolve">You step inside his reach and the short blade lays his knife arm open from wrist to elbow. He reels back against the rail, breathing hard.</p>
+
+        <!-- A later round: Aren goes down -->
+        <h3 class="scene round" data-show="down">Round 4</h3>
+
+        <p class="narr" data-show="down">The knifeman lies still on the planks, but the man with the cudgel has been waiting for you to tire. He steps in as your blade swings wide.</p>
+
+        <section class="check clash" aria-label="Attack: the man with a cudgel against Aren" data-show="down">
+          <header class="check-h">
+            <span class="check-k"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-sword"/></svg>Attack · round 4</span>
+            <span class="badge badge-fail">4 damage</span>
+          </header>
+          <p class="check-t"><b>Man with a cudgel</b> <span>attacks you</span> <span class="tag">Cudgel</span></p>
+          <div class="vs">
+            <div class="vs-row">
+              <button class="die die-foe" data-die data-face="5" aria-label="The man with a cudgel rolled 5. Roll it again to watch"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></button>
+              <div><span class="vs-k">His attack</span><span class="vs-sum">Strength and Skill 4 + die <b>5</b></span></div>
+              <div class="stat"><span>Attack</span><b>9</b></div>
+            </div>
+            <div class="vs-row">
+              <button class="die" data-die data-face="1" aria-label="You rolled 1. Roll it again to watch"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></button>
+              <div><span class="vs-k">Your defence</span><span class="vs-sum">Armor 1 + Skill 3 + die <b>1</b></span></div>
+              <div class="stat"><span>Defence</span><b>5</b></div>
+            </div>
+          </div>
+          <p class="check-f"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-heart"/></svg><span>9 − 5 = <b>4 damage</b></span><span>· hit points 4 → <b class="cond-2">0</b></span></p>
+        </section>
+
+        <p class="narr" data-show="down">The cudgel comes down across your shoulder and the bridge tilts away from you. From a long way off, Mira shouts your name.</p>
+
+        <section class="card fate" aria-label="Aren is down" data-show="down">
+          <header class="fate-h">
+            <svg class="i i-f" width="18" height="18" aria-hidden="true"><use href="#i-heart"/></svg>
+            <div>
+              <h3 class="fate-t">Aren is down</h3>
+              <p class="fate-s">0 hit points. This story is played in the Adventure style, so you choose what happens next.</p>
+            </div>
+          </header>
+          <div class="stack-s" role="group" aria-label="What happens next">
+            <button class="choice" data-set="fate=destiny">
+              <span class="dotmark" aria-hidden="true"></span>
+              <span class="grow"><span class="choice-t">Spend a destiny point</span><span class="choice-d blk">You get back up with 5 hit points and the fight goes on. You have 2 this chapter; this leaves 1.</span></span>
+              <span class="choice-m" aria-hidden="true"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-gem"/></svg><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-gem"/></svg></span>
+            </button>
+            <button class="choice" data-set="fate=test">
+              <span class="dotmark" aria-hidden="true"></span>
+              <span class="grow"><span class="choice-t">Take the death test</span><span class="choice-d blk">One roll decides how bad it is, and the fight ends for you. At worst you wake up captured instead of dying.</span><span class="tag tag-ok">Softened once per chapter · not used yet</span></span>
+              <span class="choice-m" aria-hidden="true"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-dice"/></svg></span>
+            </button>
+          </div>
+        </section>
+
+        <!-- The fight is won -->
+        <h3 class="scene round" data-show="won">Round 3</h3>
+
+        <article class="act" aria-label="Your action" data-show="won">
+          <header class="act-h">Aren <span class="you">You</span><span class="act-cost"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-bolt"/></svg>Gale Push · 2 energy</span></header>
+          <p>I throw a Gale Push at the man with the cudgel.</p>
+        </article>
+
+        <p class="narr" data-show="won">The gust lifts him off his feet and throws him against the rail. He looks at Mira’s drawn bow, at the knifeman lying still on the planks, and runs for the far bank. When you look for Kessa, she is gone.</p>
+
+        <section class="card over" aria-label="The fight is over" data-show="won">
+          <header class="card-h">
+            <h3 class="card-t"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-flag"/></svg>The fight is over</h3>
+            <span class="tag tag-ok">Won in 3 rounds</span>
+          </header>
+          <ul class="over-l">
+            <li><span class="av av-s av-anon" aria-hidden="true">K</span><span class="grow"><span class="n">Hooded knifeman</span>Mira’s second arrow dropped him.</span><b class="cond cond-3">Down</b></li>
+            <li><span class="av av-s av-anon" aria-hidden="true">C</span><span class="grow"><span class="n">Man with a cudgel</span>Hurt, and gone across the far bank.</span><b class="cond cond-3">Fled</b></li>
+            <li><span class="av av-s" aria-hidden="true">K</span><span class="grow"><span class="n">Warden Kessa</span>Never joined the fight. Left before it ended.</span><b class="cond cond-3">Gone</b></li>
+          </ul>
+          <div class="meters over-m" role="group" aria-label="Aren after the fight">
+            <div class="hp" style="--v:60%">
+              <div class="m-top"><span class="m-k"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-heart"/></svg>Hit points</span><span class="m-v"><b>9</b>/15</span></div>
+              <div class="track"><i></i></div>
+            </div>
+            <div class="en" style="--v:46.67%">
+              <div class="m-top"><span class="m-k"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-bolt"/></svg>Energy</span><span class="m-v"><b>7</b>/15</span></div>
+              <div class="track"><i></i></div>
+            </div>
+          </div>
+        </section>
+
+        <div class="notes" data-show="won">
+          <span class="note"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-spark"/></svg><span><b>+3</b> experience</span></span>
+          <span class="note note-bond note-2 who-mira"><span class="av av-s" aria-hidden="true">M</span><span><b>+4</b> bond with Mira</span><span class="bb" aria-hidden="true"><i style="--f:1"></i><i style="--f:1"></i><i style="--f:1"></i><i style="--f:.4"></i><i></i></span><span class="note-x">now <b>68</b></span><span class="note-why">For fighting side by side</span></span>
+          <span class="note"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-search"/></svg><span><b>Found:</b> a blank wax seal · a clue for “Who copied the baron’s seal?”</span></span>
+        </div>
+        <p class="skip" data-show="won"><span><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-clock"/></svg>10 minutes pass</span></p>
+      </div>
+    </div>
+
+    <div class="dock">
+      <div class="dock-in">
+        <!-- resolve, down, won: one button -->
+        <button class="go" data-continue data-go="won" data-show="resolve">
+          <span>Continue</span>
+          <span class="go-n">Mira is next</span>
+          <svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-arrow"/></svg>
+          <kbd aria-hidden="true">Space</kbd>
+        </button>
+        <div data-show="down">
+          <button class="go" data-when="fate=destiny">
+            <svg class="i i-f" width="16" height="16" aria-hidden="true"><use href="#i-gem"/></svg>
+            <span>Spend a destiny point</span>
+            <span class="go-n">leaves <b>1</b></span>
+          </button>
+          <button class="go" data-when="fate=test">
+            <svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-dice"/></svg>
+            <span>Roll the death test</span>
+          </button>
+        </div>
+        <a class="go" href="play.html" data-show="won">
+          <span>Continue</span>
+          <svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-arrow"/></svg>
+          <kbd aria-hidden="true">Space</kbd>
+        </a>
+
+        <!-- turn: target, actions, and a text field for anything else -->
+        <div class="compose">
+          <div class="tgt" role="group" aria-label="Target">
+            <span class="tgt-k">Target</span>
+            <button class="tg-b" data-set="target=knife">
+              <span class="av av-s av-anon" aria-hidden="true">K</span>
+              <span class="tg-x"><b>Knifeman</b><span class="cond-1">Hurt</span></span>
+              <svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-target"/></svg>
+            </button>
+            <button class="tg-b" data-set="target=cudgel">
+              <span class="av av-s av-anon" aria-hidden="true">C</span>
+              <span class="tg-x"><b>Cudgel man</b><span>Unhurt</span></span>
+              <svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-target"/></svg>
+            </button>
+          </div>
+          <div class="cmds" role="group" aria-label="Actions">
+            <div class="cmd-row">
+              <button class="btn btn-primary" data-go="resolve"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-sword"/></svg>Attack <span class="cmd-n">· short blade</span></button>
+              <button class="btn" title="Give up your attack and guard yourself until your next turn"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-shield"/></svg>Defend</button>
+            </div>
+            <div class="cmd-row">
+              <button class="btn" data-open="ability"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-spark"/></svg>Ability</button>
+              <button class="btn" data-open="item"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-flask"/></svg>Use an item</button>
+              <button class="btn" data-open="talk"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-chat"/></svg>Talk or flee</button>
+            </div>
+          </div>
+          <div class="field">
+            <input type="text" placeholder="Or describe something else…" aria-label="Describe something else to do" autocomplete="off">
+            <button class="send" aria-label="Send"><svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-send"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== Context (desktop) ===== -->
+  <aside class="ctx" aria-label="Character, journal and map">
+    <section class="card">
+      <header class="card-h">
+        <h2 class="card-t"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-sheet"/></svg>Character</h2>
+        <a class="link" href="character.html">Sheet<svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-right"/></svg></a>
+      </header>
+      <div class="char-id">
+        <span class="av av-you" aria-hidden="true">A</span>
+        <div><div class="char-n">Aren</div><div class="char-s">Protagonist</div></div>
+        <dl class="char-x">
+          <div><dt>Destiny</dt><dd><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-gem"/></svg><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-gem"/></svg><span>2</span></dd></div>
+          <div><dt>Experience</dt><dd><span data-show="turn resolve down">14</span><span data-show="won">17</span></dd></div>
+        </dl>
+      </div>
+      <div class="meters">
+        <div class="hp" style="--v:var(--hp)">
+          <div class="m-top"><span class="m-k"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-heart"/></svg>Hit points</span><span class="m-v"><b data-show="turn resolve">11</b><b data-show="down">0</b><b data-show="won">9</b>/15</span></div>
+          <div class="track"><i></i></div>
+        </div>
+        <div class="en" style="--v:var(--en)">
+          <div class="m-top"><span class="m-k"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-bolt"/></svg>Energy</span><span class="m-v"><b data-show="turn resolve">9</b><b data-show="down won">7</b>/15</span></div>
+          <div class="track"><i></i></div>
+        </div>
+      </div>
+      <dl class="stats" aria-label="Attributes">
+        <div><dt>Strength</dt><dd>1</dd></div>
+        <div><dt>Skill</dt><dd>3</dd></div>
+        <div><dt>Resistance</dt><dd>3</dd></div>
+        <div><dt>Armor</dt><dd>1</dd></div>
+        <div><dt>Firepower</dt><dd class="zero">0</dd></div>
+      </dl>
+      <dl class="facts">
+        <div><dt>Attack</dt><dd>Strength 1 + Skill 3 + a die</dd></div>
+        <div><dt>Defence</dt><dd>Armor 1 + Skill 3 + a die</dd></div>
+        <div><dt>Abilities</dt><dd><span class="tag"><b>Gale Push</b><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-bolt"/></svg>2</span><span class="tag"><b>Featherstep</b><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-bolt"/></svg>1</span><span class="tag"><b>Glimmer</b><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-bolt"/></svg>1</span></dd></div>
+        <div><dt>Items</dt><dd>Healing draught ×2</dd></div>
+      </dl>
+      <p class="t-xs t-2 rule">The difference between attack and defence is the damage. A 6 on the die doubles Strength or Armor.</p>
+    </section>
+
+    <section class="card">
+      <header class="card-h">
+        <h2 class="card-t"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-journal"/></svg>Journal · Threads</h2>
+        <a class="link" href="journal.html">Open<svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-right"/></svg></a>
+      </header>
+      <ul class="threads">
+        <li>
+          <p class="th-t">Deliver the sealed letter to the Glass Road waystation.</p>
+          <p class="th-m"><b>Next:</b> cross the bridge before the gates close.</p>
+        </li>
+        <li>
+          <p class="th-t">Who copied the baron’s seal?</p>
+          <p class="th-m" data-show="turn resolve down"><b>Clue:</b> Roth carries a copy.</p>
+          <p class="th-m" data-show="won"><b>New clue:</b> the knifeman carried a blank wax seal.</p>
+        </li>
+      </ul>
+      <div class="due">
+        <div class="due-k"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-clock"/></svg>Commitment · due tonight</div>
+        <p>Meet Tobin’s master at the Old Mill.</p>
+      </div>
+    </section>
+
+    <section class="card card-map">
+      <header class="card-h">
+        <h2 class="card-t"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-map"/></svg>Map</h2>
+        <a class="link" href="map.html">Open<svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-right"/></svg></a>
+      </header>
+      <svg class="map" width="312" height="122" viewBox="0 0 312 122" role="img" aria-label="Schematic map. Old Mill links to Lantern Market. North Gate branches off Lantern Market. Lantern Market links to Canal Bridge, where you are, which links to Glass Road Waystation. One undiscovered place lies beyond the waystation.">
+        <g class="map-l"><path d="M24 70H254M108 70V22"/><path class="dash" d="M254 70H298"/></g>
+        <g class="map-n">
+          <circle cx="24" cy="70" r="5.5"/><circle cx="108" cy="22" r="5.5"/><circle class="seen" cx="108" cy="70" r="5.5"/><circle cx="254" cy="70" r="5.5"/>
+          <circle class="unk" cx="298" cy="70" r="9"/>
+          <circle class="halo" cx="186" cy="70" r="11"/><circle class="here" cx="186" cy="70" r="6"/>
+        </g>
+        <g aria-hidden="true">
+          <text x="24" y="93" text-anchor="middle">Old Mill</text>
+          <text x="96" y="26" text-anchor="end">North Gate</text>
+          <text x="108" y="93" text-anchor="middle">Lantern Market</text>
+          <text class="t-b" x="186" y="36" text-anchor="middle">Canal Bridge</text>
+          <text class="t-a" x="186" y="52" text-anchor="middle">You are here</text>
+          <text x="254" y="93" text-anchor="middle">Glass Road</text>
+          <text x="254" y="109" text-anchor="middle">Waystation</text>
+          <text x="298" y="74" text-anchor="middle">?</text>
+        </g>
+      </svg>
+    </section>
+  </aside>
+
+  <!-- ===== Sheets opened from the dock ===== -->
+  <div class="modal-scrim"></div>
+
+  <div class="modal pick" data-modal="ability" role="dialog" aria-label="Use an ability">
+    <header class="modal-h"><h2>Use an ability</h2><span class="tag"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-bolt"/></svg><span><b>9</b>/15 energy</span></span><button class="ib" data-close aria-label="Close"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <div class="modal-b">
+      <div class="card card-flush">
+        <button class="row" data-close><span class="grow"><span class="row-t">Gale Push <span class="tag">Air 2</span></span><span class="row-s blk">A blast of wind that shoves one opponent back, or clears arrows from the air.</span></span><span class="row-end"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-bolt"/></svg>2 energy</span></button>
+        <button class="row" data-close><span class="grow"><span class="row-t">Featherstep <span class="tag">Air 1</span></span><span class="row-s blk">Move without sound or weight for a moment.</span></span><span class="row-end"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-bolt"/></svg>1 energy</span></button>
+        <button class="row" data-close><span class="grow"><span class="row-t">Glimmer <span class="tag">Light 1</span></span><span class="row-s blk">A flash that dazzles someone looking at it.</span></span><span class="row-end"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-bolt"/></svg>1 energy</span></button>
+      </div>
+      <p class="t-sm t-2">An ability takes your turn and is aimed at your target. You can also describe an effect of your own in the text field: the rules decide its tier and cost.</p>
+    </div>
+  </div>
+
+  <div class="modal pick" data-modal="item" role="dialog" aria-label="Use an item">
+    <header class="modal-h"><h2>Use an item</h2><span class="tag t-hp"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-heart"/></svg><span><b>11</b>/15 hit points</span></span><button class="ib" data-close aria-label="Close"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <div class="modal-b">
+      <div class="card card-flush">
+        <button class="row" data-close><span class="grow"><span class="row-t">Healing draught <span class="tag">×2</span></span><span class="row-s blk">Restores 5 hit points. You would go from 11 to the full 15.</span></span><span class="row-end use">Use</span></button>
+      </div>
+      <p class="t-sm t-2">Using an item takes your turn. Nothing else you carry helps in a fight.</p>
+    </div>
+  </div>
+
+  <div class="modal pick" data-modal="talk" role="dialog" aria-label="Talk or flee">
+    <header class="modal-h"><h2>Talk or flee</h2><button class="ib" data-close aria-label="Close"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <div class="modal-b">
+      <div class="card card-flush">
+        <button class="row" data-close><svg class="i t-2" width="20" height="20" aria-hidden="true"><use href="#i-chat"/></svg><span class="grow"><span class="row-t">Talk</span><span class="row-s blk">Say something to them or to Kessa. What you say decides the test.</span></span></button>
+        <button class="row" data-close><svg class="i t-2" width="20" height="20" aria-hidden="true"><use href="#i-arrow"/></svg><span class="grow"><span class="row-t">Flee</span><span class="row-s blk">Break away with Mira and Tobin. If it works the fight ends, and they may follow.</span></span></button>
+      </div>
+      <p class="t-sm t-2">Either one takes your turn.</p>
+    </div>
+  </div>
+
+</div>
+
+<script src="slate.js"></script>
+<script>
+(function () {
+  var d = document, body = d.body;
+  var log = d.querySelector('[data-log]');
+  var MODE = { turn: 'input', resolve: 'continue', down: 'continue', won: 'continue' };
+  function each(sel, fn) { [].forEach.call(d.querySelectorAll(sel), fn); }
+  function toEnd() { if (log) log.scrollTop = log.scrollHeight; }
+
+  // The shared top bar names the Lantern Market scene; this screen is the next one.
+  function put(sel, html) { var el = d.querySelector(sel); if (el) el.innerHTML = html; }
+  var dot = ' <span class="dot" aria-hidden="true">·</span> ';
+  put('.sub-place', Slate.icon('moon', 14, 'i-s') + '<span>Canal Bridge · Night · Day 12</span>');
+  put('.sub-chapter', 'Chapter 2 · “Borrowed Seals” · Scene 5');
+  put('.place', Slate.icon('pin', 16) + 'Canal Bridge' + dot + Slate.icon('moon', 16) + 'Night' + dot + 'Day 12');
+
+  function sync() {
+    var s = Slate.state();
+    body.dataset.mode = MODE[s] || 'input';   // play.css shows the actions or the Continue button
+    body.dataset.beats = s === 'won' ? '1' : '0'; // the dot on People: Mira's bond rose
+    toEnd();
+  }
+  function people(open) {
+    body.dataset.people = open ? 'open' : '';
+    each('[data-people-toggle][aria-expanded]', function (b) { b.setAttribute('aria-expanded', open); });
+  }
+  addEventListener('slate:state', function (e) {
+    sync();
+    if (e.detail === 'resolve') each('[data-clash="resolve"] [data-die]', Slate.roll); // both dice tumble together
+  });
+  d.addEventListener('click', function (e) {
+    body.classList.add('is-live');
+    if (e.target.closest('[data-people-toggle]')) people(body.dataset.people !== 'open');
+  });
+  d.addEventListener('keydown', function (e) {
+    var t = e.target;
+    if (e.key === 'Escape' && body.dataset.people === 'open') people(false);
+    if (e.key === ' ' && body.dataset.mode === 'continue' && !(t.closest && t.closest('button,input,textarea,a'))) {
+      var go = [].filter.call(d.querySelectorAll('.go'), function (b) { return b.offsetWidth > 0; })[0];
+      if (go) { e.preventDefault(); go.click(); }
+    }
+  });
+  addEventListener('resize', toEnd);
+  if (body.dataset.people === 'open') people(true);
+  sync();
+})();
+</script>
+</body>
+</html>

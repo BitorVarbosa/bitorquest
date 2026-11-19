@@ -1,0 +1,207 @@
+{
+  "size": 64,
+  "layouts": {
+    "front": {
+      "label": "Front bust",
+      "masks": {
+        "hair": [
+          [
+            0,
+            0,
+            64,
+            26
+          ],
+          [
+            0,
+            26,
+            18,
+            24
+          ],
+          [
+            46,
+            26,
+            18,
+            24
+          ]
+        ],
+        "eyes": [
+          [
+            18,
+            27,
+            28,
+            12
+          ]
+        ],
+        "mouth": [
+          [
+            25,
+            43,
+            14,
+            8
+          ]
+        ]
+      }
+    },
+    "threequarter": {
+      "label": "3/4 bust",
+      "masks": {
+        "hair": [
+          [
+            0,
+            0,
+            64,
+            22
+          ],
+          [
+            0,
+            22,
+            27,
+            28
+          ],
+          [
+            50,
+            22,
+            14,
+            18
+          ]
+        ],
+        "eyes": [
+          [
+            27,
+            23,
+            23,
+            15
+          ]
+        ],
+        "mouth": [
+          [
+            33,
+            41,
+            13,
+            7
+          ]
+        ]
+      }
+    },
+    "closeup": {
+      "label": "Front close-up",
+      "masks": {
+        "hair": [
+          [
+            0,
+            0,
+            64,
+            25
+          ],
+          [
+            0,
+            25,
+            15,
+            30
+          ],
+          [
+            49,
+            25,
+            15,
+            30
+          ]
+        ],
+        "eyes": [
+          [
+            15,
+            26,
+            34,
+            18
+          ]
+        ],
+        "mouth": [
+          [
+            24,
+            48,
+            16,
+            9
+          ]
+        ]
+      }
+    }
+  },
+  "sets": {
+    "hair": {
+      "a": "short spiky bright red anime hair",
+      "b": "long straight black anime hair hanging down past the shoulders",
+      "c": "big fluffy curly blonde anime hair"
+    },
+    "eyes": {
+      "a": "narrow stern brown anime eyes with thick angry eyebrows",
+      "b": "large sparkling bright blue anime eyes with thin arched eyebrows",
+      "c": "tired half-closed green anime eyes with dark bags under them"
+    },
+    "mouth": {
+      "a": "small straight closed mouth drawn as a simple dark line, serious",
+      "b": "wide happy open smile showing white teeth",
+      "c": "mouth wide open shouting in surprise"
+    }
+  },
+  "heads": {
+    "woman": {
+      "label": "Woman",
+      "hair": {
+        "a": "long wavy pink anime hair falling past the shoulders",
+        "b": "short blue bob cut anime hair"
+      },
+      "eyes": {
+        "a": "large sparkling violet anime eyes with long eyelashes",
+        "b": "narrow sharp golden anime eyes with long eyelashes, confident look"
+      },
+      "mouth": {
+        "a": "small gentle closed smile with soft pink lips",
+        "b": "open laughing mouth"
+      }
+    },
+    "child": {
+      "label": "Child",
+      "hair": {
+        "a": "messy short brown anime hair with a cowlick",
+        "b": "orange anime hair in two short pigtails"
+      },
+      "eyes": {
+        "a": "huge round shiny brown anime eyes, innocent look",
+        "b": "eyes squeezed shut into happy curved arcs, cheerful"
+      },
+      "mouth": {
+        "a": "tiny closed smile",
+        "b": "big open laughing mouth with one missing tooth"
+      }
+    },
+    "oldman": {
+      "label": "Old man",
+      "hair": {
+        "a": "balding head with thin white hair only on the sides",
+        "b": "long grey anime hair tied back"
+      },
+      "eyes": {
+        "a": "small squinting eyes under bushy white eyebrows, wrinkled skin",
+        "b": "sharp narrow grey eyes under thick white eyebrows, stern, wrinkled skin"
+      },
+      "mouth": {
+        "a": "thin frowning closed mouth, wrinkled skin",
+        "b": "long white mustache covering the mouth"
+      }
+    },
+    "oldwoman": {
+      "label": "Old woman",
+      "hair": {
+        "a": "grey anime hair tied up in a neat bun",
+        "b": "short curly white anime hair"
+      },
+      "eyes": {
+        "a": "gentle closed smiling eyes with wrinkles and thin grey eyebrows",
+        "b": "small round kind blue eyes with wrinkles"
+      },
+      "mouth": {
+        "a": "soft kind closed smile, wrinkled skin",
+        "b": "small pursed thin lips, wrinkled skin"
+      }
+    }
+  }
+}

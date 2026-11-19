@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitor Quest - Play (Stagelight)</title>
+<style>
+/* ================= Stagelight design tokens ================= */
+:root{
+  /* surfaces: deep indigo night */
+  --night-0:#0b0819;            /* behind everything */
+  --night-1:#120e27;            /* log / reading surface */
+  --night-2:#1a1437;            /* cards */
+  --night-3:#251b4a;            /* raised controls */
+  --night-4:#34275f;            /* tracks, hover */
+  --plum:#281b52;              /* sheet tops */
+  --sky:#0e0a26;                /* top of the dusk sky, stage fallback */
+  --box:#211846;                /* dialogue box: opaque, the log scrolls under its pinned edge */
+  --veil:var(--night-1);        /* log surface colour: fades text under the dock */
+  --glass:linear-gradient(180deg,rgba(15,11,33,.36) 0,rgba(15,11,33,.74) 300px,rgba(15,11,33,.9) 100%); /* side columns over the stage */
+  --card:rgba(27,20,58,.8);     /* cards on glass */
+  --plate:rgba(12,9,29,.76);    /* HUD plates on the stage */
+  --fill:rgba(255,255,255,.05); /* quiet control and chip fill */
+  --track:rgba(255,255,255,.15);/* meter tracks */
+  /* ink */
+  --ink:#fcf8ff;                /* newest beat */
+  --ink-1:#e3dbf2;              /* story text in the backlog */
+  --ink-2:#c2b7dc;              /* secondary */
+  --ink-3:#a69ac6;              /* tertiary (still 4.5:1) */
+  --line:rgba(178,158,238,.18);
+  --line-2:rgba(178,158,238,.36);
+  --edge:#7b6bb0;               /* control borders (3:1) */
+  /* accents */
+  --lantern:#ffc758;            /* primary accent: lantern light */
+  --lantern-2:#ffa93a;
+  --lantern-ink:#241505;
+  --lantern-soft:rgba(255,199,88,.13);
+  --lantern-line:rgba(255,199,88,.45);
+  --lantern-pale:#ffe3a3;       /* accent text on dark */
+  --lantern-dim:#dcc48f;        /* quiet labels on warm surfaces */
+  --act-ink:#fff1d2;            /* the player's own words */
+  --bond:#ff8db5;               /* bonds, affection */
+  --bond-soft:rgba(255,141,181,.13);
+  --bond-line:rgba(255,141,181,.6);
+  --bond-pale:#ffc6da;          /* bond text on dark */
+  --bond-off:#9a80b4;           /* empty bond heart */
+  --on-cast:#130c24;            /* ink on a character colour */
+  --hp:#ff7f7f; --en:#62d0ff; --ok:#7ee2a6; --destiny:#d8b9ff;
+  /* cast colours: main / deep / light */
+  --mira:#45cdb9;  --mira-d:#1f8079;  --mira-l:#d2f7ef;
+  --tobin:#ff9c55; --tobin-d:#b9571b; --tobin-l:#ffe1c4;
+  --roth:#93a6ff;  --roth-d:#4654b3;  --roth-l:#e0e5ff;
+  --seller:#d2b58d;--seller-d:#8a6c45;--seller-l:#f3e6cf;
+  --aren:#ffc758;  --narr:#b7a8ea;
+  /* type */
+  --f-story:"Sitka Text","Iowan Old Style","Palatino Linotype","Noto Serif",Georgia,serif;
+  --f-ui:"Segoe UI Variable Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --f-num:Bahnschrift,"Roboto Condensed","Segoe UI",sans-serif;
+  --fs-xs:12px; --fs-sm:13px; --fs-ui:14px; --fs-md:15px; --fs-lg:16px; --fs-xl:17px; /* interface scale */
+  --fs-num:19px;                /* display numerals */
+  --fs-story:16px;              /* backlog */
+  --fs-now:19px;                /* newest beat, in the dialogue box */
+  --lh-story:1.58;
+  /* space and shape */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px;
+  --r-sm:8px; --r-md:12px; --r-lg:18px; --r-xl:22px; --r-pill:999px; /* cells / controls and inline cards / containers / sheet */
+  /* layout */
+  --stage-h:232px; --top-h:0px; --measure:620px; --gutter:var(--s3); --fade:24px;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+@supports (height:100dvh){html,body{height:100dvh}}
+body{background:var(--night-0);color:var(--ink-1);font:var(--fs-ui)/1.4 var(--f-ui);overflow:hidden;-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased}
+h1,h2,h3,p,ul,dl,dd{margin:0}
+ul{padding:0;list-style:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:inherit;-webkit-tap-highlight-color:transparent}
+button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--lantern);outline-offset:2px}
+svg{display:block;flex:none}
+.ic{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.ic.f{fill:currentColor;stroke:none}
+.t1{fill:var(--c)} .t2{fill:var(--c-d)} .t3{fill:var(--c-l)}
+.is-mira{--c:var(--mira);--c-d:var(--mira-d);--c-l:var(--mira-l)}
+.is-tobin{--c:var(--tobin);--c-d:var(--tobin-d);--c-l:var(--tobin-l)}
+.is-roth{--c:var(--roth);--c-d:var(--roth-d);--c-l:var(--roth-l)}
+.is-seller{--c:var(--seller);--c-d:var(--seller-d);--c-l:var(--seller-l)}
+.is-aren{--c:var(--aren)} .is-narr{--c:var(--narr)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+/* ================= shell (phone first) ================= */
+.app{position:relative;height:100%;display:flex;flex-direction:column;overflow:hidden;background:var(--night-1);isolation:isolate}
+.topbar,.side,.map-card{display:none}
+.play{position:relative;z-index:1;flex:1 1 auto;min-height:0;min-width:0;display:flex;flex-direction:column}
+
+/* ================= stage ================= */
+.backdrop{position:absolute;z-index:0;left:0;right:0;top:var(--top-h);height:var(--stage-h);overflow:hidden;background:var(--sky)}
+.backdrop svg{position:absolute;left:0;top:0;width:100%;height:100%}
+.backdrop .bd-wide{display:none}
+.backdrop::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(11,8,25,.36) 0%,rgba(11,8,25,0) 26%,rgba(18,14,39,0) 76%,var(--night-1) 100%)}
+.stage{position:relative;flex:none;height:var(--stage-h);overflow:hidden}
+.stage::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,199,88,.6) 18%,rgba(255,199,88,.6) 82%,transparent)}
+
+/* heads-up display (phone) */
+.hud{position:absolute;z-index:3;left:8px;right:8px;top:8px;display:flex;align-items:flex-start;gap:6px}
+.plate{background:var(--plate);border:1px solid var(--line);border-radius:var(--r-md);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.where{flex:0 0 auto;display:flex;align-items:center;gap:var(--s2);max-width:calc(100% - 206px);padding:7px 12px 8px 9px}
+.where .ic{color:var(--lantern)}
+.where div{min-width:0}
+.where b,.where span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.where b{font:700 var(--fs-sm)/1.25 var(--f-ui);color:var(--ink)}
+.where span{font:500 var(--fs-xs)/1.3 var(--f-ui);color:var(--ink-2)}
+.vitals{margin-left:auto;flex:0 1 164px;min-width:150px;padding:7px 10px 6px;display:grid;gap:var(--s1)}
+.vital{display:grid;grid-template-columns:19px minmax(0,1fr) 36px;align-items:center;gap:6px}
+.vital .k{font:700 var(--fs-xs)/1 var(--f-num);letter-spacing:.04em;color:var(--ink-2)}
+.vital .bar{height:6px;border-radius:3px;background:var(--track);overflow:hidden}
+.vital .bar i{display:block;height:100%;border-radius:3px;background:var(--hp)}
+.vital.en .bar i{background:var(--en)}
+.vital .v{font:600 var(--fs-sm)/1 var(--f-num);color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
+.vital .v small{font-size:var(--fs-xs);color:var(--ink-2)}
+.vital-x{display:flex;justify-content:space-between;align-items:center;gap:6px;padding-top:1px;font:600 var(--fs-xs)/1.2 var(--f-num);letter-spacing:.02em;color:var(--ink-2)}
+.vital-x span{display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
+.vital-x .d{color:var(--destiny)}
+.menu-btn{flex:none;width:44px;height:44px;display:grid;place-items:center;color:var(--ink)}
+
+/* the cast: people present, standing on the stage */
+.cast{position:absolute;z-index:2;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:flex-end;gap:var(--s3);padding:0 10px 7px}
+.troupe{display:flex;flex-direction:column;gap:5px;min-width:0}
+.troupe-figs{display:flex;align-items:flex-end;gap:var(--s2)}
+.troupe-label{display:flex;align-items:center;gap:6px;font:600 var(--fs-xs)/1 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.troupe-label::before,.troupe-label::after{content:"";flex:1;height:1px;background:var(--line-2)}
+.fig{position:relative;z-index:0;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:68px;padding:2px 0 1px;border-radius:var(--r-md)}
+.fig .bust{width:62px;height:68px;transform-origin:50% 100%;transition:transform .28s ease,filter .28s ease}
+.cast.has-focus .fig:not(.is-speaking) .bust{filter:saturate(.7) brightness(.66)}
+.fig.is-speaking .bust{transform:scale(1.16)}
+.fig.is-speaking::before{content:"";position:absolute;z-index:-1;left:50%;bottom:36px;width:156px;height:240px;transform:translateX(-50%);pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,217,150,0) calc(100% - (var(--stage-h) - 105px)),rgba(255,217,150,.26) 78%,rgba(255,217,150,.05) 100%);
+  clip-path:polygon(43% 0,57% 0,100% 100%,0 100%);filter:blur(5px)}
+.fig .name{display:inline-flex;align-items:center;gap:3px;max-width:100%;padding:2px 8px 3px;border-radius:var(--r-pill);background:rgba(11,8,25,.88);border:1px solid var(--line-2);font:700 var(--fs-sm)/1.25 var(--f-ui);color:var(--ink);white-space:nowrap}
+.fig .name .ic{color:var(--lantern)}
+.nm{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.fig.is-speaking .name{background:var(--c);border-color:var(--c);color:var(--on-cast)}
+.fig.is-speaking .name .ic{color:var(--on-cast)}
+.hearts{display:inline-flex;align-items:center;gap:2px;height:13px}
+.hearts svg{fill:var(--bond);stroke:none}
+.hearts .off{fill:none;stroke:var(--bond-off);stroke-width:2.4}
+body:not(.bond-up) .hearts .h4{fill:none;stroke:var(--bond-off);stroke-width:2.4}
+.nobond{height:13px;font:500 var(--fs-xs)/13px var(--f-ui);color:var(--ink-2);white-space:nowrap}
+
+/* ================= story log ================= */
+.log{position:relative;flex:1 1 auto;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;padding:0 var(--gutter);margin-bottom:8px;
+  scrollbar-width:thin;scrollbar-color:var(--night-4) transparent;
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 var(--fade));mask-image:linear-gradient(180deg,transparent 0,#000 var(--fade))}
+.log-col{display:flex;flex-direction:column;min-height:100%;max-width:var(--measure);margin:0 auto;padding-top:14px}
+.log-col>:first-child{margin-top:auto}
+.beat{margin-top:var(--s4);font:var(--fs-story)/var(--lh-story) var(--f-story);color:var(--ink-1)}
+.scene-head{display:flex;align-items:center;gap:10px;font:600 var(--fs-xs)/1.3 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);white-space:nowrap}
+.scene-head::before,.scene-head::after{content:"";flex:1;height:1px}
+.scene-head::before{background:linear-gradient(90deg,transparent,var(--line-2))}
+.scene-head::after{background:linear-gradient(270deg,transparent,var(--line-2))}
+.who{display:flex;align-items:baseline;gap:7px;margin-bottom:1px}
+.tag{font:700 var(--fs-sm)/1.3 var(--f-ui);letter-spacing:.03em;color:var(--c)}
+.manner{font:italic 400 var(--fs-ui)/1.3 var(--f-story);color:var(--ink-3)}
+.narr .who{display:none}
+.speech{padding-left:12px;border-left:2px solid var(--c)}
+.aside{font-style:italic;color:var(--ink-2)}
+
+/* the player's own action */
+.act{align-self:flex-end;max-width:90%;padding:8px 13px 10px;border-radius:var(--r-lg) var(--r-lg) var(--s1) var(--r-lg);background:var(--lantern-soft);border:1px solid var(--lantern-line);font:400 var(--fs-story)/1.5 var(--f-ui);color:var(--act-ink)}
+.act .who{justify-content:flex-end}
+.act .manner{font:600 var(--fs-xs)/1.3 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--lantern-dim)}
+
+/* dice check card */
+.check{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 12px;padding:11px 13px 10px;border-radius:var(--r-md);background:var(--night-2);border:1px solid var(--line-2);font:400 var(--fs-sm)/1.4 var(--f-ui);color:var(--ink-2)}
+.die{grid-row:1/3;align-self:center;width:42px;height:42px;border-radius:var(--r-sm);
+  background:radial-gradient(circle at 31% 31%,#2a1806 0 3.6px,transparent 4.2px),radial-gradient(circle at 69% 69%,#2a1806 0 3.6px,transparent 4.2px),linear-gradient(155deg,#fff4d6,#ffc758);
+  box-shadow:0 0 0 1px var(--lantern-line),0 6px 18px rgba(255,170,58,.25)}
+.check-t{align-self:end;font:700 var(--fs-ui)/1.35 var(--f-ui);color:var(--ink)}
+.check-l{align-self:start}
+.check-l b{font:700 var(--fs-ui)/1 var(--f-num);color:var(--ink)}
+.check-f{grid-column:1/-1;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:2px 12px;margin-top:7px;padding-top:8px;border-top:1px dashed var(--line-2)}
+.check-ok{display:inline-flex;align-items:center;gap:5px;font:700 var(--fs-ui)/1.3 var(--f-ui);color:var(--ok)}
+.check-ok span{font-weight:500;color:var(--ink-2)}
+
+/* system notes */
+.notes{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.note{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 5px 8px;border-radius:var(--r-md);background:var(--fill);border:1px solid var(--line);font:600 var(--fs-sm)/1.3 var(--f-ui);color:var(--ink-2)}
+.note.bond{background:var(--bond-soft);border-color:var(--bond-line);color:var(--bond-pale)}
+.note.bond .ic{color:var(--bond)}
+.note.xp .ic{color:var(--lantern)}
+.note.goal .ic{color:var(--ok)}
+.time{display:flex;align-items:center;gap:var(--s2);margin-top:8px;font:600 var(--fs-xs)/1.3 var(--f-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.time::before,.time::after{content:"";flex:1;height:1px;background:var(--line)}
+
+/* the newest beat becomes the dialogue box */
+.beat.is-now{position:relative;margin-top:var(--s6);padding:23px var(--s4) var(--s1);border:1px solid var(--line-2);border-bottom:0;border-radius:var(--r-lg) var(--r-lg) 0 0;
+  background:var(--box);font-size:var(--fs-now);line-height:1.5;color:var(--ink);box-shadow:0 -18px 40px -18px rgba(0,0,0,.6)}
+.beat.is-now::before{content:"";position:absolute;left:18px;right:18px;top:-1px;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--c),rgba(255,255,255,0) 72%)}
+.beat.is-now .who{display:block;margin:0}
+.beat.is-now .tag{position:absolute;left:14px;top:-15px;padding:4px 13px 5px;border-radius:var(--r-sm) var(--r-sm) var(--r-sm) 3px;background:var(--c);color:var(--on-cast);font-size:var(--fs-ui);box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.beat.is-now .manner{display:block;margin-bottom:3px;font-size:var(--fs-ui);color:var(--ink-2)}
+.beat.is-now .aside{color:var(--ink-2)}
+.beat.is-now .notes{margin-top:10px}
+
+/* middle of the box in the input state: the suggested actions, which scroll away with the log */
+.mid{display:none;padding:var(--s2) 14px 0;border:solid var(--line-2);border-width:0 1px;background:var(--box)}
+/* dock: the lower edge of the dialogue box, pinned while the log is scrolled. It is opaque, and a veil in
+   the log colour hides what passes its rounded corners and fades the text above it while rereading */
+.dock{position:sticky;bottom:0;z-index:4;padding:var(--s2) 14px var(--s3);border:1px solid var(--line-2);border-top:0;border-radius:0 0 var(--r-lg) var(--r-lg);
+  background:var(--box);box-shadow:0 6px 0 6px var(--veil)}
+body.is-reading .dock{margin-top:-1px;border-top:1px solid var(--line-2);border-radius:var(--r-lg);box-shadow:0 0 0 10px var(--veil),0 -14px 18px 6px var(--veil)}
+body[data-mode="input"] .go{display:none}
+body[data-mode="input"] .mid{display:block}
+body[data-mode="input"] .say{display:flex}
+.btn-go{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:52px;padding:0 16px;border-radius:var(--r-md);
+  background:linear-gradient(180deg,#ffd879,var(--lantern) 52%,var(--lantern-2));color:var(--lantern-ink);font:700 var(--fs-xl)/1 var(--f-ui);letter-spacing:.02em;
+  box-shadow:inset 0 0 0 1px rgba(255,236,180,.55),0 8px 26px rgba(255,170,58,.30)}
+.btn-go:hover{filter:brightness(1.06)}
+.btn-go .count{padding:4px 10px 5px;border-radius:var(--r-pill);background:rgba(36,21,5,.88);font:700 var(--fs-sm)/1.1 var(--f-num);letter-spacing:.03em;color:var(--lantern-pale)}
+.go-hint{display:none}
+.choices{display:grid;gap:6px}
+.choice{display:flex;align-items:center;gap:var(--s3);min-height:44px;padding:6px 10px 6px 12px;border-radius:var(--r-md);background:var(--fill);border:1px solid var(--edge);font:500 var(--fs-md)/1.3 var(--f-ui);color:var(--ink);text-wrap:balance}
+.choice:hover{border-color:var(--lantern);background:var(--lantern-soft)}
+.choice .n{flex:none;width:20px;height:20px;display:grid;place-items:center;border-radius:5px;transform:rotate(45deg);background:var(--lantern-soft);border:1px solid var(--lantern-line)}
+.choice .n b{transform:rotate(-45deg);font:700 var(--fs-sm)/1 var(--f-num);color:var(--lantern)}
+.choice .ic{margin-left:auto;color:var(--ink-3)}
+.say{display:none;align-items:center;gap:var(--s1);padding:2px 3px;border-radius:var(--r-md);background:var(--night-0);border:1px solid var(--edge)}
+.say:focus-within{border-color:var(--lantern)}
+.to{flex:none;display:inline-flex;align-items:center;gap:var(--s1);min-height:44px;padding:0 6px 0 10px;border-right:1px solid var(--line);font:600 var(--fs-sm)/1 var(--f-ui);color:var(--ink-2);white-space:nowrap}
+.to b{font-weight:700;color:var(--ink)}
+.say input{flex:1 1 auto;min-width:0;height:44px;padding:0 6px;background:none;border:0;outline:0;font:400 var(--fs-lg)/1.2 var(--f-ui);color:var(--ink);text-overflow:ellipsis}
+.say input::placeholder{color:var(--ink-3);opacity:1}
+.send{flex:none;width:44px;height:44px;display:grid;place-items:center;border-radius:calc(var(--r-md) - 3px);background:var(--lantern);color:var(--lantern-ink)}
+
+/* primary navigation (phone) */
+.nav{position:relative;z-index:5;flex:none;display:grid;grid-template-columns:repeat(5,1fr);padding:0 4px env(safe-area-inset-bottom,0);background:var(--night-0);border-top:1px solid var(--line)}
+.nav button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:52px;font:600 var(--fs-xs)/1.2 var(--f-ui);color:var(--ink-3)}
+.nav .on{color:var(--lantern)}
+.nav .on::before{content:"";position:absolute;top:-1px;left:50%;width:30px;height:2px;margin-left:-15px;border-radius:0 0 2px 2px;background:var(--lantern);box-shadow:0 0 14px 1px var(--lantern)}
+
+/* ================= people panel (phone: sheet / desktop: left column) ================= */
+.scrim{position:absolute;inset:0;z-index:8;width:100%;background:rgba(6,4,16,.66);opacity:0;visibility:hidden;transition:opacity .2s ease,visibility 0s .2s;cursor:default}
+.people{position:absolute;z-index:9;left:0;right:0;bottom:0;max-height:calc(100% - 48px);display:flex;flex-direction:column;min-height:0;
+  background:linear-gradient(180deg,var(--plum) 0,#17112f 150px);border:1px solid var(--line-2);border-bottom:0;border-radius:var(--r-xl) var(--r-xl) 0 0;box-shadow:0 -24px 60px rgba(0,0,0,.6);
+  visibility:hidden;transform:translateY(100%);transition:transform .22s ease,visibility 0s .22s}
+body[data-people="open"] .scrim{opacity:1;visibility:visible;transition:opacity .2s ease}
+body[data-people="open"] .people{visibility:visible;transform:none;transition:transform .22s ease}
+.people::before{content:"";position:absolute;top:5px;left:50%;width:36px;height:4px;margin-left:-18px;border-radius:2px;background:var(--line-2)}
+.people-head{flex:none;display:flex;align-items:center;gap:10px;padding:8px 6px 2px 16px}
+.people-head h2{font:700 var(--fs-xl)/1.2 var(--f-ui);color:var(--ink)}
+.people-head .sub{font:500 var(--fs-sm)/1.3 var(--f-ui);color:var(--ink-3)}
+.people-x{margin-left:auto;width:44px;height:44px;display:grid;place-items:center;border-radius:var(--r-md);color:var(--ink-2)}
+.people-body{flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:7px;padding:0 12px 12px;scrollbar-width:thin;scrollbar-color:var(--night-4) transparent}
+.p-group{display:flex;align-items:baseline;gap:var(--s2);margin:3px 4px 0;font:600 var(--fs-xs)/1.3 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+.p-group span{letter-spacing:.02em;text-transform:none;font-weight:500;color:var(--ink-3)}
+.person{flex:none;padding:10px 12px 11px;border-radius:var(--r-lg);background:var(--night-2);border:1px solid var(--line)}
+.person.fav{border-color:var(--bond-line);background:linear-gradient(180deg,var(--bond-soft),rgba(255,141,181,0) 72%),var(--night-2)}
+.p-head{display:flex;align-items:center;gap:var(--s3);width:100%}
+button.p-head{pointer-events:none}
+.p-face{flex:none;width:56px;height:56px;border-radius:50%;overflow:hidden;display:grid;place-items:end center;
+  background:radial-gradient(circle at 50% 28%,rgba(255,255,255,.16),rgba(255,255,255,.03) 72%);box-shadow:inset 0 0 0 1.5px var(--c)}
+.p-id{flex:1 1 auto;min-width:0}
+.p-name{display:flex;align-items:center;flex-wrap:wrap;gap:2px 8px;font:700 var(--fs-lg)/1.25 var(--f-ui);color:var(--ink)}
+.favtag{display:inline-flex;align-items:center;gap:3px;padding:1px 8px 2px 5px;border-radius:var(--r-pill);background:var(--lantern-soft);border:1px solid var(--lantern-line);font:600 var(--fs-xs)/1.3 var(--f-ui);color:var(--lantern)}
+.p-role{display:block;font:500 var(--fs-sm)/1.35 var(--f-ui);color:var(--ink-2)}
+.p-bond{display:flex;align-items:center;flex-wrap:wrap;gap:3px 8px;margin-top:3px;font:600 var(--fs-xs)/1.3 var(--f-ui);color:var(--ink-2)}
+.p-bond .hearts{height:15px;gap:3px}
+.p-bond .lvl{color:var(--bond-pale)}
+.att{display:inline-flex;align-items:center;padding:1px 8px 2px;border-radius:var(--r-pill);border:1px solid var(--line-2);font:600 var(--fs-xs)/1.3 var(--f-ui);color:var(--ink-1)}
+.p-chev{display:none}
+.p-more{margin-top:8px}
+.lbl{display:block;margin-bottom:3px;font:600 var(--fs-xs)/1.3 var(--f-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.mem li{position:relative;padding-left:17px;font:italic 400 var(--fs-md)/1.45 var(--f-story);color:var(--ink-1);text-wrap:balance}
+.mem li::before{content:"";position:absolute;left:3px;top:.56em;width:6px;height:6px;border-radius:1.5px;transform:rotate(45deg);background:var(--bond)}
+.mem.plain li::before{background:var(--ink-3)}
+.p-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.pa{flex:1 1 auto;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 11px;border-radius:var(--r-md);border:1px solid var(--edge);background:var(--fill);font:600 var(--fs-ui)/1.2 var(--f-ui);color:var(--ink);white-space:nowrap}
+/* Talk in three tiers: the favourite is filled, other companions tinted, everyone else outlined */
+.pa.talk{background:var(--lantern-soft);border-color:var(--lantern-line);color:var(--lantern)}
+.fav .pa.talk{background:var(--lantern);border-color:var(--lantern);color:var(--lantern-ink)}
+.pa.together{border-color:var(--bond-line);background:var(--bond-soft);color:var(--bond-pale)}
+.pa.together .ic{color:var(--bond)}
+.pa:hover{filter:brightness(1.1)}
+.p-quick{flex:none;padding:0 16px}
+body.bond-up .b-old,body:not(.bond-up) .b-new{display:none}
+
+/* ================= desktop-only pieces ================= */
+.topbar{position:relative;z-index:6;align-items:center;gap:20px;padding:0 10px 0 16px;background:rgba(11,8,25,.94);border-bottom:1px solid var(--line);overflow:hidden}
+.brand{flex:none;display:flex;align-items:center;gap:9px;font:700 var(--fs-lg)/1 var(--f-ui);letter-spacing:.01em;color:var(--ink);white-space:nowrap}
+.brand svg{color:var(--lantern)}
+.story{flex:0 5 auto;min-width:0;padding-left:18px;border-left:1px solid var(--line-2)}
+.story b{display:block;font:700 var(--fs-ui)/1.25 var(--f-ui);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.story span{display:block;font:500 var(--fs-xs)/1.3 var(--f-ui);color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tabs{flex:none;display:flex;align-items:stretch;gap:2px;align-self:stretch;margin:0 auto}
+.tabs button{position:relative;display:inline-flex;align-items:center;padding:0 13px;font:600 var(--fs-ui)/1 var(--f-ui);color:var(--ink-2)}
+.tabs button:hover{color:var(--ink)}
+.tabs .on{color:var(--lantern)}
+.tabs .on::after{content:"";position:absolute;left:11px;right:11px;bottom:0;height:2px;border-radius:2px 2px 0 0;background:var(--lantern);box-shadow:0 0 14px 1px var(--lantern)}
+.t-where{flex:0 3 auto;min-width:0;display:flex;align-items:center;gap:7px;font:600 var(--fs-sm)/1.2 var(--f-ui);color:var(--ink);white-space:nowrap;overflow:hidden}
+.t-where .ic{color:var(--lantern)}
+.t-where span{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.cost{flex:none;font:500 var(--fs-xs)/1.35 var(--f-num);letter-spacing:.02em;color:var(--ink-2);white-space:nowrap;text-align:right}
+.cost span{display:block}
+.cost b{font-weight:600;color:var(--ink)}
+.icon-btn{flex:none;width:40px;height:40px;display:grid;place-items:center;border-radius:var(--r-sm);color:var(--ink-2)}
+.icon-btn:hover{background:var(--night-3);color:var(--ink)}
+
+.side{position:relative;flex-direction:column;gap:var(--s3);min-height:0;overflow-y:auto;padding:14px 14px 16px;background:var(--glass);border-left:1px solid var(--line);
+  -webkit-backdrop-filter:blur(18px) saturate(1.15);backdrop-filter:blur(18px) saturate(1.15);scrollbar-width:thin;scrollbar-color:var(--night-4) transparent}
+.card{flex:none;padding:13px 14px 14px;border-radius:var(--r-lg);background:var(--card);border:1px solid var(--line)}
+.card-h{display:flex;align-items:baseline;gap:var(--s2);margin-bottom:10px}
+.card-h h2{font:700 var(--fs-lg)/1.2 var(--f-ui);color:var(--ink)}
+.card-h .sub{font:500 var(--fs-sm)/1.2 var(--f-ui);color:var(--ink-3)}
+.card-h .end{margin-left:auto;font:600 var(--fs-sm)/1.2 var(--f-num);letter-spacing:.02em;color:var(--ink-2)}
+.card-h .end b{color:var(--lantern);font-weight:700}
+.meter{display:grid;grid-template-columns:74px minmax(0,1fr) 44px;align-items:center;gap:10px;margin-bottom:8px;font:600 var(--fs-sm)/1.2 var(--f-ui);color:var(--ink-2)}
+.meter .bar{height:8px;border-radius:4px;background:var(--track);overflow:hidden}
+.meter .bar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#ff5f6d,var(--hp))}
+.meter.en .bar i{background:linear-gradient(90deg,#3aa8ff,var(--en))}
+.meter .v{font:700 var(--fs-md)/1 var(--f-num);color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
+.meter .v small{font-size:var(--fs-xs);font-weight:500;color:var(--ink-2)}
+.destiny{display:flex;align-items:center;gap:6px;margin:2px 0 12px;font:600 var(--fs-sm)/1.2 var(--f-ui);color:var(--ink-2)}
+.destiny .ic{color:var(--destiny)}
+.destiny b{font:700 var(--fs-md)/1 var(--f-num);color:var(--ink);margin-left:2px}
+.attrs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin-bottom:12px}
+.attrs div{padding:7px 2px 6px;border-radius:var(--r-sm);background:var(--fill);border:1px solid var(--line);text-align:center}
+.attrs b{display:block;font:700 var(--fs-num)/1 var(--f-num);color:var(--ink)}
+.attrs span{display:block;margin-top:4px;font:500 var(--fs-xs)/1.1 var(--f-num);font-stretch:85%;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.attrs .zero b{color:var(--ink-3)}
+.defs{display:grid;grid-template-columns:92px minmax(0,1fr);gap:7px 10px;font:500 var(--fs-sm)/1.4 var(--f-ui);color:var(--ink-1)}
+.defs dt{padding-top:2px;font:600 var(--fs-xs)/1.4 var(--f-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.nb{white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{display:inline-flex;align-items:baseline;gap:5px;padding:2px 9px 3px;border-radius:var(--r-pill);border:1px solid var(--line-2);font:600 var(--fs-sm)/1.3 var(--f-ui);color:var(--ink)}
+.chip i{font:500 var(--fs-xs)/1.3 var(--f-num);font-style:normal;color:var(--ink-2)}
+.chip.air{border-color:rgba(98,208,255,.55);color:var(--en)}
+.chip.light{border-color:var(--lantern-line);color:var(--lantern-pale)}
+.threads{display:grid;gap:var(--s2)}
+.threads li{padding:9px 11px 10px;border-radius:var(--r-md);background:var(--fill);border:1px solid var(--line)}
+.th-t{font:400 var(--fs-md)/1.4 var(--f-story);color:var(--ink)}
+.th-n{margin-top:3px;font:500 var(--fs-sm)/1.4 var(--f-ui);color:var(--ink-2)}
+.th-n b{margin-right:2px;font:600 var(--fs-xs)/1.4 var(--f-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--lantern)}
+.commit{display:flex;gap:10px;margin-top:8px;padding:9px 11px 10px;border-radius:var(--r-md);background:var(--lantern-soft);border:1px solid var(--lantern-line)}
+.commit .ic{margin-top:2px;color:var(--lantern)}
+.commit .lbl{color:var(--lantern-dim)}
+.commit p{font:400 var(--fs-md)/1.4 var(--f-story);color:var(--ink)}
+.map-card svg{width:100%;height:auto}
+.map-card text{font:600 var(--fs-xs) var(--f-ui);fill:var(--ink-2)}
+.m-l{fill:none;stroke:var(--edge);stroke-width:2}
+.m-n{fill:var(--night-3);stroke:var(--ink-2);stroke-width:1.8}
+.map-card .m-h{fill:var(--lantern)}
+.map-card .at{fill:var(--ink)}
+.map-card .end{display:none;font-family:var(--f-ui);letter-spacing:0}
+.map-card .end::before{content:"";display:inline-block;width:7px;height:7px;margin-right:7px;border-radius:50%;background:var(--lantern);box-shadow:0 0 0 3px var(--lantern-soft)}
+
+/* compact phones (360 to 389px wide) */
+@media (max-width:389px){
+  :root{--fs-now:var(--fs-xl)}
+  .cast{padding:0 6px 7px}
+  .fig{min-width:64px}
+  .fig .name{padding:2px 6px 3px;font-size:var(--fs-xs)}
+  .hud{left:6px;right:6px;gap:5px}
+  .where{gap:6px;max-width:calc(100% - 204px);padding:7px 8px 8px}
+  .vitals{padding-left:8px;padding-right:8px}
+  .choice{font-size:var(--fs-ui)}
+  .choice .ic{display:none}
+  .mid,.dock{padding-left:10px;padding-right:10px}
+  .to{padding:0 4px 0 8px}
+  .note{gap:5px;padding:4px 8px 5px 7px;font-size:var(--fs-xs)}
+  .check{column-gap:10px;padding-left:11px;padding-right:11px}
+  .check-t{font-size:var(--fs-sm)}
+}
+@media (min-width:700px){
+  :root{--stage-h:280px;--gutter:var(--s5)}
+  .cast{padding:0 20px 8px}
+  .fig{min-width:92px}
+  .fig .bust{width:84px;height:92px}
+  .people{left:50%;right:auto;width:600px;margin-left:-300px}
+  .backdrop .bd-phone{display:none}
+  .backdrop .bd-wide{display:block}
+}
+@media (min-width:700px) and (max-width:1099px){
+  /* the wide scene fits the width, lifted so its lanterns hang above the heads: sky above, ground below */
+  .backdrop{background:linear-gradient(var(--sky) 50%,var(--night-1) 50%)}
+  .backdrop .bd-wide{top:auto;bottom:calc(165px - 13.125vw);height:auto}
+}
+@media (min-width:1100px){
+  :root{--stage-h:clamp(232px,min(20.8vw,33vh),440px);--top-h:52px;--measure:640px;--fs-now:21px;--fs-story:18px;--veil:#18123a;--fade:40px}
+  .app{display:grid;grid-template-columns:312px minmax(0,1fr) 376px;grid-template-rows:var(--top-h) minmax(0,1fr);
+    background:radial-gradient(90% 55% at 50% 100%,#1b1340 0,var(--night-1) 70%)}
+  .topbar{display:flex;grid-column:1/-1;grid-row:1}
+  .play{grid-column:2;grid-row:2}
+  .side{display:flex;grid-column:3;grid-row:2}
+  .nav,.hud,.scrim,.people-x{display:none}
+  .log{margin-bottom:14px}
+  .cast{max-width:1040px;margin:0 auto;padding:0 30px 10px}
+  .troupe{gap:7px}
+  .troupe-figs{gap:var(--s2)}
+  .fig{min-width:calc(var(--stage-h)*.39);gap:5px}
+  .fig .bust{width:calc(var(--stage-h)*.347);height:calc(var(--stage-h)*.38)}
+  .fig .name{padding:3px 12px 4px;font-size:var(--fs-ui)}
+  .fig.is-speaking::before{bottom:54px;width:250px;height:340px}
+  .hearts{height:14px;gap:3px}
+  .fig .hearts svg{width:13px;height:13px}
+  .beat{margin-top:18px}
+  .beat.is-now{margin-top:34px;padding:26px 22px var(--s1)}
+  .beat.is-now .tag{left:18px;font-size:var(--fs-md)}
+  .check{padding:12px 16px 11px}
+  .mid{padding:10px 20px 0}
+  .dock{padding:10px 20px 14px}
+  .go-hint{display:block;margin-top:9px;text-align:center;font:500 var(--fs-xs)/1.3 var(--f-ui);color:var(--ink-3)}
+  .go-hint kbd{display:inline-block;padding:0 6px 1px;border-radius:5px;border:1px solid var(--edge);font:600 var(--fs-xs)/1.4 var(--f-ui);color:var(--ink-1)}
+  .choices{grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s2)}
+  .choice{min-height:56px;padding:8px 10px 8px 14px;font-size:var(--fs-ui)}
+  .choice .ic{display:none}
+  /* people become the left column */
+  .people{position:relative;z-index:2;grid-column:1;grid-row:2;left:auto;width:auto;max-height:none;margin:0;visibility:visible;transform:none;transition:none;
+    background:var(--glass);border:0;border-right:1px solid var(--line);border-radius:0;box-shadow:none;-webkit-backdrop-filter:blur(18px) saturate(1.15);backdrop-filter:blur(18px) saturate(1.15)}
+  .people::before{display:none}
+  .people-head{padding:16px 16px 6px}
+  .people-head h2{font-size:var(--fs-lg)}
+  .p-bond .hearts svg{width:13px;height:13px}
+  body[data-people="open"] .fig.is-mira .name{border-color:var(--bond);box-shadow:0 0 0 2px rgba(255,141,181,.4)}
+  .people-body{padding:0 14px 16px}
+  .mem li{font-size:var(--fs-ui)}
+  .person{background:var(--card)}
+  .person .p-more,.person .pa.more,.person .p-bond .lvl{display:none}
+  button.p-head{pointer-events:auto;border-radius:var(--r-md)}
+  .p-face{width:52px;height:52px}
+  .p-chev{display:block;flex:none;color:var(--ink-3);transition:transform .2s ease}
+  .pa{min-height:40px}
+  /* state "people": the favourite's card opens into a profile; the map folds to its heading */
+  body[data-people="open"] .fav .p-more{display:block}
+  body[data-people="open"] .fav .pa.more{display:inline-flex}
+  body[data-people="open"] .fav .p-bond .lvl{display:inline}
+  body[data-people="open"] .fav{border-color:var(--bond);box-shadow:0 0 0 1px rgba(255,141,181,.35),0 12px 36px rgba(255,141,181,.14)}
+  body[data-people="open"] .fav .p-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:0 var(--s3)}
+  body[data-people="open"] .fav .p-id{display:contents}
+  body[data-people="open"] .fav .p-face{grid-row:1/3;width:60px;height:60px}
+  body[data-people="open"] .fav .p-face svg{width:53px;height:58px}
+  body[data-people="open"] .fav .p-name{align-self:end}
+  body[data-people="open"] .fav .p-role{grid-column:2;align-self:start}
+  body[data-people="open"] .fav .p-chev{grid-area:1/3/3/4;transform:rotate(90deg);color:var(--bond)}
+  body[data-people="open"] .fav .p-bond{grid-column:1/-1;margin-top:10px}
+  body[data-people="open"] .fav .hearts{height:auto}
+  body[data-people="open"] .fav .hearts svg{width:16px;height:16px}
+  body[data-people="open"] .fav .att{margin-left:auto}
+  .map-card{display:block;margin-top:auto}
+  body[data-people="open"] .map-card svg{display:none}
+  body[data-people="open"] .map-card .card-h{margin-bottom:0}
+  body[data-people="open"] .map-card .end{display:block}
+}
+@media (max-width:699px) and (max-height:820px){
+  :root{--stage-h:210px}
+  .troupe-label{display:none}
+  .beat.is-now{margin-top:26px}
+}
+/* short phones: tighten the box so the newest beat is not cut off above the composer */
+@media (max-width:699px) and (max-height:760px){
+  :root{--stage-h:200px;--fade:14px}
+  .hud{top:6px}
+  .vitals{padding-top:5px;padding-bottom:5px}
+  .fig.is-speaking .bust{transform:scale(1.1)}
+  .beat.is-now{padding-top:20px}
+  .beat.is-now .notes{margin-top:var(--s2)}
+  .note{padding-top:3px;padding-bottom:4px}
+  .time{margin-top:6px}
+  .mid{padding-top:6px}
+  .choices{gap:var(--s1)}
+  .dock{padding-top:6px;padding-bottom:10px}
+}
+@media (min-width:1280px){
+  .tabs{position:absolute;top:0;bottom:0;left:calc(312px + (100% - 688px)/2);margin:0;transform:translateX(-50%)}
+  .t-where{margin-left:auto}
+}
+@media (min-width:1100px) and (max-width:1279px){
+  .app{grid-template-columns:272px minmax(0,1fr) 356px}
+  .topbar{gap:12px}
+  .tabs button{padding:0 9px}
+  .t-where{flex:none;max-width:146px;white-space:normal}
+  .t-where span{text-wrap:balance}
+  .cast{padding:0 10px 10px}
+  .troupe-figs{gap:6px}
+  .fig{min-width:84px}
+  .fig .bust{width:78px;height:86px}
+  .fig .name{padding:2px 9px 3px;font-size:var(--fs-sm)}
+  .attrs{display:flex}
+  .attrs div{flex:1 1 auto;padding:7px 3px 6px}
+}
+@media (min-width:1100px) and (max-width:1339px){
+  .choices{grid-template-columns:1fr;gap:6px}
+  .choice{min-height:44px;padding:6px 10px 6px 12px}
+}
+@media (min-width:1100px) and (max-height:863px){
+  .map-card svg{display:none}
+  .map-card .card-h{margin-bottom:0}
+  .map-card .end{display:block}
+}
+/* short windows: the story keeps the room. No key hint on desktop; a rotated phone gets a lower stage */
+@media (min-width:1100px) and (max-height:800px){
+  .go-hint{display:none}
+}
+@media (min-width:700px) and (max-width:1099px) and (max-height:520px){
+  :root{--stage-h:190px;--fade:10px}
+  .fig{min-width:76px}
+  .fig .bust{width:62px;height:68px}
+  .troupe-label{display:none}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body data-mode="continue">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<symbol id="i-story" viewBox="0 0 24 24"><path d="M4 5.6c2.6-1 5.5-.7 8 1 2.5-1.7 5.4-2 8-1V18c-2.6-1-5.5-.7-8 1-2.5-1.7-5.4-2-8-1zM12 6.6V19"/></symbol>
+<symbol id="i-people" viewBox="0 0 24 24"><path d="M9 11.2a3.3 3.3 0 1 0 0-6.6 3.3 3.3 0 0 0 0 6.6zM2.8 19.4c.5-3.3 2.9-5.2 6.2-5.2s5.7 1.9 6.2 5.2M15.8 4.9a3.2 3.2 0 0 1 0 6.1M17.6 14.5c2 .7 3.2 2.3 3.6 4.9"/></symbol>
+<symbol id="i-char" viewBox="0 0 24 24"><path d="M4.5 5h15a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM9 11.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM5.8 16c.4-1.8 1.6-2.8 3.2-2.8s2.8 1 3.2 2.8M15 9h3M15 12.5h3"/></symbol>
+<symbol id="i-journal" viewBox="0 0 24 24"><path d="M7 3.5h10.5A1.5 1.5 0 0 1 19 5v14a1.5 1.5 0 0 1-1.5 1.5H7a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2zM9 8h6.5M9 12h6.5M9 16h3.5"/></symbol>
+<symbol id="i-map" viewBox="0 0 24 24"><path d="M9 4.5 3.5 6.6v13L9 17.5l6 2 5.5-2.1v-13L15 6.5zM9 4.5v13M15 6.5v13"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+<symbol id="i-gear" viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.5 5.5l1.8 1.8M16.7 16.7l1.8 1.8M18.5 5.5l-1.8 1.8M7.3 16.7l-1.8 1.8M12 5.8a6.2 6.2 0 1 0 0 12.4 6.2 6.2 0 0 0 0-12.4z"/></symbol>
+<symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20.4S4.4 15.8 4.4 10.3A4.3 4.3 0 0 1 12 7.5a4.3 4.3 0 0 1 7.6 2.8c0 5.5-7.6 10.1-7.6 10.1z"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.3l2.6 5.5 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6-4.4-4.2 6-.8z"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="M4.2 11.8 20 4.2 14.6 20l-3-6.6zM11.6 13.4 20 4.2"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><path d="M12 20.5a8.5 8.5 0 1 0 0-17 8.5 8.5 0 0 0 0 17zM12 7.5V12l3 2"/></symbol>
+<symbol id="i-flag" viewBox="0 0 24 24"><path d="M6 21V4M6 5h11.5L15 9l2.5 4H6"/></symbol>
+<symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l2.3 6.7L21 12l-6.7 2.3L12 21l-2.3-6.7L3 12l6.7-2.3z"/></symbol>
+<symbol id="i-lantern" viewBox="0 0 24 24"><path d="M12 2.5v2M9 4.5h6M8.6 7.5h6.8l1.4 3.8v3.4l-1.4 3.8H8.6l-1.4-3.8v-3.4zM10 18.5V21h4v-2.5M12 10.5v5"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.6l4.4 4.4L19 7.4"/></symbol>
+<symbol id="i-gem" viewBox="0 0 24 24"><path d="M12 2.8 19.5 12 12 21.2 4.5 12z"/></symbol>
+<symbol id="i-mark" viewBox="0 0 24 24"><path d="M10.5 1.5h3v2h-3zM8 4.5h8l.8 1.8H7.2zM7 7.3h10c1.4 2.6 1.4 7 0 9.6H7c-1.4-2.6-1.4-7 0-9.6zM8 17.9h8l-1 2.1H9zM10.5 21h3v1.5h-3z"/></symbol>
+<symbol id="b-mira" viewBox="0 0 80 88"><path class="t2" d="M6 88c0-16 12-26 34-26s34 10 34 26z"/><path class="t1" d="M40 5C24 5 16 17 16 33c0 12 5 23 11 30h26c6-7 11-18 11-30C64 17 56 5 40 5z"/><ellipse class="t3" cx="40" cy="38" rx="12.5" ry="15.5"/><path class="t2" d="M27.5 34c1-9 6-14.5 13-14.5 6.5 0 11 4 12 11-7 0-12-2-15-7-2 5-5 8.5-10 10.5z"/><path class="t1" d="M24 62c4 6 10 9 16 9s12-3 16-9l5 26H19z"/></symbol>
+<symbol id="b-tobin" viewBox="0 0 80 88"><path class="t2" d="M12 88c0-15 10-24 28-24s28 9 28 24z"/><rect class="t3" x="34" y="50" width="12" height="16" rx="3"/><ellipse class="t3" cx="40" cy="38" rx="14" ry="16"/><path class="t1" d="M24.5 38c-3-14 4-26 15.5-26s19 11 15.5 26c-1.5-6-4-9.5-7.5-11-5 3-11 3-16 1-3.5 2-6 5.5-7.5 10zM29 15l2.5-8 4.5 6 4-9 3.5 9 5-6.5 1.5 9z"/><rect class="t2" x="24.5" y="23" width="31" height="5" rx="2.5"/><circle class="t2" cx="33" cy="25.5" r="5.5"/><circle class="t2" cx="47" cy="25.5" r="5.5"/><circle class="t3" cx="33" cy="25.5" r="2.8"/><circle class="t3" cx="47" cy="25.5" r="2.8"/><path class="t1" d="M30 64l10 8 10-8 4 24H26z"/></symbol>
+<symbol id="b-roth" viewBox="0 0 80 88"><path class="t2" d="M2 88c0-17 13-28 38-28s38 11 38 28z"/><ellipse class="t1" cx="13" cy="72" rx="12" ry="8"/><ellipse class="t1" cx="67" cy="72" rx="12" ry="8"/><path class="t1" d="M28 56h24l4 14H24z"/><path class="t3" d="M27 33h26v11c0 9-6 15-13 15s-13-6-13-15z"/><path class="t1" d="M21 35C21 18 29 9 40 9s19 9 19 26zM37.5 1.5h5l-1 9h-3zM38 34h4v12a2 2 0 0 1-4 0zM21 35h6.5v15c-4.5-2.5-6.5-8-6.5-15zM59 35h-6.5v15c4.5-2.5 6.5-8 6.5-15z"/><rect class="t2" x="18" y="32" width="44" height="5" rx="2.5"/><circle class="t3" cx="40" cy="71" r="3.5"/></symbol>
+<symbol id="b-seller" viewBox="0 0 80 88"><path class="t2" d="M8 88c0-14 12-23 32-23s32 9 32 23z"/><ellipse class="t3" cx="40" cy="44" rx="13" ry="14.5"/><path class="t1" d="M3 37 40 8l37 29c-11 5-24 7.5-37 7.5S14 42 3 37z"/><path class="t2" d="M40 8l6 4.5-6 1.5-6-1.5z"/><path class="t1" d="M22 64c5 5.5 11 8 18 8s13-2.5 18-8l6 24H16z"/></symbol>
+<defs>
+<radialGradient id="glow"><stop offset="0" stop-color="#ffdf9a" stop-opacity=".9"/><stop offset=".4" stop-color="#ffb14a" stop-opacity=".3"/><stop offset="1" stop-color="#ffb14a" stop-opacity="0"/></radialGradient>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0e0a26"/><stop offset=".22" stop-color="#231650"/><stop offset=".42" stop-color="#55296f"/><stop offset=".58" stop-color="#a4486f"/><stop offset=".7" stop-color="#ea8a5e"/><stop offset=".78" stop-color="#ffc06a"/></linearGradient>
+<linearGradient id="water" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2a069"/><stop offset="1" stop-color="#5f2c68"/></linearGradient>
+<g id="lan"><path d="M0-2v10" stroke="#0b0719" stroke-width="1.4"/><circle cy="18" r="32" fill="url(#glow)"/><rect x="-7" y="8" width="14" height="19" rx="6" fill="#ffdc8f"/><rect x="-4" y="6" width="8" height="3" rx="1" fill="#3b1d32"/><rect x="-3" y="26" width="6" height="2.5" rx="1" fill="#3b1d32"/></g>
+<g id="stall"><path fill="#1c1239" d="M0 30 24 0h132l24 30v7H0zM8 37h5v40H8zM167 37h5v40h-5zM2 66h176v28H2zM34 66a9 9 0 0 1 18 0zM54 66a6 6 0 0 1 12 0zM104 50h14v16h-14zM124 58h22v8h-22z"/><path fill="currentColor" d="M24 0h22L30 30H0zM68 0h22v30H60zM112 0h22l16 30h-30z"/><use href="#lan" x="90" y="38"/></g>
+<g id="bridge"><path fill="#2b1b52" d="M500 300V268Q720 190 940 268V300H886Q886 250 826 250T766 300H674Q674 250 614 250T554 300Z"/><path d="M500 262Q720 184 940 262" fill="none" stroke="#2b1b52" stroke-width="9" stroke-dasharray="3 19"/><path d="M500 258Q720 180 940 258M610 240v-40M830 240v-40" fill="none" stroke="#2b1b52" stroke-width="2.6"/><circle cx="610" cy="196" r="28" fill="url(#glow)"/><circle cx="610" cy="196" r="5" fill="#ffe7b0"/><circle cx="830" cy="196" r="28" fill="url(#glow)"/><circle cx="830" cy="196" r="5" fill="#ffe7b0"/></g>
+</defs>
+</svg>
+
+<div class="app">
+
+<header class="topbar">
+  <div class="brand"><svg class="ic f" width="22" height="22" aria-hidden="true"><use href="#i-mark"/></svg>Bitor Quest</div>
+  <div class="story"><b>The Glass Road</b><span>Chapter 2 · Borrowed Seals · Scene 4</span></div>
+  <nav class="tabs" aria-label="Primary">
+    <button type="button" class="on" aria-current="page">Story</button>
+    <button type="button" data-people-toggle>People</button>
+    <button type="button">Character</button>
+    <button type="button">Journal</button>
+    <button type="button">Map</button>
+  </nav>
+  <div class="t-where"><svg class="ic" width="17" height="17" aria-hidden="true"><use href="#i-lantern"/></svg><span>Lantern Market&nbsp;· Dusk&nbsp;· Day 12</span></div>
+  <div class="cost"><span>This turn <b>$0.006</b> · Session <b>$0.21</b></span><span>Narrator <b>Sonnet 5.5</b></span></div>
+  <button type="button" class="icon-btn" aria-label="Settings"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="#i-gear"/></svg></button>
+</header>
+
+<div class="backdrop" aria-hidden="true">
+<svg class="bd-phone" viewBox="0 0 390 232" width="390" height="232" preserveAspectRatio="none">
+  <rect width="390" height="232" fill="url(#sky)"/>
+  <path fill="#4b2a68" opacity=".82" d="M0 162V136h22l10-10h26l9 10h30v-20l14-12 14 12v20h34l10-8h28l8 8h30v-28h10v-16l9-8 9 8v16h10v28h38l12-11h22l10 11h35V162z"/>
+  <rect y="160" width="390" height="24" fill="url(#water)"/>
+  <use href="#bridge" transform="translate(-113 39) scale(.47)"/>
+  <rect y="181" width="390" height="51" fill="#130d2a"/>
+  <path d="M0 62Q195 86 390 62" fill="none" stroke="#0b0719" stroke-width="1.2"/>
+  <use href="#lan" transform="translate(8 63) scale(.7)"/><use href="#lan" transform="translate(83 70) scale(.7)"/><use href="#lan" transform="translate(173 74) scale(.7)"/><use href="#lan" transform="translate(277 72) scale(.7)"/><use href="#lan" transform="translate(364 65) scale(.7)"/>
+</svg>
+<svg class="bd-wide" viewBox="0 0 1440 340" width="1440" height="340" preserveAspectRatio="xMidYMax slice">
+  <rect width="1440" height="340" fill="url(#sky)"/>
+  <g fill="#fff" opacity=".8"><circle cx="150" cy="58" r="1.3"/><circle cx="330" cy="46" r="1"/><circle cx="505" cy="70" r="1.2"/><circle cx="690" cy="50" r="1"/><circle cx="760" cy="84" r=".9"/><circle cx="930" cy="56" r="1.3"/><circle cx="1090" cy="48" r="1"/><circle cx="1270" cy="66" r="1.2"/><circle cx="1390" cy="50" r="1"/></g>
+  <path fill="#4b2a68" opacity=".82" d="M0 262V222h46l18-16h44l14 16h58v-30l24-18 24 18v30h70l16-12h48l12 12h60v-40h18v-24l14-12 14 12v24h18v40h96l20-18h40l16 18h70v-34l30-22 30 22v34h84l14-10h52l14 10h66v-46h16v-20l12-10 12 10v20h16v46h80l22-16h36l18 16h72v-28l26-20 26 20v28h74V262z"/>
+  <path fill="#ffd98a" d="M200 200h4v6h-4zM464 168h4v6h-4zM484 196h4v6h-4zM764 198h4v6h-4zM1054 164h4v6h-4zM1068 190h4v6h-4zM1336 204h4v6h-4z"/>
+  <rect y="258" width="1440" height="36" fill="url(#water)"/>
+  <use href="#bridge"/>
+  <g opacity=".9"><use href="#stall" transform="translate(430 230) scale(.75)" style="color:#6a3a78"/><use href="#stall" transform="translate(880 230) scale(.75)" style="color:#7d4368"/></g>
+  <use href="#stall" x="30" y="206" style="color:#7b3f72"/><use href="#stall" x="236" y="206" style="color:#8d4b56"/>
+  <use href="#stall" x="1004" y="206" style="color:#8d4b56"/><use href="#stall" x="1212" y="206" style="color:#7b3f72"/>
+  <rect y="291" width="1440" height="49" fill="#130d2a"/>
+  <path d="M0 54Q380 104 760 66Q1110 112 1440 78" fill="none" stroke="#0b0719" stroke-width="1.2"/>
+  <g opacity=".85"><use href="#lan" transform="translate(152 70) scale(.62)"/><use href="#lan" transform="translate(380 82) scale(.62)"/><use href="#lan" transform="translate(608 78) scale(.62)"/><use href="#lan" transform="translate(934 84) scale(.62)"/><use href="#lan" transform="translate(1105 92) scale(.62)"/><use href="#lan" transform="translate(1274 90) scale(.62)"/></g>
+  <path d="M0 62Q350 150 720 100Q1090 160 1440 72" fill="none" stroke="#0b0719" stroke-width="1.6"/>
+  <use href="#lan" x="105" y="85"/><use href="#lan" x="212" y="102"/><use href="#lan" x="319" y="113"/><use href="#lan" x="427" y="118"/><use href="#lan" x="536" y="116"/><use href="#lan" x="646" y="109"/><use href="#lan" x="794" y="110"/><use href="#lan" x="904" y="121"/><use href="#lan" x="1013" y="124"/><use href="#lan" x="1121" y="121"/><use href="#lan" x="1228" y="111"/><use href="#lan" x="1335" y="95"/>
+</svg>
+</div>
+
+<aside class="people" id="people" aria-label="People">
+  <header class="people-head">
+    <h2>People</h2><span class="sub">2 in your party · 2 also here</span>
+    <button type="button" class="people-x" data-people-toggle aria-label="Close people panel"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-x"/></svg></button>
+  </header>
+  <div class="people-body">
+
+    <h3 class="p-group">In your party</h3>
+
+    <article class="person fav is-mira">
+      <button type="button" class="p-head" data-people-toggle>
+        <span class="p-face"><svg width="46" height="50" aria-hidden="true"><use href="#b-mira"/></svg></span>
+        <span class="p-id">
+          <span class="p-name">Mira <span class="favtag"><svg class="ic f" width="11" height="11" aria-hidden="true"><use href="#i-star"/></svg>Favourite</span></span>
+          <span class="p-role">Scout</span>
+          <span class="p-bond"><span class="hearts" aria-hidden="true"><svg width="14" height="14"><use href="#i-heart"/></svg><svg width="14" height="14"><use href="#i-heart"/></svg><svg width="14" height="14"><use href="#i-heart"/></svg><svg class="h4" width="14" height="14"><use href="#i-heart"/></svg><svg class="off" width="14" height="14"><use href="#i-heart"/></svg></span><span class="lvl">Bond <span class="b-old">3</span><span class="b-new">4</span> of 5</span><span class="att"><span class="sr">Attitude: </span>Trusts you</span></span>
+        </span>
+        <svg class="ic p-chev" width="18" height="18" aria-hidden="true"><use href="#i-chev"/></svg>
+      </button>
+      <div class="p-more">
+        <span class="lbl">Shared memories</span>
+        <ul class="mem"><li>You shared your rations on the salt flats.</li><li>You did not use her as bait at the bridge.</li></ul>
+      </div>
+      <div class="p-actions">
+        <button type="button" class="pa talk">Talk</button>
+        <button type="button" class="pa together"><svg class="ic f" width="15" height="15" aria-hidden="true"><use href="#i-heart"/></svg>Spend time together</button>
+        <button type="button" class="pa more">Ask about…</button>
+      </div>
+    </article>
+
+    <article class="person is-tobin">
+      <div class="p-head">
+        <span class="p-face"><svg width="46" height="50" aria-hidden="true"><use href="#b-tobin"/></svg></span>
+        <span class="p-id">
+          <span class="p-name">Tobin</span>
+          <span class="p-role">Tinkerer's apprentice</span>
+          <span class="p-bond"><span class="hearts" aria-hidden="true"><svg width="14" height="14"><use href="#i-heart"/></svg><svg class="off" width="14" height="14"><use href="#i-heart"/></svg><svg class="off" width="14" height="14"><use href="#i-heart"/></svg><svg class="off" width="14" height="14"><use href="#i-heart"/></svg><svg class="off" width="14" height="14"><use href="#i-heart"/></svg></span><span class="lvl">Bond 1 of 5</span><span class="att"><span class="sr">Attitude: </span>Curious</span></span>
+        </span>
+        <svg class="ic p-chev" width="18" height="18" aria-hidden="true"><use href="#i-chev"/></svg>
+      </div>
+      <div class="p-more">
+        <span class="lbl">Shared memory</span>
+        <ul class="mem"><li>You paid for his broken lens.</li></ul>
+      </div>
+      <div class="p-actions">
+        <button type="button" class="pa talk">Talk</button>
+        <button type="button" class="pa together"><svg class="ic f" width="15" height="15" aria-hidden="true"><use href="#i-heart"/></svg>Spend time together</button>
+        <button type="button" class="pa more">Ask about…</button>
+      </div>
+    </article>
+
+    <h3 class="p-group">Also here <span>present, not in the party</span></h3>
+
+    <article class="person is-roth">
+      <div class="p-head">
+        <span class="p-face"><svg width="46" height="50" aria-hidden="true"><use href="#b-roth"/></svg></span>
+        <span class="p-id">
+          <span class="p-name">Captain Roth</span>
+          <span class="p-role">City Watch</span>
+          <span class="p-bond"><span>No bond yet</span><span class="att"><span class="sr">Attitude: </span>Wary</span></span>
+        </span>
+        <svg class="ic p-chev" width="18" height="18" aria-hidden="true"><use href="#i-chev"/></svg>
+      </div>
+      <div class="p-more">
+        <span class="lbl">Note</span>
+        <ul class="mem plain"><li>Suspects a courier carried the forged seal.</li></ul>
+      </div>
+      <div class="p-actions">
+        <button type="button" class="pa">Talk</button>
+        <button type="button" class="pa more">Ask about…</button>
+      </div>
+    </article>
+
+    <article class="person is-seller">
+      <div class="p-head">
+        <span class="p-face"><svg width="46" height="50" aria-hidden="true"><use href="#b-seller"/></svg></span>
+        <span class="p-id">
+          <span class="p-name">Lantern seller</span>
+          <span class="p-role">Stranger</span>
+          <span class="p-bond"><span>No details yet</span></span>
+        </span>
+        <button type="button" class="pa p-quick">Talk</button>
+      </div>
+    </article>
+
+    <section class="card map-card" aria-label="Map">
+      <div class="card-h"><h2>Map</h2><span class="sub">Known routes</span><span class="end">Lantern Market</span></div>
+      <svg viewBox="0 0 244 124" width="244" height="124" role="img" aria-label="Old Mill links to Lantern Market, where you are. Lantern Market links to Canal Bridge and to North Gate. Canal Bridge links to Glass Road Waystation. Beyond it lies an undiscovered place.">
+        <path class="m-l" d="M24 76h176M84 76V28"/>
+        <path class="m-l" d="M200 76h32" stroke-dasharray="3 4"/>
+        <g class="m-n"><circle cx="24" cy="76" r="5.5"/><circle cx="84" cy="28" r="5.5"/><circle cx="144" cy="76" r="5.5"/><circle cx="200" cy="76" r="5.5"/><circle cx="232" cy="76" r="9" stroke-dasharray="3 3"/></g>
+        <circle class="m-h" cx="84" cy="76" r="15" opacity=".18"/><circle class="m-h" cx="84" cy="76" r="7"/>
+        <g text-anchor="middle"><text x="26" y="60">Old Mill</text><text x="144" y="60">Canal Bridge</text><text x="200" y="98">Glass Road</text><text x="200" y="113">Waystation</text><text x="232" y="80.5">?</text><text class="at" x="84" y="102">Lantern Market</text><text class="m-h" x="84" y="117">You are here</text></g>
+        <text x="96" y="32">North Gate</text>
+      </svg>
+    </section>
+  </div>
+</aside>
+
+<main class="play">
+
+  <section class="stage" aria-label="Scene">
+    <div class="hud">
+      <div class="plate where"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-lantern"/></svg><div><b>Lantern Market</b><span>Dusk · Day 12</span></div></div>
+      <div class="plate vitals">
+        <div class="vital hp"><span class="k" title="Hit points">HP</span><span class="bar"><i style="width:80%"></i></span><span class="v">12<small>/15</small></span></div>
+        <div class="vital en"><span class="k" title="Energy">EN</span><span class="bar"><i style="width:60%"></i></span><span class="v">9<small>/15</small></span></div>
+        <div class="vital-x"><span class="d"><svg class="ic f" width="10" height="10" aria-hidden="true"><use href="#i-gem"/></svg>Destiny 2</span><span>Turn $0.006</span></div>
+      </div>
+      <button type="button" class="plate menu-btn" aria-label="Menu"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-menu"/></svg></button>
+    </div>
+
+    <div class="cast" data-cast>
+      <div class="troupe">
+        <div class="troupe-figs">
+          <button type="button" class="fig is-mira" data-who="mira" data-people-toggle>
+            <svg class="bust" width="62" height="68" aria-hidden="true"><use href="#b-mira"/></svg>
+            <span class="name"><svg class="ic f" width="11" height="11" aria-hidden="true"><use href="#i-star"/></svg><span class="sr">Favourite: </span><span class="nm">Mira</span></span>
+            <span class="hearts"><svg width="11" height="11" aria-hidden="true"><use href="#i-heart"/></svg><svg width="11" height="11" aria-hidden="true"><use href="#i-heart"/></svg><svg width="11" height="11" aria-hidden="true"><use href="#i-heart"/></svg><svg class="h4" width="11" height="11" aria-hidden="true"><use href="#i-heart"/></svg><svg class="off" width="11" height="11" aria-hidden="true"><use href="#i-heart"/></svg><span class="sr">Bond <span class="b-old">3</span><span class="b-new">4</span> of 5</span></span>
+          </button>
+          <button type="button" class="fig is-tobin" data-who="tobin" data-people-toggle>
+            <svg class="bust" width="62" height="68" aria-hidden="true"><use href="#b-tobin"/></svg>
+            <span class="name"><span class="nm">Tobin</span></span>
+            <span class="hearts"><svg width="11" height="11" aria-hidden="true"><use href="#i-heart"/></svg><svg class="off" width="11" height="11" aria-hidden="true"><use href="#i-heart"/></svg><svg class="off" width="11" height="11" aria-hidden="true"><use href="#i-heart"/></svg><svg class="off" width="11" height="11" aria-hidden="true"><use href="#i-heart"/></svg><svg class="off" width="11" height="11" aria-hidden="true"><use href="#i-heart"/></svg><span class="sr">Bond 1 of 5</span></span>
+          </button>
+        </div>
+        <span class="troupe-label">Party</span>
+      </div>
+      <div class="troupe">
+        <div class="troupe-figs">
+          <button type="button" class="fig is-roth" data-who="roth" data-people-toggle>
+            <svg class="bust" width="62" height="68" aria-hidden="true"><use href="#b-roth"/></svg>
+            <span class="name"><span class="nm">Captain Roth</span></span>
+            <span class="nobond">No bond yet</span>
+          </button>
+          <button type="button" class="fig is-seller" data-who="seller" data-people-toggle>
+            <svg class="bust" width="62" height="68" aria-hidden="true"><use href="#b-seller"/></svg>
+            <span class="name"><span class="nm">Lantern seller</span></span>
+            <span class="nobond">Stranger</span>
+          </button>
+        </div>
+        <span class="troupe-label">Also here</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="log" data-log tabindex="0" role="region" aria-label="Story log">
+    <div class="log-col">
+
+      <h2 class="beat scene-head">Scene 4 · Lantern Market · Dusk</h2>
+
+      <article class="beat narr is-narr">
+        <header class="who"><b class="tag">Narrator</b></header>
+        <p>Paper lanterns sway above the market stalls as the last light drains out of the canal. By the bridge, Captain Roth turns a wax seal over in his gloved hand while two watchmen search a courier's bag.</p>
+      </article>
+
+      <article class="beat speech is-mira" data-focus="mira">
+        <header class="who"><b class="tag">Mira</b><i class="manner">whispering</i></header>
+        <p>"He's checking couriers. If he sees your satchel, we're done. I can draw them off, or you talk your way through."</p>
+      </article>
+
+      <article class="beat speech is-tobin" data-focus="tobin">
+        <header class="who"><b class="tag">Tobin</b></header>
+        <p>"Or we wait for dark. I vote dark."</p>
+      </article>
+
+      <article class="beat act is-aren">
+        <header class="who"><b class="tag">Aren</b><i class="manner">your action</i></header>
+        <p>I walk up to Roth openly and ask whether the bridge is closed, keeping the satchel under my cloak.</p>
+      </article>
+
+      <article class="beat check" aria-label="Dice check">
+        <span class="die" aria-hidden="true"></span>
+        <p class="check-t">Skill test · Manipulation (bluff) · Medium</p>
+        <p class="check-l">Needed <b>4 or less</b> on one die · Rolled <b>2</b></p>
+        <p class="check-f"><span class="check-ok"><svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-check"/></svg>Success <span>· quality 2</span></span><span>Opposed by Captain Roth</span></p>
+      </article>
+
+      <article class="beat narr is-narr" data-focus="roth">
+        <header class="who"><b class="tag">Narrator</b></header>
+        <p>Roth's eyes go from your face to your boots and back. "Bridge is open. Papers are not," he says, but he is already looking past you at a cart with a broken axle. He waves you on.</p>
+      </article>
+
+      <div class="pend" data-pending>
+        <article class="beat speech is-mira" data-focus="mira">
+          <header class="who"><b class="tag">Mira</b><i class="manner">low, falling in beside you</i></header>
+          <p>"You could have sent me in as the distraction. You didn't." <span class="aside">A pause.</span> "I noticed."</p>
+          <ul class="notes"><li class="note bond"><svg class="ic f" width="14" height="14" aria-hidden="true"><use href="#i-heart"/></svg>Bond with Mira rises from 3 to 4</li></ul>
+        </article>
+      </div>
+
+      <div class="pend" data-pending>
+        <article class="beat narr is-narr">
+          <header class="who"><b class="tag">Narrator</b></header>
+          <p>Behind you the cart finally gives way, and the whole market turns to look. The bridge ahead is empty, and beyond it the lamps of the Glass Road are being lit one by one.</p>
+          <ul class="notes">
+            <li class="note xp"><svg class="ic f" width="14" height="14" aria-hidden="true"><use href="#i-spark"/></svg>+1 experience</li>
+            <li class="note goal"><svg class="ic" width="14" height="14" aria-hidden="true"><use href="#i-flag"/></svg>Goal progress: reach the Glass Road waystation</li>
+          </ul>
+          <p class="time"><svg class="ic" width="14" height="14" aria-hidden="true"><use href="#i-clock"/></svg>10 minutes pass</p>
+        </article>
+      </div>
+
+      <div class="mid">
+        <div class="choices" role="group" aria-label="Suggested actions">
+          <button type="button" class="choice"><span class="n"><b>1</b></span><span>Cross the bridge now</span><svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-chev"/></svg></button>
+          <button type="button" class="choice"><span class="n"><b>2</b></span><span>Ask Mira what she saw at the stalls</span><svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-chev"/></svg></button>
+          <button type="button" class="choice"><span class="n"><b>3</b></span><span>Take a closer look at the cart</span><svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-chev"/></svg></button>
+        </div>
+      </div>
+
+      <div class="dock">
+        <div class="go">
+          <button type="button" class="btn-go" data-continue>
+            <span>Continue</span>
+            <span class="count"><b data-continue-count>2</b> left</span>
+            <svg class="ic" width="20" height="20" aria-hidden="true"><use href="#i-chev"/></svg>
+          </button>
+          <p class="go-hint">Press <kbd>Space</kbd> to continue · scroll up to reread</p>
+        </div>
+        <div class="say">
+          <button type="button" class="to" aria-label="Speak to: everyone">To: <b>Everyone</b><svg class="ic" width="14" height="14" aria-hidden="true"><use href="#i-down"/></svg></button>
+          <input type="text" placeholder="What do you do?" aria-label="What do you do?" autocomplete="off">
+          <button type="button" class="send" aria-label="Send"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="#i-send"/></svg></button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<aside class="side" aria-label="Character and journal">
+  <section class="card sheet" aria-label="Character">
+    <div class="card-h"><h2>Aren</h2><span class="sub">Protagonist</span><span class="end">Experience <b>14</b></span></div>
+    <div class="meter hp"><span>Hit points</span><span class="bar"><i style="width:80%"></i></span><span class="v">12<small>/15</small></span></div>
+    <div class="meter en"><span>Energy</span><span class="bar"><i style="width:60%"></i></span><span class="v">9<small>/15</small></span></div>
+    <p class="destiny"><svg class="ic f" width="13" height="13" aria-hidden="true"><use href="#i-gem"/></svg><svg class="ic f" width="13" height="13" aria-hidden="true"><use href="#i-gem"/></svg>Destiny points <b>2</b></p>
+    <div class="attrs">
+      <div><b>1</b><span>Strength</span></div>
+      <div><b>3</b><span>Skill</span></div>
+      <div><b>3</b><span>Resistance</span></div>
+      <div><b>1</b><span>Armor</span></div>
+      <div class="zero"><b>0</b><span>Firepower</span></div>
+    </div>
+    <dl class="defs">
+      <dt>Paths</dt><dd class="chips"><span class="chip air">Air <i>2</i></span><span class="chip light">Light <i>1</i></span></dd>
+      <dt>Abilities</dt><dd class="chips"><span class="chip">Featherstep <i>Air 1</i></span><span class="chip">Gale Push <i>Air 2</i></span><span class="chip">Glimmer <i>Light 1</i></span></dd>
+      <dt>Advantages</dt><dd><span class="nb">Quick Reflexes</span> · <span class="nb">Patron: Couriers' Guild</span></dd>
+      <dt>Skills</dt><dd>Manipulation · Survival</dd>
+    </dl>
+  </section>
+  <section class="card journal" aria-label="Journal">
+    <div class="card-h"><h2>Journal</h2><span class="sub">2 threads · 1 commitment</span></div>
+    <ul class="threads">
+      <li><p class="th-t">Deliver the sealed letter to the Glass Road waystation.</p><p class="th-n"><b>Next:</b> cross the bridge before the gates close.</p></li>
+      <li><p class="th-t">Who copied the baron's seal?</p><p class="th-n"><b>Clue:</b> Roth carries a copy.</p></li>
+    </ul>
+    <div class="commit"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-clock"/></svg><div><span class="lbl">Commitment · due tonight</span><p>Meet Tobin's master at the Old Mill.</p></div></div>
+  </section>
+</aside>
+
+<nav class="nav" aria-label="Primary">
+  <button type="button" class="on" aria-current="page"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-story"/></svg>Story</button>
+  <button type="button" data-people-toggle><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-people"/></svg>People</button>
+  <button type="button"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-char"/></svg>Character</button>
+  <button type="button"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-journal"/></svg>Journal</button>
+  <button type="button"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-map"/></svg>Map</button>
+</nav>
+
+<button type="button" class="scrim" data-people-toggle aria-label="Close people panel" tabindex="-1"></button>
+
+</div>
+
+<script>
+(function () {
+  var state = new URLSearchParams(location.search).get('state') || 'continue';
+  var body = document.body;
+  var log = document.querySelector('[data-log]');
+  var cast = document.querySelector('[data-cast]');
+  var pending = Array.prototype.slice.call(document.querySelectorAll('[data-pending]'));
+  var beats = Array.prototype.slice.call(log.querySelectorAll('.beat'));
+  var figs = Array.prototype.slice.call(document.querySelectorAll('.fig'));
+  var shown = (state === 'input' || state === 'people') ? pending.length : 0;
+
+  function sync() {
+    pending.forEach(function (el, i) { el.hidden = i >= shown; });
+    var left = pending.length - shown;
+    body.dataset.mode = left > 0 ? 'continue' : 'input';
+    body.classList.toggle('bond-up', shown >= 1);
+    document.querySelectorAll('[data-continue-count]').forEach(function (c) { c.textContent = left; });
+
+    /* the newest visible beat becomes the dialogue box and its speaker steps into the light */
+    var now = null;
+    beats.forEach(function (b) {
+      b.classList.remove('is-now');
+      var group = b.closest('[data-pending]');
+      if (!group || !group.hidden) now = b;
+    });
+    if (now) now.classList.add('is-now');
+    var who = now ? now.getAttribute('data-focus') : null;
+    figs.forEach(function (f) { f.classList.toggle('is-speaking', !!who && f.getAttribute('data-who') === who); });
+    cast.classList.toggle('has-focus', !!who);
+
+    log.scrollTop = log.scrollHeight;
+  }
+
+  if (state === 'people') body.dataset.people = 'open';
+
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('[data-continue]')) { shown = Math.min(pending.length, shown + 1); sync(); }
+    if (e.target.closest('[data-people-toggle]')) {
+      body.dataset.people = body.dataset.people === 'open' ? '' : 'open';
+    }
+  });
+  /* scrolled up to reread: the dock detaches from the dialogue box */
+  log.addEventListener('scroll', function () {
+    body.classList.toggle('is-reading', log.scrollHeight - log.clientHeight - log.scrollTop > 24);
+  }, { passive: true });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') body.dataset.people = '';
+    if (e.key === ' ' && e.target === body && body.dataset.mode === 'continue') {
+      e.preventDefault(); shown = Math.min(pending.length, shown + 1); sync();
+    }
+  });
+  sync();
+})();
+</script>
+</body>
+</html>

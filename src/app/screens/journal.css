@@ -1,0 +1,102 @@
+/* Journal: open threads, the story so far and the roll log. Built from Slate tokens.
+   Every rule is scoped to .jn, the screen's wrapper (it has no box of its own), so nothing here reaches another screen. */
+.jn{display:contents}
+.jn .jr>*{min-width:0}
+.jn .jc{display:flex;flex-direction:column;gap:var(--sp-4);min-width:0}
+.jn p.card{font-size:var(--fs-md);line-height:20px}
+
+/* Thread card: kind and age, the question, clues, the next step */
+.jn .thr{display:grid;gap:10px}
+.jn .thr-main{border-color:var(--c-accent-line)}
+.jn .thr-k{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);font-size:var(--fs-xs);color:var(--c-text-2)}
+.jn .thr h3{font-size:var(--fs-lg);font-weight:600;line-height:22px;text-wrap:pretty}
+.jn .thr .mem{margin-top:var(--sp-1)}
+.jn .thr-next{display:flex;align-items:flex-start;gap:var(--sp-2);padding:var(--sp-2) 10px 9px;border-radius:var(--r-md);background:var(--c-raised);font-size:var(--fs-md);line-height:20px}
+.jn .thr-next .i{margin-top:2px;color:var(--c-accent-text)}
+.jn .thr-next.is-open{color:var(--c-text-2)}
+.jn .thr-next.is-open .i{color:var(--c-text-3)}
+
+/* Personal: a moment waiting with someone, in that person's colour */
+.jn .pt{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) 10px var(--sp-3) var(--sp-3);border-radius:var(--r-lg);background:color-mix(in srgb,var(--p,var(--c-text-3)) 12%,var(--c-card));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--p,var(--c-text-3)) 40%,var(--c-card));--under:color-mix(in srgb,var(--p,var(--c-text-3)) 12%,var(--c-card))}
+.jn .pt:hover{box-shadow:inset 0 0 0 1px var(--p,var(--c-text-2))}
+.jn .pt-t{display:block;font-size:var(--fs-lg);font-weight:600;line-height:22px}
+.jn .pt-s{display:block;font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.jn .pt-b{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-1) var(--sp-2);margin-top:6px;font-size:var(--fs-sm);line-height:16px;color:var(--c-text-2);font-variant-numeric:tabular-nums}
+.jn .pt-b b{color:var(--c-text)}
+.jn .pt>.i{color:var(--p,var(--c-text-2))}
+
+/* Commitments: what is due now stands out; the rest are plain */
+.jn .cms{display:grid;gap:10px}
+.jn .cm{padding:0 11px}
+.jn .cm+.cm,.jn .due+.cm{padding-top:10px;border-top:1px solid var(--c-line)}
+.jn .cm-k{display:flex;align-items:center;gap:5px;font-size:var(--fs-xs);font-weight:600;line-height:16px;color:var(--c-text-2)}
+.jn .cm p{margin-top:2px;font-size:var(--fs-md);line-height:20px}
+
+/* Completed threads: a collapsed list */
+.jn .fold summary{min-height:48px;display:flex;align-items:center;gap:var(--sp-2);padding:0 10px 0 14px;font-size:var(--fs-md);font-weight:600;cursor:pointer;list-style:none}
+.jn .fold summary::-webkit-details-marker{display:none}
+.jn .fold summary .i:first-child{color:var(--c-ok)}
+.jn .fold summary .chev{margin-left:auto;color:var(--c-text-2)}
+.jn .fold[open] .chev{transform:rotate(180deg)}
+.jn .fold .threads{padding:var(--sp-1) 14px 14px}
+.jn .fold .th-t{font-weight:400}
+
+/* The story so far */
+.jn .lead{max-width:var(--w-read);color:var(--c-text)}
+.jn .ch{display:grid;gap:10px}
+.jn .ch-h{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);min-height:22px}
+.jn .ch h3{font-size:var(--fs-xl);font-weight:600;line-height:26px}
+.jn .stands-recap{margin-top:var(--sp-3)}
+.jn .ch-facts{margin-top:2px;font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2);font-variant-numeric:tabular-nums}
+.jn .ch>.t-story{font-size:var(--fs-lg);line-height:1.6;text-wrap:pretty}
+.jn .ch-fold{display:inline-flex;align-items:center;gap:6px;min-height:44px;justify-self:start;font-size:var(--fs-sm);font-weight:600}
+.jn .ch-fold .chev.is-up{transform:rotate(180deg)}
+.jn .sc-list{gap:var(--sp-3);margin-top:var(--sp-1)}
+.jn .sc-list li.big{--p:var(--c-accent-text)}
+.jn .sc-list .tl-k{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-1) var(--sp-2);line-height:18px}
+.jn .sc-list .t-story{margin-top:3px;font-size:var(--fs-lg);line-height:1.6}
+.jn .sc-now,.jn .sc-none{font-size:var(--fs-sm);line-height:19px;color:var(--c-text-2);text-wrap:pretty}
+.jn .sc-now{margin-top:3px}
+/* Going back to the start of a scene */
+.jn .rw{display:inline-flex;align-items:center;gap:6px;min-height:44px;font-size:var(--fs-sm);font-weight:600}
+.jn .rw[disabled]{opacity:.45;pointer-events:none}
+.jn .rw-where{font-weight:600}
+.jn .stands{--kv:64px}
+.jn .stands dd{flex-direction:column;gap:0}
+
+/* Roll log: the dice, what the roll was for, the outcome, the number needed */
+.jn .rl{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"d t b" "d m m";gap:2px var(--sp-3);align-items:start;padding:var(--sp-3) 14px;border-top:1px solid var(--c-line)}
+.jn .rl:first-child{border-top:0}
+.jn .rl-d{grid-area:d;display:flex;align-items:center;gap:6px}
+.jn .rl-d .i{margin:0 -4px;color:var(--c-text-3)}
+.jn .rl-d .was{display:flex;opacity:.55}
+.jn .rl-auto{width:44px;height:44px;display:grid;place-items:center;border:1.5px dashed var(--c-line-strong);border-radius:10px}
+.jn .rl-auto .i{margin:0}
+.jn .rl-t{grid-area:t;align-self:center;font-size:var(--fs-md);line-height:20px;text-wrap:pretty}
+.jn .rl-t b{font-size:var(--fs-lg)}
+.jn .rl .badge{grid-area:b}
+.jn .rl-m{grid-area:m;font-size:var(--fs-sm);line-height:19px;color:var(--c-text-2);font-variant-numeric:tabular-nums;text-wrap:pretty}
+.jn .rl-m b{color:var(--c-text)}
+.jn .more{flex:none}
+/* On a phone a die in the log is a full tap target: pressing it rolls it again */
+.jn .rl-d .die-s{width:44px;height:44px;padding:7px;border-radius:10px}
+.jn .rl-d .die-s i{width:7px;height:7px}
+/* An attack shows two dice; on a phone they sit above the line of sums so the words keep their width */
+.jn .rl-2{grid-template-areas:"d t b" "m m m"}
+.jn .rl-2 .rl-m{margin-top:var(--sp-1)}
+
+.jn .faces{display:grid;grid-template-columns:repeat(6,auto);justify-content:space-between;gap:var(--sp-2);margin-top:var(--sp-3)}
+.jn .faces li{display:grid;justify-items:center;gap:var(--sp-1);font-size:var(--fs-sm);font-variant-numeric:tabular-nums;color:var(--c-text-2)}
+.jn .faces b{color:var(--c-text)}
+.jn .faces-n{margin-top:var(--sp-3);text-wrap:pretty}
+
+@media (min-width:1100px){
+  .jn .rw,.jn .ch-fold{min-height:32px}
+  .jn .sc-list{gap:var(--sp-4)}
+  .jn .rl,.jn .rl-2{grid-template-areas:"d t b" "d m b";align-items:center}
+  .jn .rl-t{align-self:end}
+  .jn .rl-m,.jn .rl-2 .rl-m{align-self:start;margin-top:0}
+  .jn .rl-d .die-s{width:36px;height:36px;padding:6px;border-radius:8px}
+  .jn .rl-d .die-s i{width:6px;height:6px}
+  .jn .rl-auto{width:36px;height:36px;border-radius:8px}
+}

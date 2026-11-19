@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitor Quest - Play (Slate)</title>
+<style>
+/* ==========================================================================
+   Slate: a neutral product interface. The accent comes from the world played.
+   ========================================================================== */
+:root{
+  /* World accent: the single value a story changes ("The Glass Road" = teal) */
+  --accent:#2bb3a3;
+
+  /* Type */
+  --font-ui:"Segoe UI Variable Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-story:"Sitka Text","Iowan Old Style","Palatino Linotype","Noto Serif",Georgia,serif;
+  --fs-xs:12px; --fs-sm:13px; --fs-md:14px; --fs-lg:16px; --fs-xl:20px;   /* interface scale */
+  --fs-story:17px; --lh-story:1.62;     /* narration (serif) */
+  --fs-speech:16px; --lh-speech:1.5;    /* speech and the player's action (sans) */
+
+  /* Space: 4px steps; 2px half-steps (6, 10, 14) only for optical tuning inside components */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px;
+
+  /* Shape */
+  --r-sm:6px; --r-md:10px; --r-lg:12px; --r-pill:999px;
+
+  /* Layout: reading column width (about 70 characters of narration on desktop) and its side gutter */
+  --w-read:640px; --gut:var(--sp-4);
+
+  /* Colour roles: dark (default) */
+  color-scheme:dark;
+  --c-chrome:#0e1115;        /* bars, navigation */
+  --c-pane:#11151a;          /* side panes, sheets */
+  --c-story:#151920;         /* reading surface */
+  --c-card:#1b2029;          /* cards, fields */
+  --c-raised:#232a35;        /* chips, hover */
+  --c-track:#2c3541;         /* meter tracks */
+  --c-line:#272f3a;          /* hairlines, card borders */
+  --c-line-strong:#66758a;   /* control borders (3:1) */
+  --c-text:#e8ecf2;
+  --c-text-2:#aab5c4;
+  --c-text-3:#8b98aa;
+  --c-accent-fill:var(--accent);
+  --c-on-accent:#04211d;
+  --c-accent-text:color-mix(in srgb,var(--accent) 78%,#fff);
+  --c-accent-tint:color-mix(in srgb,var(--accent) 14%,var(--c-card));
+  --c-accent-line:color-mix(in srgb,var(--accent) 38%,var(--c-card));
+  --c-hp:#f2705f; --c-en:#e6b450; --c-gold:#efc253;
+  --c-ok:#5ec97a; --c-on-ok:#06200f;
+  /* Persona hues: one per character, used for avatar, name and bond */
+  --p-mira:#f590b9; --p-tobin:#b7a6f8; --p-roth:#9fb1cb;
+  --scrim:rgba(4,6,10,.62);
+  --shadow-sheet:0 -10px 36px rgba(0,0,0,.5);
+}
+:root.theme-light{
+  color-scheme:light;
+  --c-chrome:#f5f7fa; --c-pane:#f0f3f6; --c-story:#fff; --c-card:#fff; --c-raised:#eceff4;
+  --c-track:#dde2e9; --c-line:#dce1e8; --c-line-strong:#7b8899;
+  --c-text:#161d27; --c-text-2:#465263; --c-text-3:#5b687a;
+  --c-accent-fill:color-mix(in srgb,var(--accent) 64%,#000);
+  --c-on-accent:#fff;
+  --c-accent-text:color-mix(in srgb,var(--accent) 56%,#000);
+  --c-hp:#cc3b30; --c-en:#a86f00; --c-gold:#8a6100;
+  --c-ok:#15703b; --c-on-ok:#fff;
+  --p-mira:#b01f57; --p-tobin:#5f41c2; --p-roth:#4a5b74;
+  --scrim:rgba(22,29,39,.4);
+  --shadow-sheet:0 -10px 36px rgba(22,29,39,.16);
+}
+
+/* ---------- Base ---------- */
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%;height:100dvh;margin:0}
+body{overflow:hidden;background:var(--c-story);color:var(--c-text);font:400 var(--fs-md)/1.4 var(--font-ui);-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+[hidden]{display:none!important}
+h1,h2,h3,h4,p,ul,ol,dl,dd{margin:0}
+ul,ol{padding:0;list-style:none}
+b{font-weight:600}
+button,input{font:inherit;color:inherit}
+button{background:none;border:0;padding:0;cursor:pointer;text-align:inherit;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:2px solid var(--c-accent-text);outline-offset:2px}
+
+/* ---------- Atoms ---------- */
+.i{flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.i-s{stroke-width:2.2}
+.i-f{fill:currentColor;stroke:none}
+
+.who-mira{--p:var(--p-mira)}.who-tobin{--p:var(--p-tobin)}.who-roth{--p:var(--p-roth)}
+.av{--z:38px;position:relative;flex:none;width:var(--z);height:var(--z);border-radius:50%;display:inline-grid;place-items:center;font-size:var(--fs-lg);font-weight:600;line-height:1;color:var(--p,var(--c-text-2));background:color-mix(in srgb,var(--p,var(--c-text-3)) 17%,var(--c-card));box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--p,var(--c-text-3)) 50%,var(--c-card))}
+.av-s{--z:22px;font-size:var(--fs-xs);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--p,var(--c-text-3)) 50%,var(--c-card))}
+.av-l{--z:44px}
+.av-anon{background:none;box-shadow:none;border:1.5px dashed var(--c-line-strong);color:var(--c-text-2)}
+.fav{position:absolute;top:-3px;right:-4px;width:16px;height:16px;border-radius:50%;display:grid;place-items:center;background:var(--under,var(--c-chrome));color:var(--c-gold)}
+
+.dots{display:inline-flex;align-items:center;gap:3px}
+.dots i{width:6px;height:6px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--c-line-strong)}
+.dots i.on{background:var(--p,var(--c-accent-text));box-shadow:none}
+.dots-l{gap:var(--sp-1)}
+.dots-l i{width:8px;height:8px}
+/* Mira's fourth dot lights up when the bond note is revealed */
+body[data-beats="0"] .dots i.live{background:none;box-shadow:inset 0 0 0 1.5px var(--c-line-strong)}
+body:not([data-beats="0"]) .dots i.live{box-shadow:0 0 0 2px color-mix(in srgb,var(--p) 36%,transparent)}
+
+.tag{display:inline-flex;align-items:center;gap:var(--sp-1);height:22px;padding:0 var(--sp-2);border-radius:var(--r-pill);background:var(--c-raised);font-size:var(--fs-xs);color:var(--c-text-2);white-space:nowrap}
+.mood{display:inline-flex;align-items:center;height:22px;padding:0 var(--sp-2);border-radius:var(--r-pill);font-size:var(--fs-xs);font-weight:600;white-space:nowrap;color:var(--p,var(--c-text-2));background:color-mix(in srgb,var(--p,var(--c-text-3)) 15%,var(--c-card))}
+.link{position:relative;display:inline-flex;align-items:center;gap:3px;font-size:var(--fs-sm);font-weight:600;color:var(--c-accent-text);border-radius:var(--r-sm)}
+.link::after{content:"";position:absolute;inset:-5px 0} /* a taller hit area without moving the layout */
+.link:hover{text-decoration:underline}
+.btn{flex:1 1 auto;min-width:0;height:44px;padding:0 var(--sp-2);display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--c-line-strong);border-radius:var(--r-md);background:var(--c-card);font-size:var(--fs-sm);font-weight:600;white-space:nowrap}
+.btn:hover{border-color:var(--c-accent-text)}
+.btn-primary{background:var(--c-accent-fill);border-color:transparent;color:var(--c-on-accent)}
+.btn-soft{border-color:var(--c-accent-line);background:var(--c-accent-tint);color:var(--c-accent-text)}
+.ib{flex:none;width:44px;height:44px;display:grid;place-items:center;border-radius:var(--r-md);color:var(--c-text-2)}
+.ib:hover{background:var(--c-raised);color:var(--c-text)}
+
+/* ---------- App shell (phone first) ---------- */
+.app{position:relative;height:100%;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;--tab-h:calc(59px + env(safe-area-inset-bottom,0px))}
+.top{grid-row:1;position:relative;z-index:2;background:var(--c-chrome);border-bottom:1px solid var(--c-line)}
+.story{grid-row:2;min-height:0;display:flex;flex-direction:column;background:var(--c-story)}
+.nav{grid-row:3}
+
+/* ---------- Top bar ---------- */
+.bar{display:flex;align-items:center;gap:2px;height:52px;padding:0 var(--sp-1)}
+.bar-mid{flex:1;min-width:0;padding:0 6px 0 var(--sp-1)}
+.story-title{display:flex;align-items:center;font-size:var(--fs-lg);font-weight:600;line-height:20px;white-space:nowrap}
+.world{flex:none;width:8px;height:8px;margin-right:7px;border-radius:3px;background:var(--accent)}
+.sub{display:flex;align-items:center;gap:5px;font-size:var(--fs-xs);line-height:17px;color:var(--c-text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sub span,.story-title span+span{min-width:0;overflow:hidden;text-overflow:ellipsis} /* long titles and places shorten instead of running into the cost chip */
+.bar-end{display:flex;align-items:center;gap:2px}
+.cost-chip{display:flex;align-items:center;gap:5px;height:28px;padding:0 9px;border:1px solid var(--c-line);border-radius:var(--r-pill);background:var(--c-card);font-size:var(--fs-xs);font-weight:600;font-variant-numeric:tabular-nums;color:var(--c-text)}
+.cost-k{font-weight:400;color:var(--c-text-2)}
+:root:not(.theme-light) .t-moon,.theme-light .t-sun{display:none}
+
+/* ---------- Vitals (phone) ---------- */
+.vitals{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;column-gap:var(--sp-4);padding:1px var(--sp-4) 10px}
+.m-top{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:var(--fs-xs);line-height:16px;color:var(--c-text-2)}
+.m-k{display:inline-flex;align-items:center;gap:5px}
+.m-k .i{color:var(--m)}
+.m-v{font-variant-numeric:tabular-nums}
+.m-v b{font-size:var(--fs-sm);color:var(--c-text)}
+.track{height:5px;margin-top:5px;border-radius:3px;background:var(--c-track);overflow:hidden}
+.track i{display:block;width:var(--v);height:100%;border-radius:3px;background:var(--m)}
+.hp{--m:var(--c-hp)}.en{--m:var(--c-en)}
+.gems{display:flex;margin:2px 0 0 -2px;color:var(--c-text)}
+.gems svg+svg,.char-x svg+svg{margin-left:-2px}
+
+/* ---------- People strip (phone) ---------- */
+.strip{display:flex;align-items:flex-start;padding:0 10px 7px;--under:var(--c-chrome)}
+.strip-row{flex:1;min-width:0;display:flex;overflow-x:auto;scrollbar-width:none}
+.strip-row::-webkit-scrollbar{display:none}
+.strip-row .pc:focus-visible{outline-offset:-2px} /* the scroller would clip an outer ring */
+.pc{flex:none;min-width:50px;min-height:44px;padding:3px 5px 2px;display:flex;flex-direction:column;align-items:center;gap:3px;border-radius:var(--r-md);text-align:center}
+.pc-n{font-size:var(--fs-sm);font-weight:600;line-height:15px;white-space:nowrap}
+.pc-m{font-size:var(--fs-xs);line-height:13px;color:var(--c-text-3)}
+.pc .dots{height:13px}
+.pc-scene .pc-n{font-weight:400;color:var(--c-text-2)}
+.strip-sep{flex:none;align-self:stretch;width:1px;margin:5px 3px 15px;background:var(--c-line)}
+.av-all{background:none;color:var(--c-text);box-shadow:inset 0 0 0 1.5px var(--c-line-strong)}
+.pc-all .pc-n{color:var(--c-accent-text)}
+
+/* ---------- Story log ---------- */
+.log{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:var(--sp-4) var(--gut) 18px;scrollbar-width:thin;scrollbar-color:var(--c-line) transparent;-webkit-mask-image:linear-gradient(transparent,#000 12px);mask-image:linear-gradient(transparent,#000 12px)}
+.col{max-width:var(--w-read);min-height:100%;margin:0 auto;display:flex;flex-direction:column;justify-content:flex-end;gap:14px}
+.beat{position:relative;display:flex;flex-direction:column;gap:inherit}
+.beat.is-new::before{content:"";position:absolute;left:-9px;top:3px;bottom:3px;width:2px;border-radius:2px;background:var(--c-accent-text);opacity:.75}
+.scene{display:flex;align-items:center;gap:var(--sp-3);font-size:var(--fs-xs);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--c-text-2);white-space:nowrap}
+.scene::before,.scene::after{content:"";flex:1;height:1px;background:var(--c-line)}
+.narr{font-family:var(--font-story);font-size:var(--fs-story);line-height:var(--lh-story);color:var(--c-text);text-wrap:pretty}
+
+.say{align-self:flex-start;max-width:95%;padding:10px 14px var(--sp-3);border:1px solid var(--c-line);border-radius:var(--r-lg);background:var(--c-card)}
+.say-h{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:5px;min-height:22px}
+.say-n{font-size:var(--fs-md);color:var(--p)}
+.say-m{font-size:var(--fs-sm);font-style:italic;color:var(--c-text-2)}
+.say p,.act p{font-size:var(--fs-speech);line-height:var(--lh-speech);text-wrap:pretty}
+.aside{font-family:var(--font-story);font-style:italic;line-height:1;color:var(--c-text-2)} /* line-height 1: the serif must not stretch the sans line */
+
+.act{align-self:flex-end;max-width:88%;padding:9px 14px 11px;border:1px solid var(--c-accent-line);border-radius:var(--r-lg) var(--r-lg) 4px var(--r-lg);background:var(--c-accent-tint)}
+.act-h{display:flex;align-items:center;gap:7px;margin-bottom:3px;font-size:var(--fs-sm);font-weight:600;color:var(--c-accent-text)}
+.you{padding:0 6px;border:1px solid var(--c-accent-line);border-radius:var(--r-pill);font-size:var(--fs-xs);line-height:16px;font-weight:400}
+
+.check{display:grid;gap:10px;padding:var(--sp-3) 14px;border:1px solid var(--c-line);border-radius:var(--r-lg);background:var(--c-card)}
+.check-h{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2)}
+.check-k{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-xs);font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--c-text-2)}
+.badge{display:inline-flex;align-items:center;gap:var(--sp-1);height:24px;padding:0 10px 0 7px;border-radius:var(--r-pill);background:var(--c-ok);color:var(--c-on-ok);font-size:var(--fs-sm);font-weight:600}
+.check-t{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-1) var(--sp-2);font-size:var(--fs-lg);line-height:22px}
+.check-t span:not(.tag){color:var(--c-text-2)}
+.roll{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:var(--sp-3);align-items:center}
+.stat{display:grid;justify-items:center;min-width:54px;padding:5px var(--sp-2) var(--sp-1);border-radius:var(--r-md);background:var(--c-raised)}
+.stat span{font-size:var(--fs-xs);line-height:15px;color:var(--c-text-2)}
+.stat b{font-size:var(--fs-xl);line-height:25px;font-variant-numeric:tabular-nums}
+.steps{display:grid;grid-template-columns:repeat(4,1fr) 2px repeat(2,1fr);gap:3px}
+.steps li{height:22px;display:grid;place-items:center;border-radius:5px;background:var(--c-raised);font-size:var(--fs-xs);font-variant-numeric:tabular-nums;color:var(--c-text-3)}
+.steps .in{background:color-mix(in srgb,var(--c-ok) 34%,var(--c-card));color:var(--c-text)}
+.steps .hit{background:var(--c-ok);color:var(--c-on-ok);font-weight:700}
+.steps .lim{height:28px;margin:-3px 0;border-radius:1px;background:var(--c-ok)} /* the target line: this side succeeds */
+.scale-cap{margin-top:5px;font-size:var(--fs-sm);line-height:16px;color:var(--c-text-2)}
+.check-f{display:flex;align-items:center;gap:6px;font-size:var(--fs-sm);color:var(--c-text-2)}
+.check-f b{color:var(--c-text)}
+
+.notes{display:flex;flex-wrap:wrap;gap:6px}
+.note{display:inline-flex;align-items:center;gap:6px;min-height:28px;padding:var(--sp-1) 11px var(--sp-1) 9px;border:1px solid var(--c-line);border-radius:14px;background:var(--c-raised);font-size:var(--fs-sm);line-height:1.3;color:var(--c-text-2)}
+.note b{color:var(--c-text)}
+.note-bond{padding-left:var(--sp-1);color:var(--c-text);border-color:color-mix(in srgb,var(--p) 40%,var(--c-story));background:color-mix(in srgb,var(--p) 13%,var(--c-story))}
+.skip{display:flex;align-items:center;gap:10px;font-size:var(--fs-sm);color:var(--c-text-2)}
+.skip::before,.skip::after{content:"";flex:1;height:1px;background:var(--c-line)}
+.skip span{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 11px 0 var(--sp-2);border:1px solid var(--c-line);border-radius:var(--r-pill)}
+
+/* ---------- Dock: Continue or the input ---------- */
+.dock{flex:none;padding:10px var(--gut);border-top:1px solid var(--c-line);background:var(--c-story)}
+.dock-in{max-width:var(--w-read);margin:0 auto}
+.go{position:relative;width:100%;height:50px;display:flex;align-items:center;justify-content:center;gap:10px;border-radius:var(--r-lg);background:var(--c-accent-fill);color:var(--c-on-accent);font-size:var(--fs-lg);font-weight:600}
+.go:hover{filter:brightness(1.06)}
+.go-n{padding:1px var(--sp-2) 2px;border-radius:var(--r-pill);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c-on-accent) 45%,transparent);font-size:var(--fs-sm)}
+.go kbd{display:none}
+body[data-mode="input"] .go,body[data-mode="continue"] .compose{display:none}
+.sugg{display:flex;flex-wrap:wrap;column-gap:6px;margin:-4px 0 2px}
+.sg{max-width:100%;min-height:44px;display:flex;align-items:center}
+.sg>span{display:flex;align-items:center;gap:6px;min-height:36px;padding:2px 11px;border:1px solid var(--c-line-strong);border-radius:18px;background:var(--c-card);font-size:var(--fs-sm);line-height:1.25}
+.sg-2>span{padding-left:6px}
+.sg:hover>span{border-color:var(--c-accent-text);color:var(--c-accent-text)}
+.field{display:flex;align-items:center;height:50px;padding-right:2px;border:1px solid var(--c-line-strong);border-radius:var(--r-lg);background:var(--c-card)}
+.field:focus-within{border-color:var(--c-accent-text);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 26%,transparent)}
+.to{flex:none;height:48px;display:flex;align-items:center;gap:6px;padding:0 6px 0 var(--sp-3);border-right:1px solid var(--c-line);border-radius:11px 0 0 11px;font-size:var(--fs-md)}
+.to-k{color:var(--c-text-2)}
+.to .i{color:var(--c-text-2)}
+.field input{flex:1;min-width:0;height:48px;padding:0 10px;border:0;outline:0;background:none;font-size:var(--fs-lg)}
+.field input::placeholder{color:var(--c-text-3);opacity:1}
+.send{flex:none;width:44px;height:44px;display:grid;place-items:center;border-radius:var(--r-md);background:var(--c-accent-fill);color:var(--c-on-accent)}
+
+/* ---------- Primary navigation (bottom bar on phone, rail on desktop) ---------- */
+.nav{position:relative;z-index:6;display:flex;padding:0 var(--sp-1) env(safe-area-inset-bottom,0px);border-top:1px solid var(--c-line);background:var(--c-chrome)}
+.tab{flex:1;min-width:0;height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:var(--fs-xs);line-height:16px;color:var(--c-text-2)}
+.tab-i{position:relative;width:52px;height:28px;display:grid;place-items:center;border-radius:var(--r-pill)}
+
+/* ---------- People: bottom sheet on phone, pane on desktop ---------- */
+.scrim{position:absolute;left:0;top:0;z-index:4;width:100%;height:calc(100% - var(--tab-h));display:none;background:var(--scrim);cursor:default}
+.people{position:absolute;left:0;right:0;bottom:var(--tab-h);z-index:5;max-width:var(--w-read);max-height:calc(100% - var(--tab-h) - 56px);margin:0 auto;display:none;flex-direction:column;border-top:1px solid var(--c-line);border-radius:16px 16px 0 0;background:var(--c-pane);box-shadow:var(--shadow-sheet)}
+body[data-people="open"] .scrim{display:block}
+body[data-people="open"] .people{display:flex}
+.people-h{position:relative;flex:none;display:flex;align-items:center;gap:var(--sp-2);padding:10px 6px 0 var(--sp-4)}
+.people-h::before{content:"";position:absolute;top:7px;left:50%;width:36px;height:4px;margin-left:-18px;border-radius:2px;background:var(--c-line-strong)}
+.people-h h2{font-size:var(--fs-lg);font-weight:600}
+.people-n{flex:1;font-size:var(--fs-sm);color:var(--c-text-2)}
+.people-b{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:var(--sp-2);padding:0 var(--sp-3) 14px}
+.grp{display:flex;justify-content:space-between;margin:6px var(--sp-1) 0;font-size:var(--fs-xs);font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--c-text-2)}
+.person{padding:var(--sp-3);border:1px solid var(--c-line);border-radius:var(--r-lg);background:var(--c-card);--under:var(--c-card)}
+.person.is-focus{border-color:color-mix(in srgb,var(--p) 30%,var(--c-card))}
+.person-top{display:flex;align-items:center;gap:10px;min-height:44px}
+.person-id{flex:1;min-width:0}
+.person-name{display:flex;align-items:center;flex-wrap:wrap;gap:0 7px;font-size:var(--fs-lg);font-weight:600;line-height:21px}
+.pinned{display:inline-flex;align-items:center;gap:3px;font-size:var(--fs-xs);font-weight:600;color:var(--c-gold)}
+.person-role{font-size:var(--fs-sm);line-height:17px;color:var(--c-text-2)}
+.bond{flex:none;display:grid;justify-items:end;gap:5px}
+.bond-l{display:flex;align-items:center;gap:7px;font-size:var(--fs-sm);line-height:15px;color:var(--c-text-2);font-variant-numeric:tabular-nums}
+.bond-l b{color:var(--c-text)}
+.bond small{font-size:var(--fs-xs);line-height:15px;color:var(--c-text-3)}
+.person-detail{margin-top:10px;padding-top:10px;border-top:1px solid var(--c-line)}
+.mem-k{font-size:var(--fs-xs);font-weight:600;line-height:16px;color:var(--c-text-2)}
+.mem{display:grid;gap:3px;margin-top:var(--sp-1)}
+.mem li{position:relative;padding-left:15px;font-size:var(--fs-md);line-height:20px}
+.mem li::before{content:"";position:absolute;left:3px;top:8px;width:5px;height:5px;border-radius:50%;background:var(--p)}
+.acts{display:flex;gap:6px;margin-top:var(--sp-3)}
+.person-note{margin-top:var(--sp-2);font-size:var(--fs-md);line-height:20px;color:var(--c-text-2)}
+.talk-sm{flex:none;padding:0 14px}
+
+/* ---------- Desktop-only parts are hidden until the desktop layout ---------- */
+.ctx,.brand,.place,.cost,.sub-chapter,.tab-set,.person-foot{display:none}
+
+/* ---------- Phone and tablet only ---------- */
+@media (max-width:1099.98px){
+  body:not([data-people="open"]) .tab[data-nav="story"],body[data-people="open"] .tab[data-nav="people"]{color:var(--c-accent-text);font-weight:600}
+  body:not([data-people="open"]) .tab[data-nav="story"] .tab-i,body[data-people="open"] .tab[data-nav="people"] .tab-i{background:var(--c-accent-tint)}
+  /* something changed with someone: Mira's bond rose in this passage */
+  body:not([data-beats="0"]):not([data-people="open"]) .tab[data-nav="people"] .tab-i::after{content:"";position:absolute;top:1px;right:10px;width:9px;height:9px;border-radius:50%;background:var(--p-mira);box-shadow:0 0 0 2px var(--c-chrome)}
+}
+@media (max-width:699.98px),(min-width:1100px) and (max-width:1279.98px){
+  /* narrow columns keep two rows: the short suggestions share row one and wrap inside their pill before a third row is needed */
+  .sugg{display:grid;grid-template-columns:auto auto;justify-content:start}
+  .sg-2{order:1;grid-column:1/-1;justify-self:start}
+  .sg>span{text-wrap:pretty}
+}
+@media (max-width:699.98px){
+  /* phone: the People sheet always rises to just under the top bar, so its edge never cuts through the meters */
+  .people{height:calc(100% - var(--tab-h) - 56px)}
+}
+@media (min-width:700px) and (max-width:1099.98px){
+  /* tablet: the top bar, meters, people strip and tabs line up with the centred reading column */
+  .bar,.vitals,.strip{max-width:calc(var(--w-read) + 2*var(--gut));margin-inline:auto}
+  .nav{padding-inline:max(var(--sp-1),calc(50% - var(--w-read)/2 - var(--gut)))}
+}
+@media (max-width:379.98px){
+  .cost-k{display:none}
+  .sugg{column-gap:var(--sp-1)}
+  .sg>span{padding:2px var(--sp-2)}
+  .sg-2>span{padding-left:6px}
+}
+
+/* ==========================================================================
+   Desktop: icon rail | people | story | context
+   ========================================================================== */
+@media (min-width:1100px){
+  :root{--fs-story:18px;--fs-speech:17px;--w-read:592px;--gut:var(--sp-6)}
+  /* 592px keeps the 18px serif at about 70 characters a line; the panes are 360 | fluid | 368 */
+  .app{grid-template-columns:72px 360px minmax(0,1fr) 368px;grid-template-rows:auto minmax(0,1fr)}
+  .top{grid-column:1/-1}
+  .menu,.cost-chip,.sub-place,.vitals,.strip,.people-h::before,.people .close,.talk-sm,body[data-people="open"] .scrim{display:none}
+
+  /* top bar aligned to the panes below; the title and the place line up with the reading column */
+  .bar{display:grid;grid-template-columns:432px minmax(0,1fr) 368px;gap:0;height:55px;padding:0}
+  .brand{display:flex;align-items:center;gap:var(--sp-3);padding-left:22px;font-size:var(--fs-lg);font-weight:600}
+  .logo{width:28px;height:28px;display:grid;place-items:center;border-radius:8px;background:var(--c-accent-fill);color:var(--c-on-accent)}
+  .bar-mid{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-5);padding:0 max(var(--gut),calc(50% - var(--w-read)/2))}
+  .titles{flex:none}
+  .sub-chapter{display:block;font-size:var(--fs-sm)}
+  .place{display:flex;align-items:center;gap:6px;font-size:var(--fs-sm);color:var(--c-text-2);white-space:nowrap}
+  .place .i{margin-right:-1px}
+  .dot{color:var(--c-text-3)}
+  .bar-end{justify-content:flex-end;gap:var(--sp-2);padding:0 var(--sp-3)}
+  .cost{display:flex;height:38px;border:1px solid var(--c-line);border-radius:var(--r-md);background:var(--c-card)}
+  .cost>div{padding:3px var(--sp-3) 0;border-left:1px solid var(--c-line)}
+  .cost>div:first-child{border-left:0}
+  .cost dt{font-size:var(--fs-xs);line-height:15px;color:var(--c-text-2)}
+  .cost dd{font-size:var(--fs-sm);line-height:16px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .ib{width:38px;height:38px}
+
+  /* rail */
+  .nav{grid-column:1;grid-row:2;flex-direction:column;align-items:center;gap:var(--sp-1);padding:10px 0;border-top:0;border-right:1px solid var(--c-line)}
+  .tab{flex:none;width:60px;height:auto;padding:7px 0 6px;gap:3px;border-radius:var(--r-md)}
+  .tab:hover{background:var(--c-raised);color:var(--c-text)}
+  .tab-i{width:auto;height:auto}
+  .tab[data-nav="story"]{background:var(--c-accent-tint);color:var(--c-accent-text);font-weight:600}
+  .tab-set{display:flex;margin-top:auto}
+
+  /* people pane */
+  .people{position:static;grid-column:2;grid-row:2;display:flex;max-width:none;max-height:none;min-height:0;margin:0;border-top:0;border-right:1px solid var(--c-line);border-radius:0;box-shadow:none}
+  .people-h{padding:14px var(--sp-4) 2px}
+  .av-l{--z:40px}
+  .person-detail{display:none}
+  body[data-people="open"] .is-focus .person-detail{display:block}
+  .person-foot{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:9px;border-top:1px solid var(--c-line)}
+  .person-foot .link{height:22px}
+  body[data-people="open"] .is-focus .chev{transform:rotate(180deg)}
+  body[data-people="open"] .is-focus .foot-talk{visibility:hidden}
+  body[data-people="open"] .person.is-focus{border-color:color-mix(in srgb,var(--p) 46%,var(--c-card))}
+  .btn{height:36px}
+  .acts{flex-wrap:wrap}
+  .acts .btn-primary{flex:1 0 100%}
+
+  /* story */
+  .story{grid-column:3;grid-row:2}
+  .log{padding:18px var(--gut) var(--sp-4)}
+  .col{gap:var(--sp-4)}
+  .say{max-width:570px}
+  .act{max-width:500px}
+  .check{width:100%;max-width:450px}
+  .dock{padding:10px var(--gut) 14px}
+  .go{height:48px}
+  .go kbd{position:absolute;right:14px;top:50%;display:block;margin-top:-11px;padding:0 7px;border-radius:5px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c-on-accent) 45%,transparent);font:600 var(--fs-xs)/22px var(--font-ui)}
+  .sugg{margin:-2px 0 var(--sp-1)}
+  .sg{min-height:42px}
+  .sg>span{min-height:34px}
+  .field{height:52px}
+  .to,.field input{height:50px}
+
+  /* context pane */
+  .ctx{grid-column:4;grid-row:2;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:var(--sp-3);border-left:1px solid var(--c-line);background:var(--c-pane);scrollbar-width:thin;scrollbar-color:var(--c-line) transparent}
+  .card{flex:none;padding:13px 14px 14px;border:1px solid var(--c-line);border-radius:var(--r-lg);background:var(--c-card)}
+  .card-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .card-t{display:flex;align-items:center;gap:7px;font-size:var(--fs-xs);font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--c-text-2)}
+  .char-id{display:flex;align-items:center;gap:10px}
+  .av-you{--p:var(--c-accent-text)}
+  .char-n{font-size:var(--fs-lg);font-weight:600;line-height:20px}
+  .char-s{font-size:var(--fs-sm);line-height:16px;color:var(--c-text-2)}
+  .char-x{display:flex;gap:var(--sp-4);margin-left:auto}
+  .char-x dt{font-size:var(--fs-xs);line-height:15px;color:var(--c-text-2)}
+  .char-x dd{display:flex;align-items:center;font-size:var(--fs-md);line-height:19px;font-weight:600;font-variant-numeric:tabular-nums}
+  .char-x dd span{margin-left:5px}
+  .char-x .i{margin-left:-1px;color:var(--c-text)}
+  .meters{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:var(--sp-3)}
+  .stats{display:flex;margin-top:var(--sp-3);border:1px solid var(--c-line);border-radius:var(--r-md)}
+  .stats>div{flex:1 1 auto;padding:5px var(--sp-1) 6px;border-left:1px solid var(--c-line);text-align:center}
+  .stats>div:first-child{border-left:0}
+  .stats dt{font-size:var(--fs-xs);line-height:15px;color:var(--c-text-2)}
+  .stats dd{font-size:var(--fs-lg);line-height:22px;font-weight:600;font-variant-numeric:tabular-nums}
+  .stats .zero{color:var(--c-text-3)}
+  .facts{display:grid;gap:7px;margin-top:var(--sp-3);font-size:var(--fs-sm);line-height:20px}
+  .facts>div{display:grid;grid-template-columns:78px minmax(0,1fr);gap:var(--sp-2)}
+  .facts dt{color:var(--c-text-2)}
+  .facts dd{display:flex;flex-wrap:wrap;gap:var(--sp-1) 6px}
+  .facts .tag{height:20px;padding:0 7px}
+  .facts .tag b{color:var(--c-text)}
+  /* plain lists: a dot sits before every item and the clip hides the one that starts a line, so no separator dangles when the list wraps */
+  .facts .list{margin-left:-12px;column-gap:0;clip-path:inset(0 0 0 12px)}
+  .list span{position:relative;padding-left:12px}
+  .list span::before{content:"\B7";position:absolute;left:0;width:12px;text-align:center;color:var(--c-text-3)}
+  .threads{display:grid;gap:10px}
+  .threads li{position:relative;padding-left:18px}
+  .threads li::before{content:"";position:absolute;left:1px;top:6px;width:8px;height:8px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--c-accent-text)}
+  .th-t{font-size:var(--fs-md);font-weight:600;line-height:20px}
+  .th-m{margin-top:1px;font-size:var(--fs-sm);line-height:19px;color:var(--c-text-2)}
+  .th-m b{color:var(--c-text)}
+  .due{margin-top:var(--sp-3);padding:var(--sp-2) 11px 9px;border-radius:var(--r-md);background:color-mix(in srgb,var(--c-gold) 11%,var(--c-card));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c-gold) 32%,var(--c-card))}
+  .due-k{display:flex;align-items:center;gap:5px;font-size:var(--fs-xs);font-weight:600;line-height:16px;color:var(--c-gold)}
+  .due p{margin-top:2px;font-size:var(--fs-md);line-height:20px}
+  .map{display:block;max-width:100%;height:auto}
+  .map text{font:var(--fs-xs) var(--font-ui);fill:var(--c-text-2)}
+  .map .t-b{font-weight:600;fill:var(--c-text)}
+  .map .t-a{fill:var(--c-accent-text)}
+  .map-l path{fill:none;stroke:var(--c-line-strong);stroke-width:1.6}
+  .map-l .dash{stroke-dasharray:3 4}
+  .map-n circle{fill:var(--c-card);stroke:var(--c-text-2);stroke-width:1.6}
+  .map-n .unk{stroke:var(--c-text-3);stroke-dasharray:3 3}
+  .map-n .halo{fill:color-mix(in srgb,var(--accent) 26%,transparent);stroke:none}
+  .map-n .here{fill:var(--c-accent-text);stroke:none}
+}
+/* Narrow desktop: slimmer side panes so the story keeps a readable measure; the map moves to its tab */
+@media (min-width:1100px) and (max-width:1279.98px){
+  :root{--gut:var(--sp-5)}
+  .app{grid-template-columns:72px 264px minmax(0,1fr) 336px}
+  .bar{grid-template-columns:auto minmax(0,1fr) auto}
+  .bar-mid{padding:0 var(--sp-5)}
+  .person-top{flex-wrap:wrap}
+  .bond{flex:1 0 100%;display:flex;align-items:center;justify-content:space-between}
+  .card-map{display:none}
+}
+/* Short desktop windows: the map schematic no longer fits under the journal, so it stays behind its tab */
+@media (min-width:1100px) and (max-height:869.98px){
+  .card-map{display:none}
+}
+
+/* ---------- Motion ---------- */
+@media (prefers-reduced-motion:no-preference){
+  .is-new{animation:rise .18s ease-out}
+  @keyframes rise{from{opacity:.4;transform:translateY(6px)}to{opacity:1;transform:none}}
+}
+@media (prefers-reduced-motion:no-preference) and (max-width:1099.98px){
+  body.is-live[data-people="open"] .people{animation:sheet .2s ease-out}
+  @keyframes sheet{from{opacity:.6;transform:translateY(24px)}to{opacity:1;transform:none}}
+}
+</style>
+</head>
+<body data-mode="continue">
+
+<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+<defs>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+<symbol id="i-right" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+<symbol id="i-story" viewBox="0 0 24 24"><path d="M12 6.5C10.4 5.3 8.2 4.7 5.5 4.7H4v13h1.5c2.7 0 4.9.6 6.5 1.8 1.6-1.2 3.8-1.8 6.5-1.8H20v-13h-1.5c-2.7 0-4.9.6-6.5 1.8ZM12 6.5v13"/></symbol>
+<symbol id="i-people" viewBox="0 0 24 24"><circle cx="9.5" cy="8.2" r="3.2"/><path d="M3.5 19v-.8a4.2 4.2 0 0 1 4.2-4.2h3.6a4.2 4.2 0 0 1 4.2 4.2v.8M15.5 5.2a3.2 3.2 0 0 1 0 6M17.5 14.3a4.2 4.2 0 0 1 3 4V19"/></symbol>
+<symbol id="i-sheet" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><circle cx="9" cy="10.6" r="1.9"/><path d="M6 16c.5-1.5 1.6-2.3 3-2.3s2.5.8 3 2.3M14.8 10h3M14.8 13.5h3"/></symbol>
+<symbol id="i-journal" viewBox="0 0 24 24"><rect x="5" y="3.5" width="14" height="17" rx="2.2"/><path d="M9 3.5v17M12.5 8.2H16M12.5 11.8H16"/></symbol>
+<symbol id="i-map" viewBox="0 0 24 24"><path d="m9 4.5-5 2v13l5-2 6 2 5-2v-13l-5 2-6-2ZM9 4.5v13M15 6.5v13"/></symbol>
+<symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20Z"/></symbol>
+<symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3 5.5 13.5h5.8L10.5 21l8-11h-5.8L13 3Z"/></symbol>
+<symbol id="i-gem" viewBox="0 0 24 24"><path d="M12 3.2 19.6 12 12 20.8 4.4 12Z"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3l-5.6 2.9 1.1-6.2L3 9.6l6.2-.9L12 3Z"/></symbol>
+<symbol id="i-dice" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3.5"/><circle cx="9" cy="9" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="15" r="1.2" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24"><path d="M20 12a7.6 7.6 0 0 1-11.3 6.6L4.5 19.5l1-3.9A7.6 7.6 0 1 1 20 12Z"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.8"/><path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.4 1.4M16.6 16.6 18 18M18 6l-1.4 1.4M7.4 16.6 6 18"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M19.5 14.2A7.8 7.8 0 0 1 9.8 4.5a7.8 7.8 0 1 0 9.7 9.7Z"/></symbol>
+<symbol id="i-dusk" viewBox="0 0 24 24"><path d="M3 17h18M7.5 20.5h9M6.5 17a5.5 5.5 0 0 1 11 0M12 6v2.2M4.6 10.2l1.6 1.4M19.4 10.2l-1.6 1.4"/></symbol>
+<symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7.5h9M18 7.5h2M4 16.5h3M12 16.5h8"/><circle cx="15.5" cy="7.5" r="2.3"/><circle cx="9.5" cy="16.5" r="2.3"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 20.5s6.3-5.4 6.3-10.2a6.3 6.3 0 1 0-12.6 0c0 4.8 6.3 10.2 6.3 10.2Z"/><circle cx="12" cy="10.2" r="2.2"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 2.3 6.7L21 12l-6.7 2.3L12 21l-2.3-6.7L3 12l6.7-2.3L12 3Z"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+<symbol id="i-person" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.5"/><path d="M5.5 19.5v-.7a5 5 0 0 1 5-5h3a5 5 0 0 1 5 5v.7"/></symbol>
+</defs>
+</svg>
+
+<div class="app">
+
+  <!-- ===== Top bar ===== -->
+  <header class="top">
+    <div class="bar">
+      <button class="ib menu" aria-label="Menu"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-menu"/></svg></button>
+      <div class="brand"><span class="logo" aria-hidden="true"><svg class="i i-f" width="16" height="16" aria-hidden="true"><use href="#i-spark"/></svg></span><span>Bitor Quest</span></div>
+      <div class="bar-mid">
+        <div class="titles">
+          <h1 class="story-title"><span class="world" aria-hidden="true"></span><span>The Glass Road</span></h1>
+          <p class="sub sub-place"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-dusk"/></svg><span>Lantern Market · Dusk · Day 12</span></p>
+          <p class="sub sub-chapter">Chapter 2 · “Borrowed Seals” · Scene 4</p>
+        </div>
+        <p class="place"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-pin"/></svg>Lantern Market <span class="dot" aria-hidden="true">·</span> <svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-dusk"/></svg>Dusk <span class="dot" aria-hidden="true">·</span> Day 12</p>
+      </div>
+      <div class="bar-end">
+        <div class="cost-chip" title="Cost of this turn"><span class="cost-k">Turn</span>$0.006</div>
+        <dl class="cost" aria-label="Cost meter">
+          <div><dt>This turn</dt><dd>$0.006</dd></div>
+          <div><dt>Session</dt><dd>$0.21</dd></div>
+          <div><dt>Narrator</dt><dd>Sonnet 5.5</dd></div>
+        </dl>
+        <button class="ib" data-theme-toggle aria-label="Switch between dark and light theme">
+          <svg class="i t-sun" width="20" height="20" aria-hidden="true"><use href="#i-sun"/></svg>
+          <svg class="i t-moon" width="20" height="20" aria-hidden="true"><use href="#i-moon"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="vitals" role="group" aria-label="Aren">
+      <div class="hp" style="--v:80%">
+        <div class="m-top"><span class="m-k"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-heart"/></svg>HP</span><span class="m-v"><b>12</b>/15</span></div>
+        <div class="track"><i></i></div>
+      </div>
+      <div class="en" style="--v:60%">
+        <div class="m-top"><span class="m-k"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-bolt"/></svg>Energy</span><span class="m-v"><b>9</b>/15</span></div>
+        <div class="track"><i></i></div>
+      </div>
+      <div class="destiny">
+        <div class="m-top"><span class="m-k">Destiny</span><span class="m-v"><b>2</b></span></div>
+        <div class="gems" aria-hidden="true"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-gem"/></svg><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-gem"/></svg></div>
+      </div>
+    </div>
+
+    <div class="strip" role="group" aria-label="People with you">
+      <div class="strip-row">
+        <button class="pc who-mira" title="Mira, pinned favourite">
+          <span class="av" aria-hidden="true">M<span class="fav"><svg class="i i-f" width="11" height="11" aria-hidden="true"><use href="#i-star"/></svg></span></span>
+          <span class="pc-n">Mira</span>
+          <span class="dots" role="img" aria-label="Bond 4 of 5" data-mira-dots><i class="on"></i><i class="on"></i><i class="on"></i><i class="on live"></i><i></i></span>
+        </button>
+        <button class="pc who-tobin">
+          <span class="av" aria-hidden="true">T</span>
+          <span class="pc-n">Tobin</span>
+          <span class="dots" role="img" aria-label="Bond 1 of 5"><i class="on"></i><i></i><i></i><i></i><i></i></span>
+        </button>
+        <span class="strip-sep" aria-hidden="true"></span>
+        <button class="pc pc-scene who-roth">
+          <span class="av" aria-hidden="true">R</span>
+          <span class="pc-n">Captain Roth</span>
+          <span class="pc-m">Wary</span>
+        </button>
+        <button class="pc pc-scene">
+          <span class="av av-anon" aria-hidden="true"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-person"/></svg></span>
+          <span class="pc-n">Lantern seller</span>
+          <span class="pc-m">Stranger</span>
+        </button>
+      </div>
+      <button class="pc pc-all" data-people-toggle aria-expanded="false" aria-label="Open people panel">
+        <span class="av av-all" aria-hidden="true"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span>
+        <span class="pc-n">All</span>
+        <span class="pc-m">4 here</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== Primary navigation ===== -->
+  <nav class="nav" aria-label="Primary">
+    <button class="tab" data-nav="story" aria-current="page"><span class="tab-i"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-story"/></svg></span>Story</button>
+    <button class="tab" data-nav="people" data-people-toggle aria-expanded="false"><span class="tab-i"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-people"/></svg></span>People</button>
+    <button class="tab"><span class="tab-i"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-sheet"/></svg></span>Character</button>
+    <button class="tab"><span class="tab-i"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-journal"/></svg></span>Journal</button>
+    <button class="tab"><span class="tab-i"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-map"/></svg></span>Map</button>
+    <button class="tab tab-set"><span class="tab-i"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-sliders"/></svg></span>Settings</button>
+  </nav>
+
+  <!-- ===== People ===== -->
+  <button class="scrim" type="button" data-people-toggle tabindex="-1" aria-hidden="true"></button>
+  <aside class="people" aria-label="People">
+    <header class="people-h">
+      <h2>People</h2>
+      <span class="people-n">4 here</span>
+      <button class="ib close" data-people-toggle aria-label="Close people panel"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </header>
+    <div class="people-b">
+      <h3 class="grp"><span>Your party</span><span>2</span></h3>
+
+      <article class="person who-mira is-focus">
+        <div class="person-top">
+          <span class="av av-l" aria-hidden="true">M<span class="fav"><svg class="i i-f" width="11" height="11" aria-hidden="true"><use href="#i-star"/></svg></span></span>
+          <div class="person-id">
+            <div class="person-name">Mira <span class="pinned"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-star"/></svg>Pinned</span></div>
+            <div class="person-role">Scout</div>
+          </div>
+          <div class="bond">
+            <div class="bond-l"><span class="dots dots-l" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on live"></i><i></i></span><span>Bond <b data-mira-bond>4</b>/5</span></div>
+            <span class="mood">Trusts you</span>
+          </div>
+        </div>
+        <div class="person-detail" id="mira-profile">
+          <h4 class="mem-k">Shared memories</h4>
+          <ul class="mem">
+            <li>You shared your rations on the salt flats.</li>
+            <li>You did not use her as bait at the bridge.</li>
+          </ul>
+          <div class="acts">
+            <button class="btn btn-primary"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-chat"/></svg>Talk</button>
+            <button class="btn">Spend time together</button>
+            <button class="btn">Ask about…</button>
+          </div>
+        </div>
+        <div class="person-foot">
+          <button class="link foot-talk"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-chat"/></svg>Talk</button>
+          <button class="link" data-people-toggle aria-expanded="false" aria-controls="mira-profile">Profile<svg class="i i-s chev" width="14" height="14" aria-hidden="true"><use href="#i-down"/></svg></button>
+        </div>
+      </article>
+
+      <article class="person who-tobin">
+        <div class="person-top">
+          <span class="av av-l" aria-hidden="true">T</span>
+          <div class="person-id">
+            <div class="person-name">Tobin</div>
+            <div class="person-role">Tinkerer’s apprentice</div>
+          </div>
+          <div class="bond">
+            <div class="bond-l"><span class="dots dots-l" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i><i></i></span><span>Bond <b>1</b>/5</span></div>
+            <span class="mood">Curious</span>
+          </div>
+        </div>
+        <div class="person-detail">
+          <h4 class="mem-k">Shared memory</h4>
+          <ul class="mem">
+            <li>You paid for his broken lens.</li>
+          </ul>
+          <div class="acts">
+            <button class="btn btn-soft"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-chat"/></svg>Talk</button>
+            <button class="btn">Spend time together</button>
+            <button class="btn">Ask about…</button>
+          </div>
+        </div>
+        <div class="person-foot">
+          <button class="link"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-chat"/></svg>Talk</button>
+          <button class="link">Profile<svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-down"/></svg></button>
+        </div>
+      </article>
+
+      <h3 class="grp"><span>Also in the scene</span><span>2</span></h3>
+
+      <article class="person who-roth">
+        <div class="person-top">
+          <span class="av av-l" aria-hidden="true">R</span>
+          <div class="person-id">
+            <div class="person-name">Captain Roth</div>
+            <div class="person-role">City Watch</div>
+          </div>
+          <div class="bond">
+            <span class="mood">Wary</span>
+            <small>No bond yet</small>
+          </div>
+          <button class="btn talk-sm">Talk</button>
+        </div>
+        <p class="person-note">Suspects a courier carried the forged seal.</p>
+        <div class="person-foot">
+          <button class="link"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-chat"/></svg>Talk</button>
+        </div>
+      </article>
+
+      <article class="person">
+        <div class="person-top">
+          <span class="av av-l av-anon" aria-hidden="true"><svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-person"/></svg></span>
+          <div class="person-id">
+            <div class="person-name">Lantern seller</div>
+            <div class="person-role">Stranger</div>
+          </div>
+          <div class="bond"><small>No details yet</small></div>
+          <button class="btn talk-sm">Talk</button>
+        </div>
+        <div class="person-foot">
+          <button class="link"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-chat"/></svg>Talk</button>
+        </div>
+      </article>
+    </div>
+  </aside>
+
+  <!-- ===== Story ===== -->
+  <main class="story">
+    <div class="log" data-log role="log" aria-label="Story">
+      <div class="col">
+        <h2 class="scene">Scene 4 · Lantern Market · Dusk</h2>
+
+        <p class="narr">Paper lanterns sway above the market stalls as the last light drains out of the canal. By the bridge, Captain Roth turns a wax seal over in his gloved hand while two watchmen search a courier’s bag.</p>
+
+        <article class="say who-mira">
+          <header class="say-h"><span class="av av-s" aria-hidden="true">M</span><b class="say-n">Mira</b><span class="say-m">whispering</span></header>
+          <p>“He’s checking couriers. If he sees your satchel, we’re done. I can draw them off, or you talk your way through.”</p>
+        </article>
+
+        <article class="say who-tobin">
+          <header class="say-h"><span class="av av-s" aria-hidden="true">T</span><b class="say-n">Tobin</b></header>
+          <p>“Or we wait for dark. I vote dark.”</p>
+        </article>
+
+        <article class="act" aria-label="Your action">
+          <header class="act-h">Aren <span class="you">You</span></header>
+          <p>I walk up to Roth openly and ask whether the bridge is closed, keeping the satchel under my cloak.</p>
+        </article>
+
+        <section class="check" aria-label="Dice check result">
+          <header class="check-h">
+            <span class="check-k"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-dice"/></svg>Skill test</span>
+            <span class="badge"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg>Success</span>
+          </header>
+          <p class="check-t"><b>Manipulation</b> <span>(bluff)</span> <span class="tag">Medium</span></p>
+          <div class="roll">
+            <div class="stat"><span>Rolled</span><b>2</b></div>
+            <div>
+              <ol class="steps" aria-hidden="true"><li class="in">1</li><li class="in hit">2</li><li class="in">3</li><li class="in">4</li><li class="lim"></li><li>5</li><li>6</li></ol>
+              <p class="scale-cap">Needed 4 or less on one die</p>
+            </div>
+            <div class="stat"><span>Quality</span><b>2</b></div>
+          </div>
+          <p class="check-f who-roth">Opposed by <span class="av av-s" aria-hidden="true">R</span><b>Captain Roth</b></p>
+        </section>
+
+        <p class="narr">Roth’s eyes go from your face to your boots and back. “Bridge is open. Papers are not,” he says, but he is already looking past you at a cart with a broken axle. He waves you on.</p>
+
+        <div class="beat" data-pending>
+          <article class="say who-mira">
+            <header class="say-h"><span class="av av-s" aria-hidden="true">M</span><b class="say-n">Mira</b><span class="say-m">low, falling in beside you</span></header>
+            <p>“You could have sent me in as the distraction. You didn’t.” <span class="aside">A&nbsp;pause.</span> “I noticed.”</p>
+          </article>
+          <div class="notes">
+            <span class="note note-bond who-mira"><span class="av av-s" aria-hidden="true">M</span>Bond with Mira rises from 3 to 4<span class="dots" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on live"></i><i></i></span></span>
+          </div>
+        </div>
+
+        <div class="beat" data-pending>
+          <p class="narr">Behind you the cart finally gives way, and the whole market turns to look. The bridge ahead is empty, and beyond it the lamps of the Glass Road are being lit one by one.</p>
+          <div class="notes">
+            <span class="note"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-spark"/></svg><span><b>+1</b> experience</span></span>
+            <span class="note"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-target"/></svg><span><b>Goal progress:</b> reach the Glass Road waystation</span></span>
+          </div>
+          <p class="skip"><span><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-clock"/></svg>10 minutes pass</span></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="dock">
+      <div class="dock-in">
+        <button class="go" data-continue>
+          <span>Continue</span>
+          <span class="go-n"><b data-continue-count>2</b> more</span>
+          <svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-arrow"/></svg>
+          <kbd aria-hidden="true">Space</kbd>
+        </button>
+        <div class="compose">
+          <div class="sugg" role="group" aria-label="Suggested actions">
+            <button class="sg"><span>Cross the bridge now</span></button>
+            <button class="sg sg-2 who-mira"><span><span class="av av-s" aria-hidden="true">M</span>Ask Mira what she saw at the stalls</span></button>
+            <button class="sg"><span>Take a closer look at the cart</span></button>
+          </div>
+          <div class="field">
+            <button class="to who-mira" aria-label="To: Mira. Change who you speak to"><span class="to-k">To:</span><span class="av av-s" aria-hidden="true">M</span><b>Mira</b><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-down"/></svg></button>
+            <input type="text" placeholder="What do you do?" aria-label="What do you do?" autocomplete="off">
+            <button class="send" aria-label="Send"><svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-send"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== Context (desktop) ===== -->
+  <aside class="ctx" aria-label="Character, journal and map">
+    <section class="card">
+      <header class="card-h">
+        <h2 class="card-t"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-sheet"/></svg>Character</h2>
+        <button class="link">Sheet<svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-right"/></svg></button>
+      </header>
+      <div class="char-id">
+        <span class="av av-you" aria-hidden="true">A</span>
+        <div><div class="char-n">Aren</div><div class="char-s">Protagonist</div></div>
+        <dl class="char-x">
+          <div><dt>Destiny</dt><dd><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-gem"/></svg><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-gem"/></svg><span>2</span></dd></div>
+          <div><dt>Experience</dt><dd>14</dd></div>
+        </dl>
+      </div>
+      <div class="meters">
+        <div class="hp" style="--v:80%">
+          <div class="m-top"><span class="m-k"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-heart"/></svg>Hit points</span><span class="m-v"><b>12</b>/15</span></div>
+          <div class="track"><i></i></div>
+        </div>
+        <div class="en" style="--v:60%">
+          <div class="m-top"><span class="m-k"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-bolt"/></svg>Energy</span><span class="m-v"><b>9</b>/15</span></div>
+          <div class="track"><i></i></div>
+        </div>
+      </div>
+      <dl class="stats" aria-label="Attributes">
+        <div><dt>Strength</dt><dd>1</dd></div>
+        <div><dt>Skill</dt><dd>3</dd></div>
+        <div><dt>Resistance</dt><dd>3</dd></div>
+        <div><dt>Armor</dt><dd>1</dd></div>
+        <div><dt>Firepower</dt><dd class="zero">0</dd></div>
+      </dl>
+      <dl class="facts">
+        <div><dt>Paths</dt><dd><span class="tag">Air <b>2</b></span><span class="tag">Light <b>1</b></span></dd></div>
+        <div><dt>Abilities</dt><dd><span class="tag"><b>Featherstep</b> Air 1</span><span class="tag"><b>Gale Push</b> Air 2</span><span class="tag"><b>Glimmer</b> Light 1</span></dd></div>
+        <div><dt>Advantages</dt><dd class="list"><span>Quick Reflexes</span><span>Patron: Couriers’ Guild</span></dd></div>
+        <div><dt>Skills</dt><dd class="list"><span>Manipulation</span><span>Survival</span></dd></div>
+      </dl>
+    </section>
+
+    <section class="card">
+      <header class="card-h">
+        <h2 class="card-t"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-journal"/></svg>Journal · Threads</h2>
+        <button class="link">Open<svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-right"/></svg></button>
+      </header>
+      <ul class="threads">
+        <li>
+          <p class="th-t">Deliver the sealed letter to the Glass Road waystation.</p>
+          <p class="th-m"><b>Next:</b> cross the bridge before the gates close.</p>
+        </li>
+        <li>
+          <p class="th-t">Who copied the baron’s seal?</p>
+          <p class="th-m"><b>Clue:</b> Roth carries a copy.</p>
+        </li>
+      </ul>
+      <div class="due">
+        <div class="due-k"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-clock"/></svg>Commitment · due tonight</div>
+        <p>Meet Tobin’s master at the Old Mill.</p>
+      </div>
+    </section>
+
+    <section class="card card-map">
+      <header class="card-h">
+        <h2 class="card-t"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-map"/></svg>Map</h2>
+        <button class="link">Open<svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-right"/></svg></button>
+      </header>
+      <svg class="map" width="312" height="122" viewBox="0 0 312 122" role="img" aria-label="Schematic map. Old Mill links to Lantern Market, where you are. North Gate branches off Lantern Market. Lantern Market links to Canal Bridge, which links to Glass Road Waystation. One undiscovered place lies beyond the waystation.">
+        <g class="map-l"><path d="M24 70H254M108 70V22"/><path class="dash" d="M254 70H298"/></g>
+        <g class="map-n">
+          <circle cx="24" cy="70" r="5.5"/><circle cx="108" cy="22" r="5.5"/><circle cx="186" cy="70" r="5.5"/><circle cx="254" cy="70" r="5.5"/>
+          <circle class="unk" cx="298" cy="70" r="9"/>
+          <circle class="halo" cx="108" cy="70" r="11"/><circle class="here" cx="108" cy="70" r="6"/>
+        </g>
+        <g aria-hidden="true">
+          <text x="24" y="93" text-anchor="middle">Old Mill</text>
+          <text x="120" y="26">North Gate</text>
+          <text class="t-b" x="108" y="93" text-anchor="middle">Lantern Market</text>
+          <text class="t-a" x="108" y="109" text-anchor="middle">You are here</text>
+          <text x="186" y="54" text-anchor="middle">Canal Bridge</text>
+          <text x="254" y="93" text-anchor="middle">Glass Road</text>
+          <text x="254" y="109" text-anchor="middle">Waystation</text>
+          <text x="298" y="74" text-anchor="middle">?</text>
+        </g>
+      </svg>
+    </section>
+  </aside>
+
+</div>
+
+<script>
+(function () {
+  var d = document, root = d.documentElement, body = d.body;
+  var q = new URLSearchParams(location.search);
+  if (q.get('theme') === 'light') root.classList.add('theme-light');
+  var state = q.get('state') || 'continue';
+  var pending = [].slice.call(d.querySelectorAll('[data-pending]'));
+  var shown = (state === 'input' || state === 'people') ? pending.length : 0;
+  var log = d.querySelector('[data-log]');
+  function each(sel, fn) { [].forEach.call(d.querySelectorAll(sel), fn); }
+  function toEnd() { if (log) log.scrollTop = log.scrollHeight; }
+  function sync(fresh) {
+    pending.forEach(function (el, i) {
+      var hide = i >= shown;
+      if (fresh) el.classList.toggle('is-new', el.hidden && !hide); // marks where to resume reading
+      el.hidden = hide;
+    });
+    var left = pending.length - shown;
+    var bond = shown > 0 ? 4 : 3; // Mira's bond rises when the first pending beat is revealed
+    body.dataset.mode = left > 0 ? 'continue' : 'input';
+    body.dataset.beats = shown;
+    each('[data-continue-count]', function (c) { c.textContent = left; });
+    each('[data-mira-bond]', function (c) { c.textContent = bond; });
+    each('[data-mira-dots]', function (c) { c.setAttribute('aria-label', 'Bond ' + bond + ' of 5'); });
+    toEnd();
+  }
+  function people(open) {
+    body.dataset.people = open ? 'open' : '';
+    each('[data-people-toggle][aria-expanded]', function (b) { b.setAttribute('aria-expanded', open); });
+  }
+  if (state === 'people') people(true);
+  d.addEventListener('click', function (e) {
+    var t = e.target;
+    body.classList.add('is-live');
+    if (t.closest('[data-continue]')) {
+      shown = Math.min(pending.length, shown + 1);
+      sync(true);
+      if (shown === pending.length && matchMedia('(hover:hover) and (pointer:fine)').matches) {
+        var f = d.querySelector('.field input');
+        if (f) f.focus();
+      }
+    }
+    if (t.closest('[data-people-toggle]')) people(body.dataset.people !== 'open');
+    if (t.closest('[data-theme-toggle]')) root.classList.toggle('theme-light');
+  });
+  d.addEventListener('keydown', function (e) {
+    var t = e.target;
+    if (e.key === 'Escape' && body.dataset.people === 'open') people(false);
+    if (e.key === ' ' && body.dataset.mode === 'continue' && !(t.closest && t.closest('button,input,textarea,a'))) {
+      e.preventDefault();
+      var c = d.querySelector('[data-continue]');
+      if (c) c.click();
+    }
+  });
+  addEventListener('resize', toEnd);
+  sync(false);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+/* Usage: what the key was charged. Totals first, then one chart for each question.
+   One series and one colour per chart; today is gold and is also named. Every value is written out.
+   Built from Slate tokens. Every rule is scoped to .usg, the screen's wrapper (it has no box of its own). */
+.usg{display:contents}
+
+/* Which ledger is on screen: charges, or demo estimates. Never both at once. */
+.usg .ledger{flex:none}
+.usg .alert .link{margin-top:var(--sp-1)}
+
+/* Totals: a label, a large figure, one line of context */
+.usg .tiles{display:grid;gap:var(--sp-3);grid-template-columns:repeat(2,minmax(0,1fr))}
+.usg .tiles .today{grid-column:1/-1}
+.usg .tile{display:grid;align-content:start;gap:2px}
+.usg .tile-k{font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.usg .tile-v{font-size:var(--fs-2xl);font-weight:600;line-height:1.25;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.usg .tile-s{font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.usg .tile-s b{color:var(--c-text);font-variant-numeric:tabular-nums}
+.usg .today .budget{margin-top:var(--sp-2)}
+.usg .today-h{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);margin:-6px 0}
+.usg .today-n{margin-top:var(--sp-2);padding-top:var(--sp-2);border-top:1px solid var(--c-line);text-wrap:pretty}
+
+/* Day columns. The shared .vbars measures a column against the whole cell, label included, so tall columns
+   are squeezed. Here the cell keeps room above (the value) and below (the day), and --v is a share of what is left. */
+.usg .days{position:relative;height:172px;gap:var(--sp-1);padding-right:var(--sp-4)}   /* phone: room beside today's column for its figure */
+.usg .days::after{content:"";position:absolute;left:0;right:0;bottom:23px;height:1px;background:var(--c-line-strong)}
+.usg .days>div{position:relative;gap:0;padding:22px 0 24px}
+.usg .days i{position:relative;flex:none;max-width:14px}
+.usg .days .zero i{min-height:0}
+.usg .days b{position:absolute;left:50%;bottom:100%;transform:translateX(-50%);padding-bottom:3px;font-size:var(--fs-xs);line-height:16px;font-style:normal;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--c-text)}
+.usg .days span{position:absolute;left:50%;bottom:0;transform:translateX(-50%);line-height:16px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.usg .days .is-now span{font-weight:600;color:var(--c-text)}
+.usg .days div:not(.key) b,.usg .days .alt span{display:none}   /* phone: the largest day and today carry a value; every second day is named */
+.usg .days .is-now b{left:-6px;transform:none}   /* phone: today's figure starts at its own column and runs right, clear of a taller column before it */
+.usg .chart-f{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0 var(--sp-3);margin:var(--sp-2) 0 -8px}
+.usg .chart-f p{flex:1 1 240px}
+.usg .chart-f b{color:var(--c-text)}
+
+/* The same fourteen days as a list, for anyone who wants every figure */
+.usg .daylist{display:grid;grid-template-rows:repeat(7,auto);grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);column-gap:var(--sp-5);margin-top:var(--sp-2);padding-top:var(--sp-1);border-top:1px solid var(--c-line);font-size:var(--fs-sm)}
+.usg .daylist li{display:flex;justify-content:space-between;gap:var(--sp-2);padding:5px 0;color:var(--c-text-2)}
+.usg .daylist b{color:var(--c-text);font-variant-numeric:tabular-nums}
+.usg .daylist .zero b{font-weight:400;color:var(--c-text-3)}
+.usg .daylist .is-now{color:var(--c-text)}
+.usg .u-sum{display:flex;justify-content:space-between;gap:var(--sp-3);margin-top:var(--sp-3);padding-top:10px;border-top:1px solid var(--c-line);font-size:var(--fs-md);font-weight:600}
+.usg .u-sum b{font-variant-numeric:tabular-nums}
+
+/* Horizontal bars: a name with one line of detail, the amount, then the bar */
+.usg .by{display:flex;flex-direction:column}
+.usg .by .hbar{align-items:start;row-gap:6px;font-size:var(--fs-md);line-height:20px}
+.usg .by .hbar small{display:block;font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.usg .by .hbar>b{font-variant-numeric:tabular-nums}
+.usg .by .hbars{gap:14px;margin-bottom:var(--sp-3)}
+.usg .by .card-h span{font-size:var(--fs-xs);color:var(--c-text-2)}
+.usg .by .u-sum{margin-top:auto}
+
+/* How it stays cheap */
+.usg .cache{display:grid;gap:6px}
+.usg .cache .tile-v+.tile-s{margin-top:-4px}
+.usg .why{display:grid;gap:var(--sp-3);margin-top:var(--sp-4)}
+.usg .why li{display:flex;gap:10px;font-size:var(--fs-sm);line-height:19px;color:var(--c-text-2);text-wrap:pretty}
+.usg .why .i{margin-top:1px;color:var(--c-accent-text)}
+.usg .why b{display:block;font-size:var(--fs-md);color:var(--c-text)}
+
+/* The last turn */
+.usg .turn{margin-top:var(--sp-1)}
+.usg .turn td,.usg .turn th{padding-left:0;padding-right:0}
+.usg .turn td{padding-top:6px;padding-bottom:6px}
+.usg .turn .tot td{font-weight:600;border-bottom:0;padding-top:10px}
+.usg .turn .part td{color:var(--c-text-2);border-bottom:0}
+.usg .turn .part td:first-child{padding-left:var(--sp-4)}
+.usg .turn tbody+tbody .tot td{border-top:1px solid var(--c-line)}
+.usg .turn-meter{display:grid;gap:6px;margin-top:var(--sp-3)}
+
+@media (min-width:700px){
+  .usg .days{height:200px;gap:var(--sp-2);padding-right:0}
+  .usg .days i{max-width:32px}
+  .usg .days div:not(.key) b,.usg .days .alt span{display:revert}
+  .usg .days .is-now b{left:50%;transform:translateX(-50%)}
+}
+@media (min-width:1100px){
+  .usg .tiles{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr) minmax(0,1fr)}
+  .usg .tiles .today{grid-column:auto}
+  .usg .today-h{margin:0}
+  .usg .chart-f{margin-bottom:0}
+  .usg .tile{gap:var(--sp-1)}
+  .usg .daylist{grid-template-rows:repeat(2,auto);grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-flow:row;column-gap:var(--sp-2)}
+  .usg .daylist li{flex-direction:column;align-items:center;gap:0;padding:var(--sp-2) 0}
+  .usg .ledger{align-self:flex-start;width:360px}
+}

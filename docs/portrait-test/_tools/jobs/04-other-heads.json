@@ -1,0 +1,22 @@
+[
+  {
+    "out": "front/head-dark.png",
+    "route": "/edit-image-pixen",
+    "body": {
+      "description": "change his skin to a very dark brown skin tone; keep the pose, face shape, framing and clothes exactly the same; keep him bald",
+      "image": "@front/head.png",
+      "no_background": true,
+      "seed": 21
+    }
+  },
+  {
+    "out": "front/head-woman.png",
+    "route": "/edit-image-pixen",
+    "body": {
+      "description": "turn him into a bald young woman with pale skin and a round soft face; keep the pose, head position, framing and clothes exactly the same",
+      "image": "@front/head.png",
+      "no_background": true,
+      "seed": 21
+    }
+  }
+]

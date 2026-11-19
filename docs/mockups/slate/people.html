@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitor Quest - People</title>
+<link rel="stylesheet" href="slate.css">
+<style>
+/* People: everyone the protagonist knows, one .person card each. The whole card opens the profile. */
+.find{display:grid;gap:var(--sp-1)}
+.find-i{flex:none;width:42px;display:grid;place-items:center;color:var(--c-text-2)}
+.find .input{padding-left:0}
+.person{display:flex;flex-direction:column}
+.plink{flex:1 0 auto;display:block;margin:calc(-1*var(--sp-3));padding:var(--sp-3);border-radius:inherit}
+.person:has(>.plink:hover){border-color:color-mix(in srgb,var(--p,var(--c-text-3)) 46%,var(--c-card))}
+.kind{font-weight:600;color:var(--p,var(--c-text))}
+.plink .moment,.plink .due{margin:10px 0 0}
+.grief{--p:var(--c-err)}                         /* a grievance uses the moment box in the error colour */
+.person-detail .moment{margin-bottom:0}
+.person-detail .acts{margin-top:var(--sp-2)}
+.person-detail .acts:first-child{margin-top:0}
+.empty p{text-wrap:balance}
+.row .row-t,.row .row-s{display:block}
+/* how bonds work: one line per stage */
+.stage-list{display:grid;gap:10px}
+.stage-list li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px var(--sp-3);align-items:center;font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.stage-list b{font-size:var(--fs-md);color:var(--c-text)}
+.stage-list .bb{grid-row:span 2}
+.stage-list .num{color:var(--c-text-3)}
+.hint{display:grid;gap:var(--sp-1);align-content:start}
+.hint .i{color:var(--c-accent-text)}
+.hint h3{font-size:var(--fs-md);font-weight:600}
+.hint p{font-size:var(--fs-sm);line-height:19px;color:var(--c-text-2)}
+@media (max-width:1099.98px){
+  .page-h{align-items:center}
+}
+@media (min-width:1100px){
+  .find{grid-template-columns:minmax(0,340px) minmax(0,1fr);align-items:center;gap:var(--sp-4)}
+  /* the waiting moment and its button share a row, so the cards of a pair stay about the same height */
+  .has-moment{display:flex;align-items:center;gap:var(--sp-2)}
+  .has-moment .moment{flex:1}
+  .has-moment .acts{flex:none;margin-top:0}
+  .person-detail .acts{justify-content:flex-end}
+  .person-detail .btn{flex:none;padding:0 var(--sp-4)}
+}
+</style>
+</head>
+<body data-shell="story" data-page="people" data-title="People" data-state="all" data-with="mira">
+
+<div class="app">
+  <header class="top"><div class="bar" data-bar></div></header>
+  <nav class="nav" data-nav></nav>
+
+  <main class="page">
+    <div class="page-col">
+      <header class="page-h">
+        <div>
+          <h1 class="only-desktop">People</h1>
+          <p data-show="all">9 people · 2 with you</p>
+          <p data-show="empty">Nobody yet</p>
+        </div>
+        <div class="inline">
+          <button class="btn btn-quiet btn-fit" data-open="bonds"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-info"/></svg>How bonds work</button>
+        </div>
+      </header>
+
+      <!-- Find someone -->
+      <div class="find" data-show="all">
+        <div class="input-row">
+          <span class="find-i" aria-hidden="true"><svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-search"/></svg></span>
+          <input class="input" type="text" inputmode="search" placeholder="Search by name or role" aria-label="Search people" autocomplete="off" data-search>
+        </div>
+        <div class="chips" data-single role="group" aria-label="Show">
+          <button class="chip" aria-pressed="true" data-filter="all"><span>All</span></button>
+          <button class="chip" aria-pressed="false" data-filter="party"><span>Party</span></button>
+          <button class="chip" aria-pressed="false" data-filter="pinned"><span>Pinned</span></button>
+          <button class="chip" aria-pressed="false" data-filter="here"><span>Here</span></button>
+          <button class="chip" aria-pressed="false" data-filter="elsewhere"><span>Elsewhere</span></button>
+        </div>
+      </div>
+
+      <div class="stack-l" data-show="all">
+
+        <!-- With you -->
+        <section class="sec" data-group>
+          <h2 class="grp"><span>With you</span><span data-count>2</span></h2>
+          <div class="grid grid-2">
+
+            <article class="person who-mira is-focus" data-tags="party pinned here">
+              <a class="plink" href="person.html">
+                <div class="person-top">
+                  <span class="av av-l" aria-hidden="true">M<span class="fav"><svg class="i i-f" width="11" height="11" aria-hidden="true"><use href="#i-star"/></svg></span></span>
+                  <div class="person-id">
+                    <div class="person-name">Mira <span class="pinned"><svg class="i i-f" width="12" height="12" aria-hidden="true"><use href="#i-star"/></svg>Pinned</span></div>
+                    <div class="person-role">Scout</div>
+                  </div>
+                  <div class="bond">
+                    <div class="bond-l"><b>Close</b><span><b>64</b>/100</span></div>
+                    <span class="bb bb-l" role="img" aria-label="Bond 64 of 100, Close"><i style="--f:1"></i><i style="--f:1"></i><i style="--f:1"></i><i style="--f:.2"></i><i></i></span>
+                    <span class="mood">Trusts you</span>
+                  </div>
+                </div>
+                <p class="person-note">With you since Day 3 · fights with a bow</p>
+              </a>
+              <div class="person-detail has-moment">
+                <p class="moment"><svg class="i i-f" width="16" height="16" aria-hidden="true"><use href="#i-spark"/></svg><span><b>New stage: Close</b>Mira wants a moment with you.</span></p>
+                <div class="acts">
+                  <button class="btn btn-moment" data-set="with=mira" data-open="time"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-spark"/></svg>Spend time together</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="person who-tobin" data-tags="party here">
+              <a class="plink" href="person.html">
+                <div class="person-top">
+                  <span class="av av-l" aria-hidden="true">T</span>
+                  <div class="person-id">
+                    <div class="person-name">Tobin</div>
+                    <div class="person-role">Tinkerer’s apprentice</div>
+                  </div>
+                  <div class="bond">
+                    <div class="bond-l"><b>Acquaintance</b><span><b>9</b>/100</span></div>
+                    <span class="bb bb-l" role="img" aria-label="Bond 9 of 100, Acquaintance"><i style="--f:.45"></i><i></i><i></i><i></i><i></i></span>
+                    <span class="mood">Curious</span>
+                  </div>
+                </div>
+                <p class="person-note">With you since Day 11 · not a fighter</p>
+              </a>
+              <div class="person-detail">
+                <div class="acts">
+                  <button class="btn" data-set="with=tobin" data-open="time">Spend time together</button>
+                </div>
+              </div>
+            </article>
+
+          </div>
+        </section>
+
+        <!-- In this scene -->
+        <section class="sec" data-group>
+          <h2 class="grp"><span>In this scene</span><span data-count>2</span></h2>
+          <div class="grid grid-2">
+
+            <article class="person who-roth" data-tags="here">
+              <a class="plink" href="person.html">
+                <div class="person-top">
+                  <span class="av av-l" aria-hidden="true">R</span>
+                  <div class="person-id">
+                    <div class="person-name">Captain Roth</div>
+                    <div class="person-role">City Watch</div>
+                  </div>
+                  <div class="bond">
+                    <span class="mood">Wary</span>
+                    <small>No bond yet</small>
+                  </div>
+                </div>
+                <p class="person-note">Suspects a courier carried the forged seal.</p>
+              </a>
+            </article>
+
+            <article class="person" data-tags="here">
+              <a class="plink" href="person.html">
+                <div class="person-top">
+                  <span class="av av-l av-anon" aria-hidden="true"><svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-person"/></svg></span>
+                  <div class="person-id">
+                    <div class="person-name">Lantern seller</div>
+                    <div class="person-role">Stranger</div>
+                  </div>
+                  <div class="bond"><small>No details yet</small></div>
+                </div>
+                <p class="person-note">You have not spoken yet.</p>
+              </a>
+            </article>
+
+          </div>
+        </section>
+
+        <!-- Elsewhere -->
+        <section class="sec" data-group>
+          <h2 class="grp"><span>Elsewhere</span><span data-count>4</span></h2>
+          <div class="grid grid-2">
+
+            <article class="person who-lise" data-tags="elsewhere">
+              <a class="plink" href="person.html">
+                <div class="person-top">
+                  <span class="av av-l" aria-hidden="true">L</span>
+                  <div class="person-id">
+                    <div class="person-name">Lise</div>
+                    <div class="person-role"><span class="kind">Kinship</span> · your sister</div>
+                  </div>
+                  <div class="bond">
+                    <div class="bond-l"><b>Devoted</b><span><b>86</b>/100</span></div>
+                    <span class="bb bb-l" role="img" aria-label="Bond 86 of 100, Devoted"><i style="--f:1"></i><i style="--f:1"></i><i style="--f:1"></i><i style="--f:1"></i><i style="--f:.3"></i></span>
+                    <span class="mood">Worried about you</span>
+                  </div>
+                </div>
+                <p class="person-note">Harbour district · you can visit or send word</p>
+              </a>
+            </article>
+
+            <article class="person who-hask" data-tags="elsewhere">
+              <a class="plink" href="person.html">
+                <div class="person-top">
+                  <span class="av av-l" aria-hidden="true">H</span>
+                  <div class="person-id">
+                    <div class="person-name">Oren Hask</div>
+                    <div class="person-role"><span class="kind">Mentorship</span> · Guildmaster, Couriers’ Guild</div>
+                  </div>
+                  <div class="bond">
+                    <div class="bond-l"><b>Trusted</b><span><b>44</b>/100</span></div>
+                    <span class="bb bb-l" role="img" aria-label="Bond 44 of 100, Trusted"><i style="--f:1"></i><i style="--f:1"></i><i style="--f:.2"></i><i></i><i></i></span>
+                    <span class="mood">Expects results</span>
+                  </div>
+                </div>
+                <p class="person-note">Guild House · you can visit or send word</p>
+              </a>
+            </article>
+
+            <article class="person who-dace" data-tags="elsewhere">
+              <a class="plink" href="person.html">
+                <div class="person-top">
+                  <span class="av av-l" aria-hidden="true">D</span>
+                  <div class="person-id">
+                    <div class="person-name">Dace</div>
+                    <div class="person-role"><span class="kind">Rivalry</span> · courier, Ferrymen’s Company</div>
+                  </div>
+                  <div class="bond">
+                    <div class="bond-l"><b>Friendly</b><span><b>22</b>/100</span></div>
+                    <span class="bb bb-l" role="img" aria-label="Bond 22 of 100, Friendly"><i style="--f:1"></i><i style="--f:.1"></i><i></i><i></i><i></i></span>
+                    <span class="mood">Grudging respect</span>
+                  </div>
+                </div>
+                <p class="person-note">Last seen in Brinehold, Day 6</p>
+                <p class="moment grief"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-warn"/></svg><span><b>Open grievance</b>You took the Brinehold contract from under him. Until it is settled, gains are halved and the next stage is out of reach.</span></p>
+              </a>
+            </article>
+
+            <article class="person" data-tags="elsewhere">
+              <a class="plink" href="person.html">
+                <div class="person-top">
+                  <span class="av av-l" aria-hidden="true">K</span>
+                  <div class="person-id">
+                    <div class="person-name">Warden Kessa</div>
+                    <div class="person-role">The baron’s agent</div>
+                  </div>
+                  <div class="bond">
+                    <span class="mood grief">Hostile</span>
+                    <small>No bond</small>
+                  </div>
+                </div>
+                <p class="person-note">Hunting you · last seen in Brinehold, Day 8</p>
+                <p class="moment grief"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-warn"/></svg><span><b>Her grievance</b>You slipped her cordon at Brinehold.</span></p>
+              </a>
+            </article>
+
+          </div>
+        </section>
+
+        <!-- Heard of -->
+        <section class="sec" data-group>
+          <h2 class="grp"><span>Heard of</span><span data-count>1</span></h2>
+          <div class="grid grid-2">
+
+            <article class="person who-sela" data-tags="heard">
+              <a class="plink" href="person.html">
+                <div class="person-top">
+                  <span class="av av-l" aria-hidden="true">S</span>
+                  <div class="person-id">
+                    <div class="person-name">Sela of the Old Mill</div>
+                    <div class="person-role">Lens-maker, Tobin’s master</div>
+                  </div>
+                  <div class="bond"><small>Not met yet</small></div>
+                </div>
+                <div class="due">
+                  <div class="due-k"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-clock"/></svg>Commitment · due tonight</div>
+                  <p>Meet her at the Old Mill.</p>
+                </div>
+              </a>
+            </article>
+
+          </div>
+        </section>
+
+        <p class="t-2" data-none hidden>Nobody matches. Try another name, or show everyone.</p>
+      </div>
+
+      <!-- A new story: nobody is known yet -->
+      <section class="empty" data-show="empty">
+        <svg class="i" width="40" height="40" aria-hidden="true"><use href="#i-people"/></svg>
+        <h2>You have not met anyone yet</h2>
+        <p>Everyone you meet in the story appears here: companions, friends, family, rivals. You will see how well you know each of them, and why.</p>
+        <a class="btn btn-primary btn-lg btn-fit" href="play.html">Back to the story</a>
+      </section>
+      <div class="grid grid-3" data-show="empty">
+        <div class="card hint">
+          <svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-heart"/></svg>
+          <h3>Bonds grow with what you do</h3>
+          <p>A bond runs from 0 to 100. Every 20 points is a stage, and each stage changes what that person will do for you.</p>
+        </div>
+        <div class="card hint">
+          <svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-spark"/></svg>
+          <h3>A new stage brings a moment</h3>
+          <p>A scene with that person, played the next time you spend time together.</p>
+        </div>
+        <div class="card hint">
+          <svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-star"/></svg>
+          <h3>Pin the people you like most</h3>
+          <p>Pinned people stay at the top, and the story gives you more ways to reach them.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="modal-scrim"></div>
+
+  <!-- Time together: a scene for two -->
+  <div class="modal who-mira" data-modal="time" role="dialog" aria-label="Spend time with Mira">
+    <header class="modal-h"><h2><span data-when="with=mira">Spend time with Mira</span><span data-when="with=tobin">Spend time with Tobin</span></h2><button class="ib" data-close aria-label="Close"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <div class="modal-b">
+      <p class="moment" style="margin:0" data-when="with=mira"><svg class="i i-f" width="16" height="16" aria-hidden="true"><use href="#i-spark"/></svg><span><b>Her moment plays here</b>She reached Close today and has something to say to you.</span></p>
+      <p class="t-2">A scene for the two of you. It takes about an hour of the evening and adds a little to the bond, once a day at most.</p>
+      <div class="card card-flush">
+        <a class="row" href="play.html?state=input"><span class="grow"><span class="row-t">Share a meal at the market stalls</span></span><span class="row-end"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span></a>
+        <a class="row" href="play.html?state=input"><span class="grow"><span class="row-t">Walk along the canal</span></span><span class="row-end"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span></a>
+        <a class="row" href="play.html?state=input" data-when="with=tobin"><span class="grow"><span class="row-t">Ask what the lens was for</span><span class="row-s">A small question, still open</span></span><span class="row-end"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span></a>
+        <a class="row" href="play.html?state=input" data-when="with=mira"><span class="grow"><span class="row-t">Ask her to teach you</span><span class="row-s">Windcaller’s Ear, an Air ability she knows</span></span><span class="row-end"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span></a>
+        <a class="row" href="play.html?state=input"><span class="grow"><span class="row-t">Something else…</span><span class="row-s">Describe it in the story</span></span><span class="row-end"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span></a>
+      </div>
+      <div class="due">
+        <div class="due-k"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-clock"/></svg>Commitment · due tonight</div>
+        <p>Meet Tobin’s master at the Old Mill. An hour here leaves less of the evening for it.</p>
+      </div>
+    </div>
+    <footer class="modal-f"><button class="btn" data-close>Not now</button></footer>
+  </div>
+
+  <!-- How bonds work -->
+  <div class="modal" data-modal="bonds" role="dialog" aria-label="How bonds work">
+    <header class="modal-h"><h2>How bonds work</h2><button class="ib" data-close aria-label="Close"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <div class="modal-b">
+      <p class="t-2">A bond runs from 0 to 100. It measures trust and shared history: in practice, how much someone would do for you. Every 20 points is a stage.</p>
+      <ul class="stage-list">
+        <li><span class="bb bb-l" aria-hidden="true"><i style="--f:1"></i><i></i><i></i><i></i><i></i></span><span><b>Acquaintance</b> <span class="num">1–19</span></span><span>Remembers you, talks freely, helps for a price</span></li>
+        <li><span class="bb bb-l" aria-hidden="true"><i style="--f:1"></i><i style="--f:1"></i><i></i><i></i><i></i></span><span><b>Friendly</b> <span class="num">20–39</span></span><span>Does favours, passes on what they hear</span></li>
+        <li><span class="bb bb-l" aria-hidden="true"><i style="--f:1"></i><i style="--f:1"></i><i style="--f:1"></i><i></i><i></i></span><span><b>Trusted</b> <span class="num">40–59</span></span><span>Joins the party, talks about their past</span></li>
+        <li><span class="bb bb-l" aria-hidden="true"><i style="--f:1"></i><i style="--f:1"></i><i style="--f:1"></i><i style="--f:1"></i><i></i></span><span><b>Close</b> <span class="num">60–79</span></span><span>Opens a personal quest, helps in tests, confides secrets</span></li>
+        <li><span class="bb bb-l" aria-hidden="true"><i style="--f:1"></i><i style="--f:1"></i><i style="--f:1"></i><i style="--f:1"></i><i style="--f:1"></i></span><span><b>Devoted</b> <span class="num">80–100</span></span><span>Takes serious risks, acts as one with you in a crisis</span></li>
+      </ul>
+      <div class="card stack-s">
+        <p><b>Most of a bond comes from a few acts that mattered.</b> <span class="t-2">Small courtesies add a little and are capped each day.</span></p>
+        <p><b>A new stage brings a moment.</b> <span class="t-2">A scene with that person, played when you spend time together.</span></p>
+        <p><b>Attitude is separate.</b> <span class="t-2">It is how someone feels about you right now, and it can change within a scene. A bond cannot.</span></p>
+        <p><b>There is no negative bond.</b> <span class="t-2">An enemy has no bond, a hostile attitude and a grievance.</span></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="slate.js"></script>
+<script>
+/* Search and filter chips: hide the cards that do not match, and the groups left empty. */
+(function () {
+  var d = document, q = d.querySelector('[data-search]'), filter = 'all';
+  function each(sel, fn, scope) { [].forEach.call((scope || d).querySelectorAll(sel), fn); }
+  function apply() {
+    var term = (q.value || '').trim().toLowerCase(), shown = 0;
+    each('[data-group]', function (g) {
+      var n = 0;
+      each('.person', function (c) {
+        var id = c.querySelector('.person-id');
+        var ok = (filter === 'all' || c.getAttribute('data-tags').split(' ').indexOf(filter) >= 0)
+          && (!term || id.textContent.toLowerCase().indexOf(term) >= 0);
+        c.hidden = !ok;
+        if (ok) n += 1;
+      }, g);
+      g.hidden = !n;
+      g.querySelector('[data-count]').textContent = n;
+      shown += n;
+    });
+    d.querySelector('[data-none]').hidden = shown > 0;
+  }
+  d.addEventListener('click', function (e) {
+    var c = e.target.closest('[data-filter]');
+    if (c) { filter = c.getAttribute('data-filter'); apply(); }
+  });
+  q.addEventListener('input', apply);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+/* Character creation. From docs/mockups/slate/character-new.html, built from Slate tokens.
+   Class names carry a cn- prefix: every screen's stylesheet is loaded together, and plain names such as
+   .id, .lvl, .sum or .opt mean something else on other screens. */
+
+/* Who the character is */
+.cn-top{display:none}
+.cn-id{display:flex;align-items:center;gap:var(--sp-4);min-width:0}
+.cn-id h1{overflow-wrap:anywhere}
+.cn-id-tags{margin-top:var(--sp-2)}
+.cn-b{color:var(--c-text)}
+.cn-blk{display:block}
+.cn-in-title{margin-left:var(--sp-1);font-weight:400;vertical-align:1px}
+.cn-opt-label{font-weight:400}
+textarea.cn-auto{field-sizing:content;min-height:84px}
+
+/* Asking: the two ways to begin, beside the form */
+.cn-side{display:grid;gap:var(--sp-3)}
+.cn-side .card-h{margin-bottom:0}
+.cn-points{display:grid;gap:var(--sp-3)}
+.cn-points li{display:flex;gap:10px;font-size:var(--fs-sm);line-height:19px;color:var(--c-text-2)}
+.cn-points .i{flex:none;margin-top:1px;color:var(--c-accent-text)}
+.cn-points b{display:block;font-size:var(--fs-md);line-height:20px;color:var(--c-text)}
+.cn-side-f{padding-top:var(--sp-3);border-top:1px solid var(--c-line);font-size:var(--fs-sm);line-height:19px;color:var(--c-text-2)}
+.cn-side-f b{color:var(--c-text)}
+.cn-price{font-weight:400;white-space:nowrap}
+.cn-wait{display:flex;align-items:flex-start;gap:var(--sp-3);padding:var(--sp-4)}
+.cn-wait b{display:block;font-size:var(--fs-lg);line-height:22px}
+.cn-wait p{margin-top:2px;color:var(--c-text-2);text-wrap:pretty}
+.cn-spin{flex:none;width:22px;height:22px;margin-top:1px;border-radius:50%;border:2.5px solid var(--c-track);border-top-color:var(--c-accent-text)}
+:root[data-motion="on"] .cn-spin{animation:cn-turn 1.1s linear infinite}
+@keyframes cn-turn{to{transform:rotate(360deg)}}
+
+/* Three blocks: the first sections, the summary, the remaining sections. One column on a phone (the summary
+   follows the attributes it is worked out from); on a PC the summary is the column on the right and stays in view. */
+.cn-col-a,.cn-col-b{display:flex;flex-direction:column;gap:var(--sp-5);min-width:0}
+.cn-sumry{display:grid;gap:var(--sp-4);min-width:0}
+.cn-sumry-b{display:grid;gap:10px;padding-bottom:var(--sp-4);border-bottom:1px solid var(--c-line)}
+.cn-tally{display:grid;gap:var(--sp-1);font-size:var(--fs-sm);line-height:20px}
+
+/* Trait row (an attribute, a path, a skill, an advantage): the name and one line on the left; pips and
+   the level, a stepper, or what it costs on the right. */
+.cn-trait .row-t{font-weight:600}
+.cn-trait .row-end{gap:10px}
+.cn-trait .row-s{text-wrap:pretty}
+.cn-lv{min-width:13px;font-size:var(--fs-xl);font-weight:600;line-height:1;text-align:right;font-variant-numeric:tabular-nums;color:var(--c-text)}
+.cn-trait.is-zero .row-t{color:var(--c-text-2)}
+.cn-trait.is-zero .row-s,.cn-trait.is-zero .cn-lv,.cn-lv.zero{color:var(--c-text-3)}
+.cn .pips i.above{background:none;box-shadow:inset 0 0 0 1px var(--c-line)}   /* above this world's limit */
+.cn-given .row-t{color:var(--c-text-2)}
+
+/* Why a part of the proposal is as it is */
+.cn-why{display:flex;gap:6px;font-size:var(--fs-sm);line-height:19px;color:var(--c-text-2);text-wrap:pretty}
+.cn-why .i{flex:none;margin-top:2px;color:var(--c-accent-text)}
+.cn-changes{display:grid;gap:2px;margin-top:var(--sp-1);padding-left:18px;list-style:disc;font-size:var(--fs-sm);line-height:19px;color:var(--c-text-2)}
+
+/* Option row: a row that is ticked (taken) or not. Pressing a taken one lets it go. */
+.cn-opt{border-top:1px solid var(--c-line)}
+.cn-opt:first-child{border-top:0}
+.cn-opt>.row{border-top:0}
+.cn-opt-b{align-items:flex-start;text-align:left}
+.cn-opt-b .row-end{margin-top:1px}
+.cn-box{flex:none;width:22px;height:22px;margin-top:1px;display:grid;place-items:center;border-radius:var(--r-sm);box-shadow:inset 0 0 0 1.5px var(--c-line-strong);color:transparent}
+.cn-opt-b[aria-pressed="true"],.cn-opt-b[aria-pressed="true"]:hover{background:var(--c-accent-tint)}
+.cn-opt-b[aria-pressed="true"] .cn-box{background:var(--c-accent-fill);box-shadow:none;color:var(--c-on-accent)}
+.cn-opt-b[disabled]{pointer-events:none}
+.cn-opt-b[disabled] .row-t{color:var(--c-text-2)}
+.cn-opt-b[disabled] .row-s{color:var(--c-text-3)}
+.cn-opt-b[disabled] .cn-box{box-shadow:inset 0 0 0 1.5px var(--c-line)}
+.cn-opt-b .row-s.t-accent{color:var(--c-accent-text)}
+.cn-detail-k{font-weight:400;color:var(--c-text-2)}
+.cn-detail{display:grid;gap:6px;padding:0 14px 14px 49px;background:var(--c-accent-tint)}
+.cn-detail .input{min-height:44px;background:var(--c-card)}
+.cn-add{flex:none;align-self:flex-start;padding:0 var(--sp-4)}
+
+/* Skills: chips that wrap, then what the chosen ones cover */
+.cn-chips{flex-wrap:wrap;gap:0 6px;overflow:visible}
+.cn-chip .i{display:none}
+.cn-chip[aria-pressed="true"] .i{display:block}
+.cn-more summary{display:inline-flex;min-height:36px;cursor:pointer;list-style:none}
+.cn-more summary::-webkit-details-marker{display:none}
+.cn-skills{display:grid;gap:6px;margin-top:var(--sp-1);padding:var(--sp-3) 14px;border:1px solid var(--c-line);border-radius:var(--r-lg);background:var(--c-card);font-size:var(--fs-sm);line-height:19px}
+.cn-skills>div{display:grid;grid-template-columns:104px minmax(0,1fr);gap:var(--sp-2)}
+.cn-skills dt{font-weight:600}
+.cn-skills dd{color:var(--c-text-2)}
+
+/* Ability card: name, path and tier, energy cost, what it does. As a button it is ticked or not. */
+.cn-abil{display:grid;grid-template-rows:auto 1fr;gap:6px;text-align:left}
+.cn-abil-h{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-1) var(--sp-2)}
+.cn-abil-c{display:inline-flex;align-items:center;gap:3px;margin-left:auto;font-size:var(--fs-sm);font-weight:600;white-space:nowrap}
+.cn-abil-c .i{color:var(--c-en)}
+.cn-abil-d{line-height:20px;color:var(--c-text-2)}
+.cn-pick{width:100%}
+.cn-pick .cn-box{margin-top:0}
+.cn-pick:hover{border-color:var(--c-accent-text)}
+.cn-pick[aria-pressed="true"]{border-color:var(--c-accent-text);background:var(--c-accent-tint);box-shadow:inset 0 0 0 1px var(--c-accent-text)}
+.cn-pick[aria-pressed="true"] .cn-box{background:var(--c-accent-fill);box-shadow:none;color:var(--c-on-accent)}
+.cn-pick[disabled]{opacity:.5;pointer-events:none}
+
+/* Vital: a large hit point or energy meter */
+.cn-vital .m-top{align-items:baseline;font-size:var(--fs-sm)}
+.cn-vital .m-v b{font-size:var(--fs-xl);line-height:24px}
+.cn-vital .track{height:10px;border-radius:5px}
+/* A fight number written as a sum; the die still to be rolled is the white die with a question mark */
+.cn-calcs{display:grid;gap:10px}
+.cn-calc{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:center;gap:var(--sp-2);font-size:var(--fs-sm)}
+.cn-calc>span:first-child{color:var(--c-text-2)}
+.cn-sum{display:flex;align-items:center;gap:6px}
+.cn-sum .stat{min-width:66px}
+.cn-op{font-size:var(--fs-lg);color:var(--c-text-3)}
+.cn-die{display:grid;grid-template:none;place-items:center;padding:0;font-size:var(--fs-lg);font-weight:700;line-height:1;color:var(--c-pip)}
+
+/* The foot: on a phone the points ride above the buttons, so they stay in view while the page scrolls */
+.cn-foot{flex:1 1 auto;min-width:0;display:flex;flex-wrap:wrap;gap:var(--sp-2)}
+.cn-foot-budget{flex:1 0 100%;font-size:var(--fs-sm)}
+.cn-foot-why{flex:1 0 100%;font-size:var(--fs-sm);line-height:18px;text-wrap:pretty}
+
+@media (min-width:1100px){
+  .cn .split>.cn-col-a{grid-column:1;grid-row:1}
+  .cn .split>.cn-col-b{grid-column:1;grid-row:2}
+  .cn .split>.cn-sumry{grid-column:2;grid-row:1/span 2;position:sticky;top:var(--sp-6)}
+  .cn-foot{justify-content:center;align-items:center}
+  .cn-foot-why{text-align:center}
+  .cn-detail{padding-left:48px}
+}

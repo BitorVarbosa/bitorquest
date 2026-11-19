@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitor Quest - Your character</title>
+<link rel="stylesheet" href="slate.css">
+<style>
+/* ==== Character components: identical in character.html, advance.html and character-new.html ==== */
+/* Trait row (an attribute or a path): a .row with the name and one line on the left and the value on the right:
+   pips and a number on the sheet, a stepper in the editor, the change when experience is spent. */
+.trait .row-t,.opt .row-t{font-weight:600}
+.trait .row-end{gap:10px}
+.trait .row-s,.opt .row-s{text-wrap:pretty}
+.lvl{min-width:13px;font-size:var(--fs-xl);font-weight:600;line-height:1;text-align:right;font-variant-numeric:tabular-nums;color:var(--c-text)}
+.trait.is-zero .row-t{color:var(--c-text-2)}
+.trait.is-zero .row-s,.trait.is-zero .lvl,.lvl.zero{color:var(--c-text-3)}
+.pips i.cap{background:none;box-shadow:inset 0 0 0 1px var(--c-line)}            /* above this story's cap */
+.pips i.next{background:none;box-shadow:inset 0 0 0 1.5px var(--c-accent-text)}  /* what a raise would add */
+.pips i.new{background:var(--c-gold)}                                            /* just gained */
+.chg{font-weight:400;font-variant-numeric:tabular-nums;color:var(--c-text-2);white-space:nowrap}
+.chg b{color:var(--c-text)}
+/* Ability card: name, path and tier, energy cost, what it does, and an optional foot line */
+.abil{display:grid;grid-template-rows:auto 1fr;gap:6px}
+.abil-h{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-1) var(--sp-2)}
+.abil-c{display:inline-flex;align-items:center;gap:3px;margin-left:auto;font-size:var(--fs-sm);font-weight:600;white-space:nowrap}
+.abil-c .i{color:var(--c-en)}
+.abil-d{line-height:20px;color:var(--c-text-2)}
+.abil-f{display:flex;align-items:flex-start;gap:6px;margin-top:2px;font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.abil-f .i{margin-top:1px;color:var(--c-text-3)}
+.abil-f .i.ok{color:var(--c-ok)}
+.abil-f .av,.abil-f .tag{margin:-2px 0}
+.abil.is-locked .card-n{color:var(--c-text-2)}
+/* Vital: a large hit point or energy meter */
+.vital .m-top{align-items:baseline;font-size:var(--fs-sm)}
+.vital .m-v b{font-size:var(--fs-xl);line-height:24px}
+.vital .track{height:10px;border-radius:5px}
+/* A fight number written as a sum; the die that is still to be rolled is the white die with a question mark */
+.calcs{display:grid;gap:10px}
+.calc{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:center;gap:var(--sp-2);font-size:var(--fs-sm)}
+.calc>span:first-child{color:var(--c-text-2)}
+.sum{display:flex;align-items:center;gap:6px}
+.sum .stat{min-width:66px}
+.sum .op{font-size:var(--fs-lg);color:var(--c-text-3)}
+.die-q{display:grid;grid-template:none;place-items:center;padding:0;font-size:var(--fs-lg);font-weight:700;line-height:1;color:var(--c-pip)}
+/* Option row: a .row that is ticked or not (things to buy with points or experience) */
+.opt{align-items:flex-start}
+.opt .row-t,.opt .row-s{display:block}
+.opt-box{flex:none;width:22px;height:22px;display:grid;place-items:center;border-radius:var(--r-sm);box-shadow:inset 0 0 0 1.5px var(--c-line-strong);color:transparent}
+.opt[aria-pressed="true"],.opt[aria-pressed="true"]:hover{background:var(--c-accent-tint)}
+.opt[aria-pressed="true"]+.opt[aria-pressed="true"]{border-top-color:var(--c-accent-line)}
+.opt[aria-pressed="true"] .opt-box{background:var(--c-accent-fill);box-shadow:none;color:var(--c-on-accent)}
+.opt[disabled]{pointer-events:none}
+.opt[disabled] .row-t{color:var(--c-text-2)}
+.opt[disabled] .row-s{color:var(--c-text-3)}
+.opt[disabled] .opt-box{box-shadow:none;color:var(--c-text-3)}
+.opt-why{display:flex;align-items:center;gap:var(--sp-1);margin-top:3px;font-size:var(--fs-xs);line-height:16px;color:var(--c-text-2)}
+/* The budget rides in the flow footer on a phone, so it stays in view while the page scrolls */
+.flow-foot{flex-wrap:wrap}
+.foot-budget{flex:1 0 100%;font-size:var(--fs-sm)}
+/* Who the character is */
+.id{display:flex;align-items:center;gap:var(--sp-4);min-width:0}
+.id-tags{margin-top:var(--sp-2)}
+
+/* ==== Character creation only ==== */
+/* Three blocks: the first sections, the summary, the remaining sections. One column on a phone (the summary
+   follows the attributes it is computed from); on desktop the summary is the column on the right and stays in view. */
+.col-a,.col-b{display:flex;flex-direction:column;gap:var(--sp-5);min-width:0}
+.sumry{display:grid;gap:var(--sp-4)}
+.sumry-b{display:grid;gap:10px;padding-bottom:var(--sp-4);border-bottom:1px solid var(--c-line)}
+.tally{display:grid;gap:var(--sp-1);font-size:var(--fs-sm);line-height:20px}
+.chips-wrap{flex-wrap:wrap;gap:0 6px;overflow:visible}
+.chip .i{display:none}
+.chip[aria-pressed="true"] .i{display:block}
+.choice-t,.choice-d{display:block}
+.choice-t .tag{margin-left:var(--sp-1);font-weight:400;vertical-align:1px}
+@media (min-width:1100px){
+  .split>.col-a{grid-column:1;grid-row:1}
+  .split>.col-b{grid-column:1;grid-row:2}
+  .split>.sumry{grid-column:2;grid-row:1/span 2;position:sticky;top:var(--sp-6)}
+}
+</style>
+</head>
+<body data-shell="flow" data-title="Your character" data-sub="The Lantern Coast" data-back="worlds.html" data-state="proposed" data-anc="human">
+
+<div class="app">
+  <header class="top"><div class="bar" data-bar></div></header>
+  <nav class="nav" data-nav></nav>
+
+  <main class="page">
+    <div class="page-col">
+
+      <header class="page-h">
+        <div class="id">
+          <span class="av av-xl av-you" aria-hidden="true" data-out="initial">A</span>
+          <div>
+            <h1 data-out="name">Aren</h1>
+            <p>A young courier of the Couriers’ Guild in Port Varn</p>
+            <div class="inline id-tags"><span class="tag" data-when="anc=human">Human</span><span class="tag" data-when="anc=marsh">Marsh-born</span><span class="tag">Champion · 10 points</span></div>
+          </div>
+        </div>
+      </header>
+
+      <div class="split stack-l">
+
+        <!-- ===== First block ===== -->
+        <div class="col-a">
+
+          <!-- Proposed: why the sheet looks like this -->
+          <div class="alert" data-show="proposed">
+            <svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-spark"/></svg>
+            <div><b>Proposed from your premise</b><p>“A young courier for the Couriers’ Guild who is handed a sealed letter that people are willing to kill for.” Every choice has its reason next to it. Begin as he is, or edit anything first.</p></div>
+          </div>
+
+          <section class="sec" data-show="proposed">
+            <div class="sec-h"><h2>Attributes</h2><span class="t-xs t-2">7 points</span></div>
+            <div class="card card-flush">
+              <div class="row trait">
+                <div class="grow"><div class="row-t">Strength</div><div class="row-s">Enough to carry a full satchel all day. No brawler.</div></div>
+                <div class="row-end"><span class="pips" role="img" aria-label="1 of 5"><i class="on"></i><i></i><i></i><i></i><i></i></span><b class="lvl">1</b></div>
+              </div>
+              <div class="row trait">
+                <div class="grow"><div class="row-t">Skill</div><div class="row-s">Couriers live by their wits and their feet.</div></div>
+                <div class="row-end"><span class="pips" role="img" aria-label="3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span><b class="lvl">3</b></div>
+              </div>
+              <div class="row trait">
+                <div class="grow"><div class="row-t">Resistance</div><div class="row-s">Long roads build stamina: 10 hit points, 10 energy.</div></div>
+                <div class="row-end"><span class="pips" role="img" aria-label="2 of 5"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span><b class="lvl">2</b></div>
+              </div>
+              <div class="row trait">
+                <div class="grow"><div class="row-t">Armor</div><div class="row-s">A travelling cloak and the habit of ducking.</div></div>
+                <div class="row-end"><span class="pips" role="img" aria-label="1 of 5"><i class="on"></i><i></i><i></i><i></i><i></i></span><b class="lvl">1</b></div>
+              </div>
+              <div class="row trait">
+                <div class="grow"><div class="row-t">Firepower</div><div class="row-s">He carries a short blade and no bow.</div></div>
+                <div class="row-end"><span class="pips" role="img" aria-label="0 of 5"><i></i><i></i><i></i><i></i><i></i></span><b class="lvl zero">0</b></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Editor: over the budget -->
+          <div class="alert alert-err" data-show="over" role="alert">
+            <svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-warn"/></svg>
+            <div><b><span data-out="over">1</span> over the budget</b><p>You have spent <span data-out="spent">16</span> of <span data-out="budget">15</span> points. Lower an attribute, a path, a skill or an advantage. Disadvantages already give back 5, the most a Champion can get, so they cannot cover it.</p></div>
+          </div>
+
+          <!-- Editor: who -->
+          <section class="sec" data-show="edit over">
+            <div class="sec-h"><h2>Who</h2></div>
+            <div class="card stack">
+              <div class="f">
+                <label class="label" for="name">Name</label>
+                <input class="input" id="name" type="text" value="Aren" autocomplete="off">
+              </div>
+              <div class="f">
+                <label class="label" for="line">In one line</label>
+                <textarea class="input" id="line" rows="2">A young courier of the Couriers’ Guild in Port Varn</textarea>
+                <p class="help">How the narrator introduces you to people who have not met you.</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- Editor: attributes -->
+          <section class="sec" data-show="edit over">
+            <div class="sec-h"><h2>Attributes</h2><span class="t-xs t-2"><b data-out="attr">7</b> points · 1 a level</span></div>
+            <div class="card card-flush">
+              <div class="row trait">
+                <div class="grow"><div class="row-t">Strength</div><div class="row-s">Close combat. Added to your attack.</div></div>
+                <div class="stepper" data-k="str" data-g="attr" data-min="0" data-max="5" role="group" aria-label="Strength">
+                  <button type="button" data-step="-1" aria-label="Lower Strength"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-minus"/></svg></button><b>1</b><button type="button" data-step="1" aria-label="Raise Strength"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-plus"/></svg></button>
+                </div>
+              </div>
+              <div class="row trait">
+                <div class="grow"><div class="row-t">Skill</div><div class="row-s">Agility and wits. In attack, defence and most tests.</div></div>
+                <div class="stepper" data-k="skl" data-g="attr" data-min="0" data-max="5" role="group" aria-label="Skill">
+                  <button type="button" data-step="-1" aria-label="Lower Skill"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-minus"/></svg></button><b>3</b><button type="button" data-step="1" aria-label="Raise Skill"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-plus"/></svg></button>
+                </div>
+              </div>
+              <div class="row trait">
+                <div class="grow"><div class="row-t">Resistance</div><div class="row-s">Stamina and will. Sets hit points and energy.</div></div>
+                <div class="stepper" data-k="res" data-g="attr" data-min="0" data-max="5" role="group" aria-label="Resistance">
+                  <button type="button" data-step="-1" aria-label="Lower Resistance"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-minus"/></svg></button><b>2</b><button type="button" data-step="1" aria-label="Raise Resistance"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-plus"/></svg></button>
+                </div>
+              </div>
+              <div class="row trait">
+                <div class="grow"><div class="row-t">Armor</div><div class="row-s">Turns blows aside. Added to your defence.</div></div>
+                <div class="stepper" data-k="arm" data-g="attr" data-min="0" data-max="5" role="group" aria-label="Armor">
+                  <button type="button" data-step="-1" aria-label="Lower Armor"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-minus"/></svg></button><b>1</b><button type="button" data-step="1" aria-label="Raise Armor"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-plus"/></svg></button>
+                </div>
+              </div>
+              <div class="row trait">
+                <div class="grow"><div class="row-t">Firepower</div><div class="row-s">Ranged attacks, in place of Strength.</div></div>
+                <div class="stepper" data-k="fir" data-g="attr" data-min="0" data-max="5" role="group" aria-label="Firepower">
+                  <button type="button" data-step="-1" aria-label="Lower Firepower" disabled><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-minus"/></svg></button><b>0</b><button type="button" data-step="1" aria-label="Raise Firepower"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-plus"/></svg></button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- ===== Summary: follows every change in the editor ===== -->
+        <aside class="card sumry" aria-label="Summary">
+          <div class="only-desktop">
+            <div class="sumry-b">
+              <h2 class="card-t">Points</h2>
+              <div class="budget" data-budget style="--v:100%">
+                <div class="between"><span><b class="lvl" data-out="spent">15</b> of <span data-out="budget">15</span> spent</span><span class="t-2 num" data-out="left">0 left</span></div>
+                <div class="track"><i></i></div>
+              </div>
+              <p class="help">10 for a Champion + <span data-out="dis">5</span> from disadvantages</p>
+              <ul class="tally">
+                <li class="between"><span class="t-2">Attributes</span><b class="num" data-out="attr">7</b></li>
+                <li class="between"><span class="t-2">Paths</span><b class="num" data-out="path">2</b></li>
+                <li class="between"><span class="t-2">Skills</span><b class="num" data-out="skill">4</b></li>
+                <li class="between"><span class="t-2">Advantages</span><b class="num" data-out="adv">2</b></li>
+                <li class="between"><span class="t-2">Ancestry</span><b class="num" data-out="anc">0</b></li>
+              </ul>
+            </div>
+          </div>
+          <div class="stack">
+            <h2 class="card-t">With these numbers</h2>
+            <div class="meters">
+              <div class="vital hp" style="--v:100%">
+                <div class="m-top"><span class="m-k"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-heart"/></svg>Hit points</span><span class="m-v"><b data-out="hp">10</b></span></div>
+                <div class="track"><i></i></div>
+              </div>
+              <div class="vital en" style="--v:100%">
+                <div class="m-top"><span class="m-k"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-bolt"/></svg>Energy</span><span class="m-v"><b data-out="hp">10</b></span></div>
+                <div class="track"><i></i></div>
+              </div>
+            </div>
+            <p class="help">Each is 5 × Resistance <span data-out="res">2</span>.</p>
+            <div class="calcs">
+              <div class="calc">
+                <span>Attack</span>
+                <div class="sum"><span class="stat"><span>Strength</span><b data-out="str">1</b></span><span class="op">+</span><span class="stat"><span>Skill</span><b data-out="skl">3</b></span><span class="op">+</span><span class="die die-s die-q" role="img" aria-label="one die">?</span></div>
+              </div>
+              <div class="calc">
+                <span>Defence</span>
+                <div class="sum"><span class="stat"><span>Armor</span><b data-out="arm">1</b></span><span class="op">+</span><span class="stat"><span>Skill</span><b data-out="skl">3</b></span><span class="op">+</span><span class="die die-s die-q" role="img" aria-label="one die">?</span></div>
+              </div>
+              <div class="calc">
+                <span>Initiative</span>
+                <div class="sum"><span class="stat"><span>Skill</span><b data-out="skl">3</b></span><span class="op">+</span><span class="stat" title="Quick Reflexes"><span>Reflexes</span><b data-out="ini">1</b></span><span class="op">+</span><span class="die die-s die-q" role="img" aria-label="one die">?</span></div>
+              </div>
+            </div>
+            <p class="help">Attack is with a short blade. A 6 on the die doubles Strength when you attack and Armor when you defend.</p>
+          </div>
+        </aside>
+
+        <!-- ===== Second block ===== -->
+        <div class="col-b">
+
+          <!-- Proposed -->
+          <section class="sec" data-show="proposed">
+            <div class="sec-h"><h2>Paths and starting abilities</h2><span class="t-xs t-2">2 points</span></div>
+            <div class="stack">
+              <div class="card card-flush">
+                <div class="row trait">
+                  <div class="grow"><div class="row-t">Air</div><div class="row-s">The wind favours people who run for a living.</div></div>
+                  <div class="row-end"><span class="pips" role="img" aria-label="1, the cap is 3"><i class="on"></i><i></i><i></i><i class="cap"></i><i class="cap"></i></span><b class="lvl">1</b></div>
+                </div>
+                <div class="row trait">
+                  <div class="grow"><div class="row-t">Light</div><div class="row-s">A small light for dark roads and sealed rooms.</div></div>
+                  <div class="row-end"><span class="pips" role="img" aria-label="1, the cap is 3"><i class="on"></i><i></i><i></i><i class="cap"></i><i class="cap"></i></span><b class="lvl">1</b></div>
+                </div>
+                <div class="row trait is-zero">
+                  <div class="grow"><div class="row-t">Fire, Water, Earth, Dark</div><div class="row-s">Left at 0. Paths can grow later, with experience.</div></div>
+                  <div class="row-end"><span class="pips" role="img" aria-label="0, the cap is 3"><i></i><i></i><i></i><i class="cap"></i><i class="cap"></i></span><b class="lvl">0</b></div>
+                </div>
+              </div>
+              <div class="grid grid-2">
+                <article class="card abil">
+                  <div class="abil-h"><h3 class="card-n">Featherstep</h3><span class="tag">Air <b>1</b></span><span class="abil-c"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-bolt"/></svg>1 energy</span></div>
+                  <p class="abil-d">Move without sound or weight for a moment.</p>
+                </article>
+                <article class="card abil">
+                  <div class="abil-h"><h3 class="card-n">Glimmer</h3><span class="tag">Light <b>1</b></span><span class="abil-c"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-bolt"/></svg>1 energy</span></div>
+                  <p class="abil-d">A small light, or a flash that dazzles someone looking at it.</p>
+                </article>
+              </div>
+            </div>
+          </section>
+
+          <section class="sec" data-show="proposed">
+            <div class="sec-h"><h2>Skills</h2><span class="t-xs t-2">4 points</span></div>
+            <div class="card card-flush">
+              <div class="row">
+                <div class="grow"><div class="row-t"><b>Manipulation</b></div><div class="row-s">For gates, guards and anyone who asks what is in the satchel.</div></div>
+                <div class="row-end"><span class="tag"><b>2</b> points</span></div>
+              </div>
+              <div class="row">
+                <div class="grow"><div class="row-t"><b>Survival</b></div><div class="row-s">The salt flats do not forgive the unprepared.</div></div>
+                <div class="row-end"><span class="tag"><b>2</b> points</span></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="sec" data-show="proposed">
+            <div class="sec-h"><h2>Advantages</h2><span class="t-xs t-2">2 points</span></div>
+            <div class="card card-flush">
+              <div class="row">
+                <div class="grow"><div class="row-t"><b>Quick Reflexes</b></div><div class="row-s">+1 to initiative and to dodging. He is quick off the mark.</div></div>
+                <div class="row-end"><span class="tag"><b>1</b> point</span></div>
+              </div>
+              <div class="row">
+                <div class="grow"><div class="row-t"><b>Patron: Couriers’ Guild</b></div><div class="row-s">Work, lodging and occasional help in any town with a Guild house.</div></div>
+                <div class="row-end"><span class="tag"><b>1</b> point</span></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="sec" data-show="proposed">
+            <div class="sec-h"><h2>Disadvantages</h2><span class="t-xs t-2">Give back 5 points · the limit for a Champion</span></div>
+            <div class="card card-flush">
+              <div class="row">
+                <div class="grow"><div class="row-t"><b>Code: the letter always arrives</b></div><div class="row-s">He will not abandon a delivery, whatever it costs him.</div></div>
+                <div class="row-end"><span class="tag tag-ok">+1</span></div>
+              </div>
+              <div class="row">
+                <div class="grow"><div class="row-t"><b>Dependent: Lise, his sister</b></div><div class="row-s">Someone in Port Varn the story can put at risk.</div></div>
+                <div class="row-end"><span class="tag tag-ok">+1</span></div>
+              </div>
+              <div class="row">
+                <div class="grow"><div class="row-t"><b>Hunted: the baron’s agents</b></div><div class="row-s">People will kill for the letter. These are those people.</div></div>
+                <div class="row-end"><span class="tag tag-ok">+2</span></div>
+              </div>
+              <div class="row">
+                <div class="grow"><div class="row-t"><b>Curious to a fault</b></div><div class="row-s">He was told to ask no questions. He will.</div></div>
+                <div class="row-end"><span class="tag tag-ok">+1</span></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Editor -->
+          <section class="sec" data-show="edit over">
+            <div class="sec-h"><h2>Ancestry</h2><span class="t-xs t-2"><b data-out="anc">0</b> points</span></div>
+            <div class="grid grid-2" role="group" aria-label="Ancestry">
+              <button type="button" class="choice" data-set="anc=human"><span class="dotmark" aria-hidden="true"></span><span class="grow"><span class="choice-t">Human <span class="tag"><b>0</b> points</span></span><span class="choice-d">The people of the canal cities. No special traits.</span></span></button>
+              <button type="button" class="choice" data-set="anc=marsh"><span class="dotmark" aria-hidden="true"></span><span class="grow"><span class="choice-t">Marsh-born <span class="tag"><b>1</b> point</span></span><span class="choice-d">Raised in Greywater Marsh. Sees well in fog and at dusk.</span></span></button>
+            </div>
+          </section>
+
+          <section class="sec" data-show="edit over">
+            <div class="sec-h"><h2>Paths</h2><span class="t-xs t-2"><b data-out="path">2</b> points · 1 a level, no higher than 3</span></div>
+            <div class="card card-flush">
+              <div class="row trait">
+                <div class="grow"><div class="row-t">Air</div><div class="row-s">Wind, sound and movement.</div></div>
+                <div class="stepper" data-k="air" data-g="path" data-min="0" data-max="3" role="group" aria-label="Air">
+                  <button type="button" data-step="-1" aria-label="Lower Air"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-minus"/></svg></button><b>1</b><button type="button" data-step="1" aria-label="Raise Air"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-plus"/></svg></button>
+                </div>
+              </div>
+              <div class="row trait">
+                <div class="grow"><div class="row-t">Light</div><div class="row-s">Light, sight and illusion.</div></div>
+                <div class="stepper" data-k="lig" data-g="path" data-min="0" data-max="3" role="group" aria-label="Light">
+                  <button type="button" data-step="-1" aria-label="Lower Light"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-minus"/></svg></button><b>1</b><button type="button" data-step="1" aria-label="Raise Light"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-plus"/></svg></button>
+                </div>
+              </div>
+              <div class="row trait">
+                <div class="grow"><div class="row-t">Fire</div><div class="row-s">Flame, heat and fury.</div></div>
+                <div class="stepper" data-k="fre" data-g="path" data-min="0" data-max="3" role="group" aria-label="Fire">
+                  <button type="button" data-step="-1" aria-label="Lower Fire" disabled><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-minus"/></svg></button><b>0</b><button type="button" data-step="1" aria-label="Raise Fire"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-plus"/></svg></button>
+                </div>
+              </div>
+              <div class="row trait">
+                <div class="grow"><div class="row-t">Water</div><div class="row-s">Water, mist and mending.</div></div>
+                <div class="stepper" data-k="wat" data-g="path" data-min="0" data-max="3" role="group" aria-label="Water">
+                  <button type="button" data-step="-1" aria-label="Lower Water" disabled><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-minus"/></svg></button><b>0</b><button type="button" data-step="1" aria-label="Raise Water"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-plus"/></svg></button>
+                </div>
+              </div>
+              <div class="row trait">
+                <div class="grow"><div class="row-t">Earth</div><div class="row-s">Stone, root and endurance.</div></div>
+                <div class="stepper" data-k="ear" data-g="path" data-min="0" data-max="3" role="group" aria-label="Earth">
+                  <button type="button" data-step="-1" aria-label="Lower Earth" disabled><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-minus"/></svg></button><b>0</b><button type="button" data-step="1" aria-label="Raise Earth"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-plus"/></svg></button>
+                </div>
+              </div>
+              <div class="row trait">
+                <div class="grow"><div class="row-t">Dark</div><div class="row-s">Shadow, silence and fear.</div></div>
+                <div class="stepper" data-k="drk" data-g="path" data-min="0" data-max="3" role="group" aria-label="Dark">
+                  <button type="button" data-step="-1" aria-label="Lower Dark" disabled><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-minus"/></svg></button><b>0</b><button type="button" data-step="1" aria-label="Raise Dark"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-plus"/></svg></button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="sec" data-show="edit over">
+            <div class="sec-h"><h2>Starting abilities</h2><span class="t-xs t-2">One for each path you know</span></div>
+            <div class="grid grid-2">
+              <article class="card abil">
+                <div class="abil-h"><h3 class="card-n">Featherstep</h3><span class="tag">Air <b>1</b></span><span class="abil-c"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-bolt"/></svg>1 energy</span></div>
+                <p class="abil-d">Move without sound or weight for a moment.</p>
+              </article>
+              <article class="card abil">
+                <div class="abil-h"><h3 class="card-n">Glimmer</h3><span class="tag">Light <b>1</b></span><span class="abil-c"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-bolt"/></svg>1 energy</span></div>
+                <p class="abil-d">A small light, or a flash that dazzles someone looking at it.</p>
+              </article>
+            </div>
+            <p class="help">Every other ability has to be found in the story and then learned.</p>
+          </section>
+
+          <section class="sec" data-show="edit over">
+            <div class="sec-h"><h2>Skills</h2><span class="t-xs t-2"><b data-out="skill">4</b> points · 2 each</span></div>
+            <div class="chips chips-wrap" role="group" aria-label="Skills">
+              <button type="button" class="chip" data-skill aria-pressed="false"><span><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg>Animals</span></button>
+              <button type="button" class="chip" data-skill aria-pressed="false"><span><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg>Arts</span></button>
+              <button type="button" class="chip" data-skill aria-pressed="false"><span><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg>Athletics</span></button>
+              <button type="button" class="chip" data-skill aria-pressed="false"><span><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg>Crime</span></button>
+              <button type="button" class="chip" data-skill aria-pressed="false"><span><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg>Investigation</span></button>
+              <button type="button" class="chip" data-skill aria-pressed="false"><span><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg>Languages</span></button>
+              <button type="button" class="chip" data-skill aria-pressed="false"><span><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg>Machines</span></button>
+              <button type="button" class="chip" data-skill aria-pressed="true"><span><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg>Manipulation</span></button>
+              <button type="button" class="chip" data-skill aria-pressed="false"><span><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg>Medicine</span></button>
+              <button type="button" class="chip" data-skill aria-pressed="false"><span><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg>Science</span></button>
+              <button type="button" class="chip" data-skill aria-pressed="true"><span><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg>Survival</span></button>
+            </div>
+            <p class="help">With the right skill an easy test succeeds without a roll, a medium test is rolled at the attribute&nbsp;+&nbsp;1 and a hard one at the attribute&nbsp;−&nbsp;2.</p>
+          </section>
+
+          <section class="sec" data-show="edit over">
+            <div class="sec-h"><h2>Advantages</h2><span class="t-xs t-2"><b data-out="adv">2</b> points</span></div>
+            <div class="card card-flush">
+              <button class="row opt" type="button" aria-pressed="true" data-g="adv" data-k="qr" data-cost="1">
+                <span class="opt-box" aria-hidden="true"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span class="grow"><span class="row-t">Quick Reflexes</span><span class="row-s">+1 to initiative and to dodging.</span></span>
+                <span class="row-end"><span class="tag"><b>1</b> point</span></span>
+              </button>
+              <button class="row opt" type="button" aria-pressed="true" data-g="adv" data-cost="1">
+                <span class="opt-box" aria-hidden="true"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span class="grow"><span class="row-t">Patron: Couriers’ Guild</span><span class="row-s">Work, lodging and occasional help in any town with a Guild house.</span></span>
+                <span class="row-end"><span class="tag"><b>1</b> point</span></span>
+              </button>
+              <button class="row opt" type="button" aria-pressed="false" data-g="adv" data-cost="1">
+                <span class="opt-box" aria-hidden="true"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span class="grow"><span class="row-t">Keen Senses</span><span class="row-s">+1 to tests of noticing, searching and listening.</span></span>
+                <span class="row-end"><span class="tag"><b>1</b> point</span></span>
+              </button>
+              <button class="row opt" type="button" aria-pressed="false" data-g="adv" data-cost="1">
+                <span class="opt-box" aria-hidden="true"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span class="grow"><span class="row-t">Tough</span><span class="row-s">The first blow that lands in a fight does 1 less damage.</span></span>
+                <span class="row-end"><span class="tag"><b>1</b> point</span></span>
+              </button>
+              <button class="row opt" type="button" aria-pressed="false" data-g="adv" data-cost="2">
+                <span class="opt-box" aria-hidden="true"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span class="grow"><span class="row-t">Lucky</span><span class="row-s">Reroll one die in every scene.</span></span>
+                <span class="row-end"><span class="tag"><b>2</b> points</span></span>
+              </button>
+              <button class="row opt" type="button" aria-pressed="false" data-g="adv" data-cost="2">
+                <span class="opt-box" aria-hidden="true"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span class="grow"><span class="row-t">Ally</span><span class="row-s">A capable friend who comes when you call.</span></span>
+                <span class="row-end"><span class="tag"><b>2</b> points</span></span>
+              </button>
+              <button class="row opt" type="button" aria-pressed="false" data-g="adv" data-cost="2">
+                <span class="opt-box" aria-hidden="true"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span class="grow"><span class="row-t">Wealthy</span><span class="row-s">Money stops being a problem in most towns.</span></span>
+                <span class="row-end"><span class="tag"><b>2</b> points</span></span>
+              </button>
+            </div>
+          </section>
+
+          <section class="sec" data-show="edit over">
+            <div class="sec-h"><h2>Disadvantages</h2><span class="t-xs t-2"><b data-out="dis">5</b> of 5 points back</span></div>
+            <div class="card card-flush">
+              <button class="row opt" type="button" aria-pressed="true" data-g="dis" data-cost="1">
+                <span class="opt-box" aria-hidden="true"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span class="grow"><span class="row-t">Code: the letter always arrives</span><span class="row-s">You do not abandon a delivery or open it.</span></span>
+                <span class="row-end"><span class="tag tag-ok">+1</span></span>
+              </button>
+              <button class="row opt" type="button" aria-pressed="true" data-g="dis" data-cost="1">
+                <span class="opt-box" aria-hidden="true"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span class="grow"><span class="row-t">Dependent: Lise, your sister</span><span class="row-s">What threatens her in Port Varn threatens you.</span></span>
+                <span class="row-end"><span class="tag tag-ok">+1</span></span>
+              </button>
+              <button class="row opt" type="button" aria-pressed="true" data-g="dis" data-cost="2">
+                <span class="opt-box" aria-hidden="true"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span class="grow"><span class="row-t">Hunted: the baron’s agents</span><span class="row-s">They turn up, armed, when you can least afford it.</span></span>
+                <span class="row-end"><span class="tag tag-ok">+2</span></span>
+              </button>
+              <button class="row opt" type="button" aria-pressed="true" data-g="dis" data-cost="1">
+                <span class="opt-box" aria-hidden="true"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span class="grow"><span class="row-t">Curious to a fault</span><span class="row-s">A sealed thing or a half-heard secret is hard to leave alone.</span></span>
+                <span class="row-end"><span class="tag tag-ok">+1</span></span>
+              </button>
+              <button class="row opt" type="button" aria-pressed="false" data-g="dis" data-cost="1">
+                <span class="opt-box" aria-hidden="true"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span class="grow"><span class="row-t">In debt</span><span class="row-s">A moneylender in Port Varn wants 200 silver back.</span></span>
+                <span class="row-end"><span class="tag tag-ok">+1</span></span>
+              </button>
+              <button class="row opt" type="button" aria-pressed="false" data-g="dis" data-cost="1">
+                <span class="opt-box" aria-hidden="true"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-check"/></svg></span>
+                <span class="grow"><span class="row-t">Afraid of deep water</span><span class="row-s">Tests on boats and in water are one step harder.</span></span>
+                <span class="row-end"><span class="tag tag-ok">+1</span></span>
+              </button>
+            </div>
+            <p class="help">A Champion gets back 5 points at most. You are at the limit: one more disadvantage would add to the story, not to the budget.</p>
+          </section>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div class="flow-foot">
+    <div class="budget foot-budget only-phone" data-budget style="--v:100%">
+      <div class="between"><span><b class="num" data-out="spent">15</b> of <span data-out="budget">15</span> points <span class="t-2">· 10 + <span data-out="dis">5</span> from disadvantages</span></span><span class="t-2 num" data-out="left">0 left</span></div>
+      <div class="track"><i></i></div>
+    </div>
+    <button class="btn" type="button" data-go="edit" data-show="proposed"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-edit"/></svg>Edit</button>
+    <button class="btn" type="button" data-go="proposed" data-show="edit over">Back to the proposal</button>
+    <a class="btn btn-primary" href="play.html" data-show="proposed edit">Begin the story<svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+    <button class="btn btn-primary" type="button" data-show="over" disabled>Begin the story<svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+  </div>
+</div>
+
+<script src="slate.js"></script>
+<script>
+/* The editor keeps count. Every stepper, chip and tick box feeds the budget, the section totals and the summary.
+   More than the budget is the "over" state; "Back to the proposal" puts everything back. */
+(function () {
+  var d = document, body = d.body;
+  function all(sel, root) { return [].slice.call((root || d).querySelectorAll(sel)); }
+  function value(box) { return Number(box.querySelector('b').textContent) || 0; }
+  function setStep(box, v) {
+    var min = Number(box.getAttribute('data-min') || 0), max = Number(box.getAttribute('data-max') || 5);
+    box.querySelector('b').textContent = v;
+    all('button', box).forEach(function (b) { var s = Number(b.getAttribute('data-step')); b.disabled = (s < 0 && v <= min) || (s > 0 && v >= max); });
+  }
+  var steppers = all('.stepper[data-k]');
+  var ticks = all('.chip[data-skill], .opt[data-g]');
+  var name = d.getElementById('name');
+  var start = { steps: steppers.map(value), ticks: ticks.map(function (t) { return t.getAttribute('aria-pressed'); }), name: name ? name.value : '' };
+
+  function recalc() {
+    var v = {}, attr = 0, path = 0, adv = 0, dis = 0;
+    steppers.forEach(function (box) {
+      var n = value(box);
+      v[box.getAttribute('data-k')] = n;
+      if (box.getAttribute('data-g') === 'attr') attr += n; else path += n;
+    });
+    all('.opt[data-g][aria-pressed="true"]').forEach(function (o) {
+      var c = Number(o.getAttribute('data-cost')) || 0;
+      if (o.getAttribute('data-g') === 'adv') adv += c; else dis += c;
+    });
+    var skill = 2 * all('.chip[data-skill][aria-pressed="true"]').length;
+    var back = Math.min(5, dis);
+    var anc = body.getAttribute('data-anc') === 'marsh' ? 1 : 0;
+    var budget = 10 + back, spent = attr + path + skill + adv + anc, left = budget - spent;
+    var out = {
+      spent: spent, budget: budget, over: -left, left: left < 0 ? (-left) + ' over' : left + ' left',
+      attr: attr, path: path, skill: skill, adv: adv, dis: back, anc: anc,
+      hp: 5 * v.res, res: v.res, str: v.str, skl: v.skl, arm: v.arm,
+      ini: d.querySelector('.opt[data-k="qr"][aria-pressed="true"]') ? 1 : 0
+    };
+    all('[data-out]').forEach(function (el) {
+      var k = el.getAttribute('data-out');
+      if (!(k in out)) return;
+      el.textContent = out[k];
+      if (k === 'left') { el.classList.toggle('t-err', left < 0); el.classList.toggle('t-2', left >= 0); }
+    });
+    all('[data-budget]').forEach(function (el) {
+      el.style.setProperty('--v', Math.min(100, Math.round(100 * spent / budget)) + '%');
+      el.classList.toggle('is-over', left < 0);
+    });
+    if (Slate.state() !== 'proposed') {
+      var next = left < 0 ? 'over' : 'edit';
+      if (Slate.state() !== next) Slate.setState(next);
+    }
+  }
+  function reset() {
+    steppers.forEach(function (box, i) { setStep(box, start.steps[i]); });
+    ticks.forEach(function (t, i) { t.setAttribute('aria-pressed', start.ticks[i]); });
+    var human = d.querySelector('[data-set="anc=human"]');
+    if (human && body.getAttribute('data-anc') !== 'human') human.click();
+    if (name) { name.value = start.name; showName(); }
+  }
+  function showName() {
+    var n = name.value.trim() || 'Unnamed';
+    all('[data-out="name"]').forEach(function (el) { el.textContent = n; });
+    all('[data-out="initial"]').forEach(function (el) { el.textContent = n.charAt(0).toUpperCase(); });
+  }
+
+  d.addEventListener('click', function (e) {
+    var t = e.target.closest('.chip[data-skill], .opt[data-g]');
+    if (t) t.setAttribute('aria-pressed', t.getAttribute('aria-pressed') !== 'true');
+    if (e.target.closest('[data-go="proposed"]')) reset();
+    recalc();
+  });
+  d.addEventListener('slate:step', recalc);
+
+  if (name) name.addEventListener('input', showName);
+
+  // The "over" state is the editor with Skill raised from 3 to 4.
+  if (Slate.state() === 'over') { var skill = d.querySelector('.stepper[data-k="skl"]'); if (skill) setStep(skill, 4); }
+  recalc();
+})();
+</script>
+</body>
+</html>

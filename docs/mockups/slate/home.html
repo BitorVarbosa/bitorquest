@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitor Quest - Your stories</title>
+<link rel="stylesheet" href="slate.css">
+<style>
+/* Home: the story to continue, then every other story. */
+.hero{display:grid;gap:var(--sp-3);padding:var(--sp-4);border-color:color-mix(in srgb,var(--a) 45%,var(--c-card))}
+.hero-k{display:flex;align-items:center;gap:var(--sp-2)}
+.hero h2{font-size:var(--fs-xl);font-weight:600;line-height:1.25}
+.swatch{flex:none;width:10px;height:10px;border-radius:3px;background:var(--a)}
+.last{padding-left:var(--sp-3);border-left:2px solid color-mix(in srgb,var(--a) 60%,var(--c-card));color:var(--c-text-2)}
+.facts-row{display:flex;flex-wrap:wrap;gap:var(--sp-1) var(--sp-4);font-size:var(--fs-sm);color:var(--c-text-2)}
+.facts-row b{color:var(--c-text);font-variant-numeric:tabular-nums}
+.facts-row>span{display:inline-flex;align-items:center;gap:5px}
+.hero-go{display:flex;gap:var(--sp-2)}
+.tale{display:grid;gap:10px;padding:14px}
+.tale-h{display:flex;align-items:flex-start;gap:10px}
+.tale-h h3{font-size:var(--fs-lg);font-weight:600;line-height:21px}
+.tale-h .ib{margin:-10px -10px -10px auto}
+.new{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-2);min-height:132px;border-style:dashed;border-color:var(--c-line-strong);background:none;color:var(--c-text-2);font-weight:600;text-align:center}
+.new .i{color:var(--c-accent-text)}
+@media (min-width:1100px){
+  .hero{grid-template-columns:minmax(0,1fr) auto;align-items:end;padding:var(--sp-5)}
+  .hero-go{flex-direction:column;width:190px}
+  .hero-main{display:grid;gap:var(--sp-3)}
+}
+</style>
+</head>
+<body data-shell="library" data-page="stories" data-title="Stories" data-state="list">
+
+<div class="app">
+  <header class="top"><div class="bar" data-bar></div></header>
+  <nav class="nav" data-nav></nav>
+
+  <main class="page">
+    <div class="page-col">
+      <header class="page-h">
+        <div>
+          <h1>Your stories</h1>
+          <p data-show="list">3 stories · $2.94 spent in total</p>
+          <p data-show="empty">Nothing here yet</p>
+        </div>
+        <div class="inline" data-show="list">
+          <a class="btn btn-primary btn-fit" href="worlds.html?state=pick"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-plus"/></svg>New story</a>
+        </div>
+      </header>
+
+      <!-- The story played most recently -->
+      <section class="sec" data-show="list">
+        <div class="sec-h"><h2>Continue</h2></div>
+        <article class="card hero" style="--a:#2bb3a3">
+          <div class="hero-main stack">
+            <div>
+              <div class="hero-k"><span class="swatch" aria-hidden="true"></span><span class="t-caps">The Lantern Coast</span></div>
+              <h2>The Glass Road</h2>
+              <p class="t-2">Chapter 2, “Borrowed Seals” · Scene 4 · Lantern Market at dusk</p>
+            </div>
+            <p class="t-story last">Roth’s eyes go from your face to your boots and back. “Bridge is open. Papers are not,” he says, but he is already looking past you.</p>
+            <div class="facts-row">
+              <span><span class="av-stack" style="--under:var(--c-card)"><span class="av av-s who-mira" aria-hidden="true">M</span><span class="av av-s who-tobin" aria-hidden="true">T</span></span>Aren, with Mira and Tobin</span>
+              <span><svg class="i" width="14" height="14" aria-hidden="true"><use href="#i-clock"/></svg>Played <b>today</b></span>
+              <span><b>143</b> turns</span>
+              <span><b>$0.94</b> so far</span>
+            </div>
+          </div>
+          <div class="hero-go">
+            <a class="btn btn-primary btn-lg" href="play.html"><svg class="i i-f" width="16" height="16" aria-hidden="true"><use href="#i-play"/></svg>Continue</a>
+            <a class="btn" href="recap.html">Previously…</a>
+            <button class="btn btn-quiet" data-open="manage" aria-label="More options for The Glass Road"><svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-more"/></svg>More</button>
+          </div>
+        </article>
+      </section>
+
+      <!-- Every other story -->
+      <section class="sec" data-show="list">
+        <div class="sec-h"><h2>All stories</h2><span class="t-xs t-2">Sorted by last played</span></div>
+        <div class="grid grid-3">
+          <article class="card tale" style="--a:#e8894a">
+            <div class="tale-h">
+              <div class="grow">
+                <div class="hero-k"><span class="swatch" aria-hidden="true"></span><span class="t-caps">The Ninth Fleet</span></div>
+                <h3>Ashes of the Ninth Fleet</h3>
+              </div>
+              <button class="ib" data-open="manage" aria-label="More options for Ashes of the Ninth Fleet"><svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-more"/></svg></button>
+            </div>
+            <p class="t-sm t-2">Chapter 5 · Scene 2 · Lt. Ines Varga aboard the <i>Corvid</i></p>
+            <div class="facts-row"><span>3 days ago</span><span><b>212</b> turns</span><span><b>$1.48</b></span></div>
+            <a class="btn" href="recap.html">Continue</a>
+          </article>
+
+          <article class="card tale" style="--a:#7bbf6a">
+            <div class="tale-h">
+              <div class="grow">
+                <div class="hero-k"><span class="swatch" aria-hidden="true"></span><span class="t-caps">Hollowbrook</span></div>
+                <h3>Quiet Days in Hollowbrook</h3>
+              </div>
+              <button class="ib" data-open="manage" aria-label="More options for Quiet Days in Hollowbrook"><svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-more"/></svg></button>
+            </div>
+            <p class="t-sm t-2">Chapter 3 · Scene 7 · Maya at the bakery</p>
+            <div class="facts-row"><span>2 weeks ago</span><span><b>96</b> turns</span><span><b>$0.52</b></span></div>
+            <a class="btn" href="recap.html">Continue</a>
+          </article>
+
+          <a class="card new" href="worlds.html?state=pick">
+            <svg class="i" width="24" height="24" aria-hidden="true"><use href="#i-plus"/></svg>
+            Start a new story
+            <span class="t-sm t-2" style="font-weight:400">In a world you have, or a new one</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- No stories yet -->
+      <section class="empty" data-show="empty">
+        <svg class="i" width="40" height="40" aria-hidden="true"><use href="#i-story"/></svg>
+        <h2>No stories yet</h2>
+        <p>A story takes place in a world. Describe one, name a setting you love, or attach a document, and then say who you want to be in it.</p>
+        <a class="btn btn-primary btn-lg btn-fit" href="worlds.html?state=empty"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-plus"/></svg>Create your first story</a>
+      </section>
+    </div>
+  </main>
+
+  <!-- Options for one story -->
+  <div class="modal-scrim"></div>
+  <div class="modal" data-modal="manage" role="dialog" aria-label="The Glass Road">
+    <header class="modal-h"><h2>The Glass Road</h2><button class="ib" data-close aria-label="Close"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <div class="modal-b">
+      <div class="card card-flush">
+        <button class="row"><svg class="i t-2" width="20" height="20" aria-hidden="true"><use href="#i-edit"/></svg><span class="grow"><span class="row-t">Rename</span></span></button>
+        <button class="row"><svg class="i t-2" width="20" height="20" aria-hidden="true"><use href="#i-copy"/></svg><span class="grow"><span class="row-t">Duplicate</span><span class="row-s" style="display:block">Play another way from this point</span></span></button>
+        <button class="row"><svg class="i t-2" width="20" height="20" aria-hidden="true"><use href="#i-undo"/></svg><span class="grow"><span class="row-t">Rewind to an earlier turn</span><span class="row-s" style="display:block">143 turns saved</span></span><span class="row-end"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span></button>
+        <button class="row"><svg class="i t-2" width="20" height="20" aria-hidden="true"><use href="#i-download"/></svg><span class="grow"><span class="row-t">Export to a file</span><span class="row-s" style="display:block">To back it up or move it to another device · 1.8 MB</span></span></button>
+      </div>
+      <button class="btn btn-danger" style="flex:none"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-trash"/></svg>Delete this story</button>
+    </div>
+  </div>
+</div>
+
+<script src="slate.js"></script>
+</body>
+</html>

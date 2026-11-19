@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitor Quest - Play screen directions</title>
+<!--
+  Side-by-side gallery of the play-screen design directions.
+  Every frame is the live mockup in an iframe (same folder), so it works from a local server
+  or opened straight from disk. URL parameters: view=phones|desktops|one, state=continue|input|people,
+  pick=<slug>, theme=dark|light.
+-->
+<style>
+  :root {
+    --bg: #15171b; --panel: #1d2026; --line: #2c313a; --text: #e9ebef; --muted: #a3aab6; --accent: #8fb4ff;
+    --sans: "Segoe UI Variable Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 var(--sans); }
+  header.bar {
+    position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center;
+    padding: 12px 24px; background: rgba(21, 23, 27, .95); border-bottom: 1px solid var(--line);
+  }
+  header.bar h1 { font-size: 16px; font-weight: 600; margin: 0 8px 0 0; letter-spacing: .01em; }
+  header.bar h1 span { color: var(--muted); font-weight: 400; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg button {
+    font: inherit; color: var(--muted); background: transparent; border: 0; padding: 7px 13px; cursor: pointer; min-height: 36px;
+    border-right: 1px solid var(--line);
+  }
+  .seg button:last-child { border-right: 0; }
+  .seg button[aria-pressed="true"] { background: #2a3140; color: #fff; }
+  .seg button:hover { color: #fff; }
+  .ctl { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+  main { padding: 24px; }
+  .hint { color: var(--muted); margin: 0 0 20px; max-width: 900px; }
+  .grid { display: grid; gap: 28px 24px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-width: 0; }
+  .card h2 { font-size: 16px; margin: 0; font-weight: 600; }
+  .card .tag { color: var(--muted); font-size: 13px; margin: 2px 0 12px; }
+  .links { margin-top: 12px; font-size: 13px; display: flex; gap: 14px; flex-wrap: wrap; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .frame { position: relative; overflow: hidden; background: #000; margin: 0 auto; }
+  .frame iframe { border: 0; display: block; transform-origin: 0 0; background: #fff; }
+  .frame.phone { border-radius: 22px; box-shadow: 0 0 0 6px #0b0c0e, 0 0 0 7px #3a404b; }
+  .frame.desktop { border-radius: 8px; box-shadow: 0 0 0 1px #3a404b; margin: 0; }
+  .one { display: grid; gap: 28px; align-items: start; }
+  .one .side { min-width: 0; }
+  .one .side h2 { font-size: 22px; margin: 0 0 2px; }
+  .one .side .tag { color: var(--muted); margin: 0 0 14px; }
+  .one .side p { margin: 0 0 10px; max-width: 760px; }
+  .one .side dl { margin: 0 0 18px; display: grid; grid-template-columns: 96px 1fr; gap: 6px 12px; max-width: 760px; }
+  .one .side dt { color: var(--muted); }
+  .one .side dd { margin: 0; }
+  .picker { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
+  .picker button {
+    font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 999px;
+    padding: 7px 14px; cursor: pointer; min-height: 36px;
+  }
+  .picker button[aria-pressed="true"] { border-color: var(--accent); color: #fff; background: #263047; }
+  @media (max-width: 600px) { main { padding: 16px; } header.bar { padding: 10px 16px; } }
+</style>
+</head>
+<body>
+<header class="bar">
+  <h1>Bitor Quest <span>· play screen, six directions</span></h1>
+  <span class="ctl">View
+    <span class="seg" id="view">
+      <button data-v="phones" aria-pressed="true">Phones</button>
+      <button data-v="desktops" aria-pressed="false">PC</button>
+      <button data-v="one" aria-pressed="false">One by one</button>
+    </span>
+  </span>
+  <span class="ctl">State
+    <span class="seg" id="state">
+      <button data-s="continue" aria-pressed="true">Reading (Continue)</button>
+      <button data-s="input" aria-pressed="false">Your turn (input)</button>
+      <button data-s="people" aria-pressed="false">People panel</button>
+    </span>
+  </span>
+  <span class="ctl" id="themeCtl" hidden>Slate theme
+    <span class="seg" id="theme">
+      <button data-t="dark" aria-pressed="true">Dark</button>
+      <button data-t="light" aria-pressed="false">Light</button>
+    </span>
+  </span>
+</header>
+<main>
+  <p class="hint">Every frame is the live mockup, not a picture: press Continue, open People, scroll the story. The same scene and the same data are shown in each direction, so the differences are only design.</p>
+  <div id="root"></div>
+</main>
+<script src="directions.js"></script>
+<script>
+(function () {
+  var D = window.DIRECTIONS || [];
+  var st = { view: 'phones', state: 'continue', theme: 'dark', pick: D.length ? D[0].slug : null };
+  var root = document.getElementById('root');
+  var GAP = 24;
+
+  function url(d) {
+    var q = 'state=' + st.state;
+    if (d.themes && st.theme === 'light') q += '&theme=light';
+    return d.slug + '.html?' + q;
+  }
+  function frame(d, kind, scale) {
+    var w = kind === 'phone' ? 390 : 1440, h = kind === 'phone' ? 844 : 900;
+    var box = document.createElement('div');
+    box.className = 'frame ' + kind;
+    box.style.width = Math.round(w * scale) + 'px';
+    box.style.height = Math.round(h * scale) + 'px';
+    var f = document.createElement('iframe');
+    f.title = d.name + ' (' + kind + ')';
+    f.width = w; f.height = h;
+    f.style.width = w + 'px'; f.style.height = h + 'px';
+    f.style.transform = 'scale(' + scale + ')';
+    f.src = url(d);
+    box.appendChild(f);
+    return box;
+  }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function openLink(d, text) {
+    var a = el('a', null, text); a.href = url(d); a.target = '_blank'; a.rel = 'noopener';
+    return a;
+  }
+  function card(d, kind, scale) {
+    var c = el('section', 'card');
+    c.appendChild(el('h2', null, d.name));
+    c.appendChild(el('div', 'tag', d.tagline));
+    c.appendChild(frame(d, kind, scale));
+    var links = el('div', 'links');
+    links.appendChild(openLink(d, 'Open full size'));
+    var b = el('a', null, 'Look closer'); b.href = '#';
+    b.addEventListener('click', function (e) { e.preventDefault(); st.view = 'one'; st.pick = d.slug; render(); window.scrollTo(0, 0); });
+    links.appendChild(b);
+    c.appendChild(links);
+    return c;
+  }
+  // Lay out cards of a preferred frame width in as many equal columns as fit, and
+  // return the scale that makes each frame fill its card.
+  function grid(kind, frameW, preferred) {
+    var W = root.clientWidth;
+    var cardPad = 34;
+    var cols = Math.max(1, Math.floor((W + GAP) / (preferred + cardPad + GAP)));
+    var cardW = (W - GAP * (cols - 1)) / cols;
+    var scale = Math.min(1, (cardW - cardPad) / frameW);
+    if (kind === 'phone') scale = Math.min(scale, preferred / frameW);
+    var g = el('div', 'grid');
+    g.style.gridTemplateColumns = 'repeat(' + cols + ', minmax(0, 1fr))';
+    D.forEach(function (d) { g.appendChild(card(d, kind, scale)); });
+    return g;
+  }
+  function renderOne() {
+    var d = D.filter(function (x) { return x.slug === st.pick; })[0] || D[0];
+    var W = root.clientWidth;
+    var wrap = el('div');
+    var picker = el('div', 'picker');
+    D.forEach(function (x) {
+      var b = el('button', null, x.name);
+      b.setAttribute('aria-pressed', String(x.slug === d.slug));
+      b.addEventListener('click', function () { st.pick = x.slug; render(); });
+      picker.appendChild(b);
+    });
+    wrap.appendChild(picker);
+    var wide = W >= 1000;
+    var phoneScale = Math.min(1, (W - 14) / 390);
+    var one = el('div', 'one');
+    one.style.gridTemplateColumns = wide ? '402px minmax(0, 1fr)' : 'minmax(0, 1fr)';
+    one.appendChild(frame(d, 'phone', phoneScale));
+    var side = el('div', 'side');
+    side.appendChild(el('h2', null, d.name));
+    side.appendChild(el('p', 'tag', d.tagline));
+    side.appendChild(el('p', null, d.summary));
+    var dl = el('dl');
+    if (d.bestFor) { dl.appendChild(el('dt', null, 'Best for')); dl.appendChild(el('dd', null, d.bestFor)); }
+    if (d.weakness) { dl.appendChild(el('dt', null, 'Watch out')); dl.appendChild(el('dd', null, d.weakness)); }
+    side.appendChild(dl);
+    var avail = wide ? W - 402 - 28 - 2 : W - 2;
+    side.appendChild(frame(d, 'desktop', Math.min(1, avail / 1440)));
+    var links = el('div', 'links');
+    links.appendChild(openLink(d, 'Open this direction full size'));
+    side.appendChild(links);
+    one.appendChild(side);
+    wrap.appendChild(one);
+    return wrap;
+  }
+  function render() {
+    root.textContent = '';
+    document.querySelectorAll('#view button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.v === st.view)); });
+    document.querySelectorAll('#state button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.s === st.state)); });
+    document.querySelectorAll('#theme button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.t === st.theme)); });
+    document.getElementById('themeCtl').hidden = !D.some(function (d) { return d.themes; });
+    if (st.view === 'one') root.appendChild(renderOne());
+    else if (st.view === 'desktops') root.appendChild(grid('desktop', 1440, 640));
+    else root.appendChild(grid('phone', 390, 273));
+  }
+  document.getElementById('view').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { st.view = b.dataset.v; render(); } });
+  document.getElementById('state').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { st.state = b.dataset.s; render(); } });
+  document.getElementById('theme').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { st.theme = b.dataset.t; render(); } });
+  var lastW = 0, timer = null;
+  window.addEventListener('resize', function () {
+    if (Math.abs(root.clientWidth - lastW) < 8) return;
+    clearTimeout(timer);
+    timer = setTimeout(function () { lastW = root.clientWidth; render(); }, 200);
+  });
+  var p = new URLSearchParams(location.search);
+  if (p.get('view')) st.view = p.get('view');
+  if (p.get('state')) st.state = p.get('state');
+  if (p.get('pick')) st.pick = p.get('pick');
+  if (p.get('theme')) st.theme = p.get('theme');
+  lastW = root.clientWidth;
+  render();
+})();
+</script>
+</body>
+</html>

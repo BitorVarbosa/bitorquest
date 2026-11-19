@@ -1,0 +1,97 @@
+/* ==========================================================================
+   Added 2026-11-19: another take, keeping passages as true, efforts that add up, time off, the end of a
+   story, money, looks and reference pictures, and the starting points for an empty page.
+   Built from the shared tokens and controls of slate.css; loaded after story.css.
+   ========================================================================== */
+
+/* ---------- Another take: under the newest turn ---------- */
+.take-bar{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-1) var(--sp-2);margin-top:-4px;font-size:var(--fs-sm);color:var(--c-text-2)}
+.take-go{min-height:36px;padding:0 var(--sp-2);gap:6px;font-size:var(--fs-sm)}
+.take-p{font-weight:400;color:var(--c-text-3);margin-left:2px}
+.contest .link{min-height:44px;display:inline-flex;align-items:center;padding:0 6px;font-size:var(--fs-sm)}
+.take-note{margin-left:-6px}
+.take-nav{display:inline-flex;align-items:center}
+.take-nav .ib{width:44px;height:44px}
+.take-n{font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* ---------- Picking a passage: Keep this, That's wrong ---------- */
+.narr.is-pick,.say.is-pick{cursor:pointer;border-radius:var(--r-md);transition:background-color .15s}
+.narr.is-pick:hover{background:color-mix(in srgb,var(--c-raised) 55%,transparent)}
+.narr.is-picked{background:var(--c-accent-tint);box-shadow:0 0 0 6px var(--c-accent-tint)}
+.say.is-picked{box-shadow:0 0 0 2px var(--c-accent-line)}
+.pick-bar{display:flex;flex-wrap:wrap;gap:var(--sp-2);margin:2px 0 4px}
+.pick-bar .btn{min-height:38px;font-size:var(--fs-sm)}
+.fact-quote{margin:0 0 var(--sp-3);padding:var(--sp-2) var(--sp-3);border-left:2px solid var(--c-line-strong);color:var(--c-text-2);font-family:var(--font-story);font-style:italic}
+.chips-wrap{flex-wrap:wrap;overflow:visible}
+.chip .av{--z:22px;font-size:var(--fs-xs);margin-left:-8px}
+.fact-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--sp-1)}
+.fact-list li{display:flex;align-items:flex-start;gap:var(--sp-2);padding:var(--sp-2) 0 var(--sp-2) var(--sp-1);border-bottom:1px solid var(--c-line);font-size:var(--fs-sm)}
+.fact-list li:last-child{border-bottom:0}
+.fact-list li>.i{margin-top:3px;color:var(--c-accent-text);flex:none}
+.fact-list small{display:block;color:var(--c-text-3);font-size:var(--fs-xs)}
+.fact-list .ib{width:36px;height:36px;margin:-6px 0}
+
+/* ---------- Efforts that add up: a slim track above the input ---------- */
+.contest{display:flex;align-items:center;gap:var(--sp-2);min-height:44px;padding:0 var(--sp-1);font-size:var(--fs-sm);color:var(--c-text-2)}
+.contest>.i{color:var(--c-gold);flex:none}
+.contest-l{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;color:var(--c-text)}
+.contest-pips{display:inline-flex;align-items:center;gap:3px;flex:none}
+.contest-pips i{width:9px;height:9px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--c-ok)}
+.contest-pips i.on{background:var(--c-ok)}
+.contest-pips i.x{border-radius:2px;box-shadow:inset 0 0 0 1.5px var(--c-hp)}
+.contest-pips i.x.on{background:var(--c-hp)}
+.contest-pips b{color:var(--c-text-3);font-weight:400;margin:0 2px}
+.contest .link{flex:none}
+
+/* ---------- Time off ---------- */
+.choice[aria-pressed="true"]{border-color:var(--c-accent-line);background:var(--c-accent-tint)}
+.choice[aria-pressed="true"] .dotmark{background:var(--c-accent-fill);box-shadow:inset 0 0 0 3px var(--c-card)}
+.choice-t .i{vertical-align:-3px;margin-right:6px;color:var(--c-text-2)}
+.choice:disabled{opacity:.55}
+
+/* ---------- The end of a story ---------- */
+.end-card{display:flex;flex-direction:column;gap:var(--sp-3);border-color:var(--c-accent-line)}
+.end-h{display:flex;gap:var(--sp-3);align-items:flex-start}
+.end-h>.i{color:var(--c-accent-text);flex:none;margin-top:2px}
+.end-t{margin:0;font-size:var(--fs-lg,1.15rem);font-weight:700}
+.end-s{margin:2px 0 0;color:var(--c-text-2);font-size:var(--fs-sm)}
+.end-ep{display:flex;flex-direction:column;gap:var(--sp-3)}
+.end-legend{margin:0;text-align:center;font-family:var(--font-story);font-style:italic;color:var(--c-accent-text)}
+.end-acts{display:flex;flex-wrap:wrap;gap:var(--sp-2)}
+.end-acts .btn{flex:1 1 12rem}
+
+/* ---------- Money: the purse, one line a money ---------- */
+.purse-row .row-s{max-width:36ch}
+.purse-n{font-variant-numeric:tabular-nums;color:var(--c-gold)}
+
+/* ---------- Looks ---------- */
+.looks{margin:0;color:var(--c-text);line-height:1.5}
+.looks-k{display:block;font-size:var(--fs-xs);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--c-text-3);margin-bottom:2px}
+
+/* ---------- Reference pictures: read once, then gone ---------- */
+.pic-btn{min-height:38px;font-size:var(--fs-sm)}
+.pic-shot{display:block;max-width:100%;max-height:240px;margin:0 auto var(--sp-3);border-radius:var(--r-md);border:1px solid var(--c-line)}
+.pic-row{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2)}
+
+/* ---------- A start for the empty page ---------- */
+.seeds{display:flex;flex-direction:column;gap:var(--sp-2)}
+.seeds-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.seeds-row::-webkit-scrollbar{display:none}
+.seeds-row .chip{flex:none}
+
+.cdx-fact{display:flex;align-items:center;gap:4px;color:var(--c-accent-text)}
+
+/* The two ways to read the story, in the journal: in the accent, so they are not missed. */
+.stands-read{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--sp-2);margin-top:var(--sp-3)}
+.stands-read .btn{justify-content:center;min-height:44px}
+/* What keeping a line as true is for, at the top of its sheet. */
+.fact-intro{display:flex;gap:var(--sp-2);align-items:flex-start;margin:0 0 var(--sp-3);padding:var(--sp-2) var(--sp-3);border-radius:var(--r-md);background:var(--c-accent-tint);color:var(--c-text);font-size:var(--fs-sm);line-height:1.45}
+.fact-intro .i{flex:none;margin-top:2px;color:var(--c-accent-text)}
+/* The companions who start a story, each opened to be described. */
+.comp-intro{margin:0 0 var(--sp-2)}
+.comp+.comp{border-top:1px solid var(--c-line)}
+.comp-h{width:100%;text-align:left;min-height:56px}
+.comp-h .i{flex:none;color:var(--c-text-2)}
+.comp-b{padding:0 var(--sp-3) var(--sp-3)}
+.stands-read+.help{margin-top:var(--sp-2)}
+.describe textarea{field-sizing:content;min-height:84px}

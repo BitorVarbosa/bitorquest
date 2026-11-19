@@ -1,0 +1,199 @@
+/* ==========================================================================
+   App additions to the Slate design system (slate.css) and the story layout (play.css).
+   Everything here is built from Slate's tokens. Components first drawn in the mockups for combat and
+   for the system states live here in their general form.
+   ========================================================================== */
+
+#root{height:100%}
+
+/* Something changed with someone: a dot on a navigation item */
+.tab-dot{position:absolute;top:1px;right:10px;width:9px;height:9px;border-radius:50%;background:var(--p-mira);box-shadow:0 0 0 2px var(--c-chrome)}
+@media (min-width:1100px){.tab-dot{top:-2px;right:-6px}}
+
+/* ---------- People strip: one row, whatever the number of people ----------
+   Party members always show; people in the scene fill what fits; the rest wait behind "All".
+   Names are cut rather than wrapped, and a crowd is one entry with a count. */
+.pc{max-width:92px}
+.pc-n,.pc-m{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pc-count{position:absolute;right:-6px;bottom:-3px;min-width:18px;height:17px;padding:0 var(--sp-1);border-radius:var(--r-pill);background:var(--under,var(--c-chrome));box-shadow:inset 0 0 0 1px var(--c-line-strong);font-size:var(--fs-xs);font-weight:600;line-height:17px;text-align:center;color:var(--c-text-2)}
+.pc-more{color:var(--c-text-2)}
+.pc.is-to .av{box-shadow:inset 0 0 0 1.5px var(--p,var(--c-accent-text)),0 0 0 1.5px var(--under,var(--c-chrome)),0 0 0 3px var(--p,var(--c-accent-text))}
+.grp-more{align-self:flex-start}
+
+/* ---------- Conditions: opponents are described by a word, never by hit points ---------- */
+.cond{font-weight:600;white-space:nowrap}
+.cond-1{color:var(--c-gold)}     /* hurt */
+.cond-2{color:var(--c-err)}      /* badly hurt, down (your side) */
+.cond-3{color:var(--c-text-3)}   /* down, fled */
+.lv-0{--m:var(--c-ok)}.lv-1{--m:var(--c-gold)}.lv-2{--m:var(--c-err)}
+.pips.lv i{width:12px;height:5px}
+
+/* ---------- A fight ---------- */
+/* turn order: a number on each fighter, a ring on whoever is acting */
+.ord{position:absolute;right:-5px;bottom:-3px;min-width:17px;height:17px;padding:0 var(--sp-1);border-radius:var(--r-pill);background:var(--under,var(--c-chrome));box-shadow:inset 0 0 0 1px var(--c-line-strong);font-size:var(--fs-xs);font-weight:600;line-height:17px;text-align:center;color:var(--c-text-2)}
+.is-acting .av{box-shadow:inset 0 0 0 1.5px var(--c-accent-text),0 0 0 1.5px var(--under,var(--c-chrome)),0 0 0 3px var(--c-accent-text)}
+.is-acting .ord{background:var(--c-accent-fill);box-shadow:none;color:var(--c-on-accent)}
+.pc-m.is-now{font-weight:600;color:var(--c-accent-text)}
+.av-anon{font-weight:600}
+.av-s.av-anon{border-width:1px}
+.order{display:flex;flex-wrap:wrap;gap:0 6px;margin:2px var(--sp-1) 0;font-size:var(--fs-sm);line-height:20px;color:var(--c-text-2);font-variant-numeric:tabular-nums}
+.order li+li::before{content:"\203A";margin-right:6px;color:var(--c-text-3)}
+.order .is-now{font-weight:600;color:var(--c-accent-text)}
+.person.is-acting{border-color:var(--c-accent-line)}
+.person.is-target{border-color:var(--c-accent-line)}
+.scene.round{letter-spacing:.07em}
+.round .now{color:var(--c-accent-text)}
+
+/* an attack exchange: two dice, two sums, one difference */
+.vs{display:grid;gap:var(--sp-2)}
+.vs-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:var(--sp-3)}
+.vs-k{display:block;font-size:var(--fs-md);font-weight:600;line-height:20px}
+.vs-sum{display:block;font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2);font-variant-numeric:tabular-nums}
+.vs-sum b{color:var(--c-text)}
+.vs-row .stat{min-width:66px}
+.clash .check-f{flex-wrap:wrap;gap:2px 6px;padding-top:10px;border-top:1px solid var(--c-line);font-variant-numeric:tabular-nums}
+.clash .check-f .i{color:var(--c-hp)}
+/* until the dice have landed, what the blow did keeps its place unseen, and a line of help lies over it */
+.clash-foot{position:relative}
+.clash-hint{position:absolute;left:0;right:0;top:0}
+
+/* down: the choice between a destiny point and the death test */
+.fate{display:grid;gap:var(--sp-3);border-color:color-mix(in srgb,var(--c-err) 45%,var(--c-card))}
+.fate-h{display:flex;align-items:flex-start;gap:10px}
+.fate-h .i{margin-top:3px;color:var(--c-hp)}
+.fate-t{font-size:var(--fs-lg);font-weight:600;line-height:22px}
+.fate-s{font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.fate .choice-m{display:flex;align-items:center;gap:0;color:var(--c-text)}
+.fate .tag{margin-top:6px;white-space:normal;height:auto;min-height:22px;line-height:16px;padding-block:3px}
+
+/* dock: target, actions, and still a text field.
+   Many opponents: the target row scrolls sideways and never grows taller; the first three are in
+   view, the current target first, and "All" opens the full list. */
+.tgt{display:flex;align-items:center;gap:var(--sp-2)}
+.tgt-k{flex:none;font-size:var(--fs-xs);font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--c-text-2)}
+.tgt-row{flex:1;min-width:0;display:flex;gap:var(--sp-2);overflow-x:auto;scrollbar-width:none}
+.tgt-row::-webkit-scrollbar{display:none}
+.tg-b{flex:1 1 0;min-width:0;height:44px;display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-2);border:1px solid var(--c-line-strong);border-radius:var(--r-md);background:var(--c-card)}
+.tgt-row.is-many .tg-b{flex:0 0 132px}
+.tg-b:hover{border-color:var(--c-accent-text)}
+.tg-b.is-on{border-color:var(--c-accent-text);background:var(--c-accent-tint);box-shadow:inset 0 0 0 1px var(--c-accent-text)}
+.tg-x{flex:1;min-width:0;display:grid;font-size:var(--fs-xs);line-height:15px;color:var(--c-text-2)}
+.tg-x b{font-size:var(--fs-sm);line-height:17px;color:var(--c-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tg-b>.i{display:none;flex:none;color:var(--c-accent-text)}
+.tg-b.is-on>.i{display:block}
+.tg-all{flex:none;height:44px;padding:0 var(--sp-3);border:1px solid var(--c-line-strong);border-radius:var(--r-md);background:var(--c-card);font-size:var(--fs-sm);font-weight:600;color:var(--c-accent-text);white-space:nowrap}
+.cmds{display:grid;gap:var(--sp-2);margin:var(--sp-2) 0}
+.cmd-row{display:flex;gap:var(--sp-2)}
+.cmd-row .btn{flex:1 1 0}
+.cmd-row .btn-primary{flex:2 1 0}
+.cmd-n{font-weight:400;opacity:.8}
+.field.is-plain input{padding-left:14px}
+.pick .row{align-items:flex-start;text-align:left}
+.pick .row-t{display:flex;align-items:center;flex-wrap:wrap;gap:2px var(--sp-2);font-weight:600}
+.pick .row-end{align-self:center;gap:var(--sp-1);font-weight:600;white-space:nowrap;color:var(--c-text)}
+.pick .row-end .i{color:var(--c-en)}
+.pick .row[disabled]{opacity:.5;pointer-events:none}
+/* A power's name over its moves, when the list holds moves of several powers. */
+.pick-h{padding:var(--sp-2) var(--sp-3) 2px;font-size:var(--fs-xs);font-weight:600;letter-spacing:.02em;color:var(--c-text-3);overflow-wrap:anywhere}
+
+/* ---------- When a turn cannot go through ---------- */
+/* the player's action, and whether it went out */
+.act-f{display:flex;align-items:center;gap:5px;margin-top:6px;padding-top:6px;border-top:1px dashed var(--c-accent-line);font-size:var(--fs-xs);line-height:16px;color:var(--c-text-2)}
+.act.is-unsent{border-style:dashed;background:none}
+/* the narrator is writing */
+/* A save that did not go through: over every screen, above the navigation, until a save succeeds */
+.save-alert{position:fixed;left:50%;bottom:calc(var(--tab-h, 0px) + 12px);z-index:60;width:min(560px,calc(100vw - 24px));transform:translateX(-50%);align-items:center;flex-wrap:wrap;box-shadow:var(--shadow-sheet)}
+.save-alert .btn{flex:none}
+.writing{display:flex;align-items:flex-start;gap:10px;padding:2px 15px}
+.writing-t{font-size:var(--fs-md);font-weight:600;line-height:20px}
+.writing-s{font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.dots{flex:none;width:20px;height:20px;display:flex;align-items:center;justify-content:space-between}
+.dots i{width:5px;height:5px;border-radius:50%;background:var(--c-accent-text)}
+.dots i:nth-child(2){opacity:.65}
+.dots i:nth-child(3){opacity:.35}
+/* the card: what happened, what it cost, what to do */
+.sys{width:100%}
+.sys>.i{margin-top:1px;color:var(--c-text-2)}
+.sys-warn>.i{color:var(--c-gold)}
+.sys-err>.i{color:var(--c-err)}
+.sys-b{flex:1;min-width:0;display:grid;gap:var(--sp-2)}
+.sys-t{font-size:var(--fs-lg);font-weight:600;line-height:22px}
+.sys b{display:inline;color:var(--c-text)}
+.sys-facts{display:flex;flex-wrap:wrap;gap:2px var(--sp-4);font-size:var(--fs-sm);line-height:20px;color:var(--c-text-2)}
+.sys-facts li{display:inline-flex;align-items:center;gap:5px}
+.sys-facts .i{color:var(--c-ok)}
+.sys-facts .paid .i{color:var(--c-gold)}
+.sys-acts{display:flex;flex-wrap:wrap;gap:var(--sp-2);margin-top:var(--sp-1)}
+.sys-meter{display:grid;gap:6px;font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2);font-variant-numeric:tabular-nums}
+.sys-meter .track{margin-top:0}
+.sys-more{padding:var(--sp-2) 10px;border-radius:var(--r-sm);background:var(--c-raised);font-size:var(--fs-sm);line-height:19px;color:var(--c-text-2);overflow-wrap:anywhere}
+.note-warn{color:var(--c-text);border-color:color-mix(in srgb,var(--c-gold) 40%,var(--c-story));background:color-mix(in srgb,var(--c-gold) 11%,var(--c-story))}
+.note-warn .i{color:var(--c-gold)}
+.field.is-off{border-color:var(--c-line);background:none}
+.field.is-off .send{opacity:.4;pointer-events:none}
+.stop{flex:none;height:44px;display:flex;align-items:center;gap:var(--sp-2);padding:0 14px 0 var(--sp-3);border:1px solid var(--c-line-strong);border-radius:var(--r-md);background:var(--c-raised);font-size:var(--fs-md);font-weight:600}
+.stop:hover{border-color:var(--c-accent-text)}
+.stop i{width:10px;height:10px;border-radius:2px;background:currentColor}
+/* the engine answering by itself, without the narrator */
+.notice{align-self:stretch}
+
+/* ---------- Map levels: a path, not tabs, so any depth fits on a phone ----------
+   "The Lantern Coast > Port Varn > Guild House". It scrolls sideways and keeps the current level in
+   view; the Up button always goes one level out. */
+.path{display:flex;align-items:center;gap:var(--sp-2)}
+.path-up{flex:none}
+.path-row{flex:1;min-width:0;display:flex;align-items:center;gap:2px;overflow-x:auto;scrollbar-width:none;border:1px solid var(--c-line-strong);border-radius:var(--r-md);background:var(--c-card);padding:0 var(--sp-1)}
+.path-row::-webkit-scrollbar{display:none}
+.path-row button{flex:none;min-height:42px;padding:0 var(--sp-2);border-radius:var(--r-sm);font-size:var(--fs-sm);font-weight:600;color:var(--c-text-2);white-space:nowrap}
+.path-row button:hover{color:var(--c-text)}
+.path-row button[aria-current="true"]{color:var(--c-accent-text)}
+.path-row .i{flex:none;color:var(--c-text-3)}
+
+@media (min-width:1100px){
+  /* the people pane: a party member's details open on demand */
+  .app-play .person.is-open .person-detail{display:block}
+  .app-play .person.is-open .chev{transform:rotate(180deg)}
+  .app-play .person.is-open .foot-talk{visibility:hidden}
+  .app-play .person.is-open{border-color:color-mix(in srgb,var(--p,var(--c-line-strong)) 46%,var(--c-card))}
+  .fate{width:100%;max-width:520px}
+  .tg-b,.tg-all{height:40px}
+  .sys{max-width:520px}
+  .sys-acts .btn{flex:none;padding:0 var(--sp-4)}
+  .stop{height:42px}
+  .path-row button{min-height:34px}
+}
+/* Motion: gated by :root[data-motion="on"], set by applyTheme (app.ts) from the Animations setting */
+:root[data-motion="on"] .dots i{animation:dot 1.2s ease-in-out infinite}
+:root[data-motion="on"] .dots i:nth-child(2){animation-delay:.2s}
+:root[data-motion="on"] .dots i:nth-child(3){animation-delay:.4s}
+@keyframes dot{0%,100%{opacity:.3}40%{opacity:1}}
+
+/* A power of one's own (the Gift mode): the cards and fields that character creation and the
+   character sheet share (components/Gift.tsx). The player's own words can be long and unbroken. */
+.gf-card{display:grid;gap:6px;align-content:start;min-width:0}
+.gf-h{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-1) var(--sp-2);min-width:0}
+.gf-h .card-n{min-width:0;overflow-wrap:anywhere}
+.gf-c{display:inline-flex;align-items:center;gap:3px;margin-left:auto;font-size:var(--fs-sm);font-weight:600;white-space:nowrap}
+.gf-c .i{color:var(--c-en)}
+.gf-d{line-height:20px;color:var(--c-text-2);overflow-wrap:anywhere}
+.gf-brief{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}
+/* Where a power came from (a discipline, an item, someone it was borrowed from): one quiet line under its name. */
+.gf-src{font-size:var(--fs-xs);line-height:16px;color:var(--c-text-3);overflow-wrap:anywhere}
+.gf-f{display:flex;align-items:flex-start;gap:6px;font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2);overflow-wrap:anywhere}
+.gf-f .i{flex:none;margin-top:1px;color:var(--c-text-3)}
+.gf-opt{font-weight:400}
+/* The player's own words are never cut off in their field: it grows with them (they are short by rule) */
+textarea.gf-auto{field-sizing:content;min-height:68px}
+.gf-chips{flex-wrap:wrap;gap:0 6px;overflow:visible}
+.gf-chips .chip[disabled]{opacity:.45;pointer-events:none}
+.gf-kinds{display:grid;gap:2px;font-size:var(--fs-sm);line-height:19px;color:var(--c-text-2)}
+.gf-kinds b{color:var(--c-text)}
+/* A row inside a form card: what it is on the left, a stepper or a button on the right */
+.gf-row{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);min-width:0}
+.gf-row>.grow{min-width:0}
+.gf-row .label{display:block}
+.gf-row .help{margin-top:2px}
+/* One move being written: its fields stacked, with a line to remove it */
+.gf-edit{display:grid;gap:var(--sp-3);min-width:0}
+.gf-acts{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2) var(--sp-3);margin-top:2px}
+.gf-acts .t-sm{flex:1 1 180px;min-width:0}

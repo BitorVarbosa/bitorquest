@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#100c08">
+<title>Bitor Quest - Play (Candlelit Codex)</title>
+<style>
+/* =====================================================================
+   Bitor Quest · Play screen · direction "Candlelit Codex"
+   Design tokens. Every rule below is built from these.
+   ===================================================================== */
+:root{
+  color-scheme:dark;
+
+  /* Colour roles: surfaces */
+  --c-desk:#100c08;            /* outside the page: bars, desktop margins */
+  --c-page:#19140f;            /* the reading surface */
+  --c-raise:#221b14;           /* sheets, cards, the input */
+  --c-raise-2:#2b2319;         /* a card on a sheet */
+  --c-backdrop:#0c0906;        /* covers the story behind a sheet */
+  --c-scrim:rgba(8,5,3,.68);   /* dims the chrome behind a sheet */
+
+  /* Colour roles: text */
+  --c-ink:#f1e7d1;             /* newest story text, primary text */
+  --c-ink-read:#d6c9ab;        /* story text already read */
+  --c-ink-2:#bcad8d;           /* secondary text */
+  --c-ink-3:#9c8d70;           /* tertiary text, quiet labels */
+
+  /* Colour roles: accent and lines */
+  --c-gold:#d9a94c;            /* names, ornaments, the active state */
+  --c-gold-hi:#edc673;         /* gold controls, light edge */
+  --c-gold-lo:#c8952f;         /* gold controls, dark edge */
+  --c-gold-deep:#7b5b1d;       /* engraved lines on gold */
+  --c-gold-wash:rgba(217,169,76,.1);
+  --c-on-gold:#1d1508;         /* text on gold */
+  --c-on-gold-wash:rgba(29,21,8,.15);
+  --c-line:#3d3120;            /* hairlines */
+  --c-line-mid:#5d4a28;        /* card edges */
+  --c-line-strong:#8c713d;     /* control borders, gold hairlines */
+
+  /* Colour roles: game meaning */
+  --c-hp:#cb4751;              /* garnet: hit points */
+  --c-hp-ink:#ea858c;
+  --c-en:#5c9da6;              /* muted teal: energy */
+  --c-en-ink:#8cc4cb;
+  --c-bond:#de8f9a;            /* warm rose: bonds */
+  --c-bond-dim:#96676f;        /* an empty bond pip */
+  --c-track:#2b2218;           /* an empty meter */
+
+  /* Effects */
+  --glow-candle:rgba(217,169,76,.12);
+  --glow-bond:0 0 0 2px rgba(222,143,154,.2),0 0 9px 1px rgba(222,143,154,.55);
+  --shadow-pill:inset 0 1px 0 rgba(255,244,214,.6),0 0 0 1px var(--c-gold-deep),0 10px 30px -8px rgba(217,169,76,.5);
+  --shadow-sheet:0 -20px 50px rgba(0,0,0,.55);
+  --shadow-card:0 10px 30px -12px rgba(0,0,0,.6);
+
+  /* Font stacks: the story and the interface share one serif family;
+     only the cost meter, the machine's voice, is set in sans. */
+  --font-story:"Sitka Text","Iowan Old Style","Palatino Linotype","Noto Serif",Georgia,serif;
+  --font-display:"Sitka Heading","Sitka Text","Iowan Old Style","Palatino Linotype","Noto Serif",Georgia,serif;
+  --font-small:"Sitka Small","Sitka Text","Iowan Old Style","Palatino Linotype","Noto Serif",Georgia,serif;
+  --font-ui:"Segoe UI Variable Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+
+  /* Type scale */
+  --fs-xs:12px;
+  --fs-sm:13.5px;
+  --fs-md:15px;
+  --fs-lg:17px;
+  --fs-xl:19px;
+  --fs-2xl:22px;
+  --fs-3xl:26px;
+  --fs-story:17px;             /* 18px from 700px up */
+  --lh-story:1.62;
+  --measure:33em;              /* the reading column */
+  --beat-gap:1em;              /* space between story beats */
+  --track-tight:.1em;          /* letter-spacing for small capitals */
+  --track-caps:.14em;
+  --track-wide:.22em;
+
+  /* Spacing steps */
+  --s-0:2px; --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:20px; --s-6:24px; --s-7:32px; --s-8:48px;
+
+  /* Radii */
+  --r-xs:3px; --r-sm:6px; --r-md:10px; --r-lg:18px; --r-pill:999px;
+
+  /* Sizes */
+  --tap:44px;                  /* smallest touch target; 40px with a pointer */
+  --control-h:52px;            /* Continue and the input */
+  --disc:40px;                 /* a person's medallion */
+  --disc-lg:48px;
+  --top-h:84px;
+  --nav-h:58px;
+  --gutter:var(--s-5);
+  --sheet-w:640px;             /* widest sheet or bottom control on a tablet */
+  --page-w:736px;              /* desktop: the page */
+  --margin-w:364px;            /* desktop: widest margin column */
+  --margin-min:280px;
+}
+
+/* ============================== Base ============================== */
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;height:100dvh;margin:0}
+body{overflow:hidden;background:var(--c-desk);color:var(--c-ink);font:var(--fs-md)/1.4 var(--font-story);-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+h1,h2,h3,h4,h5,p,ul,ol,dl,dt,dd{margin:0;padding:0;font-size:inherit;font-weight:400}
+ul,ol{list-style:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:inherit;-webkit-tap-highlight-color:transparent}
+input{font:inherit;color:inherit}
+svg{display:block;flex:none}
+b{font-weight:700}
+::selection{background:rgba(217,169,76,.3)}
+:focus-visible{outline:2px solid var(--c-gold);outline-offset:2px}
+.sprite{position:absolute;width:0;height:0}
+.ic{fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.ic-f{fill:currentColor;stroke:none}
+.dot{color:var(--c-line-strong)}
+.lbl{font:700 var(--fs-xs)/1.3 var(--font-small);letter-spacing:var(--track-caps);text-transform:uppercase;color:var(--c-ink-3)}
+.icon-btn{display:grid;place-items:center;width:var(--tap);height:var(--tap);border-radius:50%;color:var(--c-ink-2)}
+
+/* ============================== Shell ============================= */
+.app{position:relative;height:100%;display:flex;flex-direction:column;overflow:hidden;background:var(--c-page)}
+
+/* ----- Top bar (phone: a running head over the meters) ----- */
+.topbar{position:relative;z-index:5;flex:none;min-height:var(--top-h);display:grid;
+  grid-template-columns:calc(var(--tap) + var(--s-2)) minmax(0,1fr) calc(var(--tap) + var(--s-2));
+  grid-template-rows:repeat(2,calc(var(--tap) / 2)) auto;
+  grid-template-areas:"menu story cost" "menu place cost" "meters meters meters";
+  align-items:center;padding:calc(var(--s-1) + env(safe-area-inset-top,0px)) var(--s-3) var(--s-3);
+  background:var(--c-desk);border-bottom:1px solid var(--c-line)}
+.tb-left,.tb-right{display:contents}
+.brand{display:none}
+.tb-story{grid-area:story;align-self:end;min-width:0;text-align:center}
+.story-name{font:700 var(--fs-xs)/16px var(--font-small);letter-spacing:var(--track-wide);text-transform:uppercase;color:var(--c-gold)}
+.story-ch{display:none}
+.tb-place{grid-area:place;align-self:start;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;font:var(--fs-md)/calc(var(--tap) / 2) var(--font-story);color:var(--c-ink-2)}
+.tb-place svg{display:inline-block;vertical-align:-2px;margin-right:var(--s-1);color:var(--c-gold)}
+.place-name{color:var(--c-ink)}
+.tb-cost{grid-area:cost;justify-self:end;font:var(--fs-xs)/1.25 var(--font-ui);color:var(--c-ink-3)}
+.cost-item{display:flex;flex-direction:column-reverse;align-items:flex-end}
+.cost-item b{font-weight:600;font-size:var(--fs-sm);color:var(--c-ink-2);font-variant-numeric:tabular-nums}
+.cost-more{display:none}
+.tb-menu{grid-area:menu;justify-self:start}
+
+.tb-meters{grid-area:meters;display:flex;align-items:center;gap:var(--s-3);margin-top:var(--s-2);padding:0 var(--s-1)}
+.meter{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:var(--s-2)}
+.meter-k{font:700 var(--fs-xs)/1 var(--font-small);letter-spacing:var(--track-tight)}
+.meter--hp .meter-k{color:var(--c-hp-ink)}
+.meter--en .meter-k{color:var(--c-en-ink)}
+.track{flex:1;min-width:var(--s-5);height:6px;border-radius:var(--r-xs);background:var(--c-track);box-shadow:inset 0 0 0 1px var(--c-line-strong);overflow:hidden}
+.track i{display:block;width:var(--v);height:100%;border-radius:var(--r-xs)}
+.meter--hp .track i,.bar--hp .track i{background:var(--c-hp)}
+.meter--en .track i,.bar--en .track i{background:var(--c-en)}
+.meter-v{min-width:2.9em;font:700 var(--fs-sm)/1 var(--font-small);font-variant-numeric:lining-nums tabular-nums;color:var(--c-ink)}   /* one width, so both tracks are the same length */
+.meter-v small{font-weight:400;font-size:var(--fs-xs);color:var(--c-ink-3)}
+.destiny{flex:none;display:flex;align-items:center;gap:var(--s-1);font:700 var(--fs-xs)/1 var(--font-small);letter-spacing:var(--track-tight);text-transform:uppercase;color:var(--c-gold)}
+.destiny b{font-size:var(--fs-sm);letter-spacing:0;color:var(--c-ink);font-variant-numeric:lining-nums}
+
+/* ----- The page: story log, people strip, bottom control ----- */
+.page{position:relative;flex:1 1 auto;min-height:0;display:flex;flex-direction:column;
+  background:radial-gradient(ellipse 90% 260px at 50% 100%,var(--glow-candle),transparent) var(--c-page)}
+.log{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:var(--s-6) var(--gutter);
+  font-size:var(--fs-story);line-height:var(--lh-story);color:var(--c-ink-read);
+  -webkit-mask-image:linear-gradient(transparent,#000 var(--s-6),#000 calc(100% - var(--s-6)),transparent);
+  mask-image:linear-gradient(transparent,#000 var(--s-6),#000 calc(100% - var(--s-6)),transparent);
+  scrollbar-width:thin;scrollbar-color:var(--c-line) transparent}
+.log:focus-visible{outline-offset:-2px}
+.log-in{max-width:var(--measure);margin:0 auto calc(var(--beat-gap) * -1)}   /* cancels the last beat's own bottom margin */
+
+/* Scene heading */
+.scene{display:flex;flex-direction:column;align-items:center;gap:var(--s-2);margin-bottom:var(--s-6);text-align:center;color:var(--c-gold)}
+.scene-no{display:flex;align-items:center;gap:var(--s-3);font:700 var(--fs-xs)/14px var(--font-small);letter-spacing:.34em;text-transform:uppercase}
+.scene-no span{margin-right:-.34em}
+.flip{transform:scaleX(-1)}
+.scene-title{font:italic 400 var(--fs-3xl)/1.2 var(--font-display);color:var(--c-ink)}
+.scene-title span{font-style:normal;color:var(--c-gold);margin:0 .12em}
+
+/* Beats: narration, speech, the player's action */
+.beat{margin:0 0 var(--beat-gap);text-wrap:pretty}
+.is-new{color:var(--c-ink)}
+.lead::first-letter{-webkit-initial-letter:2;initial-letter:2;margin-right:.09em;font-family:var(--font-display);font-weight:400;color:var(--c-gold)}
+@supports not ((initial-letter:2) or (-webkit-initial-letter:2)){
+  .lead::first-letter{float:left;margin:.1em .09em 0 0;font-size:3.9em;line-height:.7}
+}
+.who{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.6em;margin-bottom:.05em;line-height:1.45}
+.who-name{font:700 .76em/1.45 var(--font-small);letter-spacing:.17em;text-transform:uppercase;color:var(--c-gold)}
+.who-how{font:italic .86em/1.45 var(--font-story);color:var(--c-ink-3)}
+.say .line{text-indent:-.42em}
+.act{margin:1.2em 0 1.2em .7em;padding:.1em 0 .2em 1em;border-left:1px solid var(--c-gold);font-style:italic}
+
+/* Dice check: a small engraved card set into the text */
+.check{margin:1.25em 0;padding:var(--s-1);border:1px solid var(--c-line-strong);border-radius:var(--r-sm);background:linear-gradient(var(--c-raise-2),var(--c-raise));color:var(--c-ink);font-family:var(--font-small)}
+.check-in{padding:var(--s-3);border:1px solid var(--c-line);border-radius:var(--r-xs)}
+.check-top{display:flex;align-items:center;gap:var(--s-2)}
+.die{color:var(--c-gold)}
+.die-head{display:none}      /* the emblem die needs the room of a tablet or desktop card */
+.die-roll{align-self:center}
+.check-title{flex:1;min-width:0}
+.check-kind{font:700 var(--fs-xs)/1.35 var(--font-small);letter-spacing:var(--track-tight);text-transform:uppercase;color:var(--c-gold)}
+.check-skill{font:400 var(--fs-lg)/1.3 var(--font-display);color:var(--c-ink)}
+.check-skill em{color:var(--c-ink-2);white-space:nowrap}
+/* A dot-separated run that may wrap: a dot that would begin a line is clipped away */
+.seps{overflow:hidden}
+.seps>span{display:flex;flex-wrap:wrap;margin-left:-1.3em}
+.seps>span>span{position:relative;padding-left:1.3em}
+.seps>span>span::before{content:"·";position:absolute;left:0;width:1.3em;text-align:center;color:var(--c-line-strong)}
+.stamp{flex:none;padding:var(--s-1) var(--s-2);border:3px double var(--c-gold);border-radius:var(--r-xs);text-align:center}
+.stamp b{display:block;font:700 var(--fs-xs)/1.3 var(--font-small);letter-spacing:var(--track-caps);text-indent:var(--track-caps);text-transform:uppercase;color:var(--c-gold-hi)}
+.stamp span{display:block;font:italic var(--fs-xs)/1.3 var(--font-small);color:var(--c-ink-2)}
+.check-facts{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 var(--s-4);margin-top:var(--s-2);padding-top:var(--s-2);border-top:1px solid var(--c-line);font-size:var(--fs-sm);line-height:1.55;color:var(--c-ink-2)}
+.check-facts p{display:flex;align-items:baseline;gap:var(--s-2)}
+.check-k{font:700 var(--fs-xs)/1 var(--font-small);letter-spacing:var(--track-caps);text-transform:uppercase;color:var(--c-ink-3)}
+.check-facts b{font-size:var(--fs-md);color:var(--c-ink);font-variant-numeric:lining-nums}
+.check-need{flex-basis:100%}
+.check-vs{margin-left:auto;font-style:italic}
+
+/* System notes: small centred lines between hairlines */
+.notes{max-width:31em;margin:1.3em auto;padding:var(--s-2) 0;text-align:center;text-wrap:balance;font:var(--fs-sm)/1.5 var(--font-small);color:var(--c-ink-2);
+  border-block:1px solid var(--c-line-strong);border-image:linear-gradient(90deg,transparent,var(--c-line-strong) 24%,var(--c-line-strong) 76%,transparent) 1}
+.note-i{display:block}
+.note-i svg{display:inline-block;vertical-align:-2px;margin-right:var(--s-2);color:var(--c-gold)}
+.note b{font-weight:400;color:var(--c-ink)}
+.note--bond .note-i{display:inline}
+.note--bond svg{color:var(--c-bond)}
+.note .pips{margin-left:var(--s-3);vertical-align:1px}
+.note-sep{display:none}
+.nw{white-space:nowrap}
+
+/* Bond pips: 6px dots, 3px apart */
+.pips{display:inline-flex;align-items:center;gap:3px}
+.pips i{display:block;width:6px;height:6px;border-radius:50%;border:1px solid var(--c-bond-dim)}
+.pips .on,body[data-bond="4"] .pips .rise{background:var(--c-bond);border-color:var(--c-bond)}
+body[data-bond="4"] .pips .rise{box-shadow:var(--glow-bond)}
+
+/* Medallions */
+.disc{position:relative;flex:none;display:grid;place-items:center;width:var(--disc);height:var(--disc);border-radius:50%;
+  font:400 var(--fs-lg)/1 var(--font-display);color:var(--c-ink-2);
+  background:radial-gradient(circle at 34% 26%,var(--c-raise-2),var(--c-page) 78%);border:1px solid var(--c-line-strong)}
+.disc--party{border:1.5px solid var(--c-gold);color:var(--c-ink);box-shadow:0 0 0 3px var(--c-gold-wash)}
+.disc--stranger{border-style:dashed;background:var(--c-page);color:var(--c-ink-3)}
+.disc--ghost{background:none}
+.disc--xs{width:var(--s-6);height:var(--s-6);font-size:var(--fs-xs);border-width:1px;box-shadow:none}
+.fav-badge{position:absolute;top:-4px;right:-6px;display:grid;place-items:center;width:var(--s-4);height:var(--s-4);border-radius:50%;background:var(--c-page);color:var(--c-gold)}
+
+/* People strip (phone) */
+.strip{position:relative;flex:none;display:flex;align-items:flex-start;gap:var(--s-0);padding:var(--s-2) var(--s-3) 0;border-top:1px solid var(--c-line)}
+.medal{flex:none;width:calc(var(--tap) + var(--s-3));min-height:calc(var(--tap) + var(--s-5));display:flex;flex-direction:column;align-items:center;gap:var(--s-0);border-radius:var(--r-md)}
+.medal:active .disc{transform:scale(.95)}
+.medal-name{font:var(--fs-xs)/16px var(--font-small);color:var(--c-ink-2);white-space:nowrap}
+.medal--party .medal-name{color:var(--c-ink)}
+.strip-sep{flex:none;width:1px;height:var(--disc);margin:0 var(--s-1);background:var(--c-line)}
+.medal--all{margin-left:auto}
+
+/* Bottom control */
+.dock{position:relative;flex:none;padding:var(--s-2) var(--s-4) var(--s-3)}
+body[data-mode="continue"] .composer,body[data-mode="input"] .dock-continue{display:none}
+.continue{position:relative;width:100%;height:var(--control-h);display:flex;align-items:center;justify-content:center;gap:var(--s-3);border-radius:var(--r-pill);
+  background:linear-gradient(var(--c-gold-hi),var(--c-gold-lo));color:var(--c-on-gold);box-shadow:var(--shadow-pill)}
+.continue::before{content:"";position:absolute;inset:3px;border-radius:inherit;border:1px solid var(--c-gold-deep);opacity:.5;pointer-events:none}
+.continue:active{transform:translateY(1px)}
+.continue-l{font:700 var(--fs-xl)/1 var(--font-display);letter-spacing:.03em}
+.continue-c{padding:var(--s-1) var(--s-2);border-radius:var(--r-pill);background:var(--c-on-gold-wash);font:var(--fs-sm)/1 var(--font-small);font-variant-numeric:lining-nums}
+.kbd-hint{display:none}
+
+.composer{display:flex;flex-direction:column;gap:var(--s-2)}
+.sug{width:100%;min-height:var(--tap);display:flex;align-items:center;gap:var(--s-2);padding:var(--s-1) var(--s-1) var(--s-1) 0;border-bottom:1px solid var(--c-line);font:italic var(--fs-md)/1.25 var(--font-story);color:var(--c-ink)}
+.suggest li:first-child .sug{border-top:1px solid var(--c-line)}
+.sug-n{flex:none;width:var(--s-6);text-align:center;font:italic var(--fs-sm)/1 var(--font-small);color:var(--c-gold)}
+.sug-t{flex:1;min-width:0}
+.sug svg{color:var(--c-ink-3)}
+.field{display:flex;align-items:center;height:var(--control-h);padding:0 calc((var(--control-h) - var(--tap)) / 2 - 1px);border:1px solid var(--c-line-strong);border-radius:var(--r-pill);background:var(--c-raise)}
+.field:focus-within{border-color:var(--c-gold)}
+.to{flex:none;height:var(--tap);display:flex;align-items:center;gap:var(--s-2);padding:0 var(--s-2);border-right:1px solid var(--c-line);border-radius:var(--r-pill) 0 0 var(--r-pill);font:var(--fs-sm)/1 var(--font-small);color:var(--c-ink)}
+.to-k,.to svg{color:var(--c-ink-3)}
+.field-input{flex:1;min-width:0;height:var(--tap);padding:0 var(--s-3);border:0;background:none;outline:none;font:var(--fs-lg)/1 var(--font-story);color:var(--c-ink)}
+.field-input::placeholder{color:var(--c-ink-3);font-style:italic;opacity:1}
+.send{flex:none;display:grid;place-items:center;width:var(--tap);height:var(--tap);border-radius:50%;background:linear-gradient(var(--c-gold-hi),var(--c-gold-lo));color:var(--c-on-gold)}
+
+/* Bottom navigation (phone) */
+.nav{position:relative;z-index:22;flex:none;display:grid;grid-template-columns:repeat(5,1fr);height:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);background:var(--c-desk);border-top:1px solid var(--c-line)}
+.nav-item{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--s-1);font:var(--fs-xs)/1 var(--font-small);letter-spacing:.02em;color:var(--c-ink-3)}
+.nav-item::before{content:"";position:absolute;top:-5px;left:calc(50% - 4px);width:8px;height:8px;transform:rotate(45deg);background:var(--c-gold);opacity:0}
+body:not([data-people="open"]) .nav-story,body[data-people="open"] .nav-people{color:var(--c-gold)}
+body:not([data-people="open"]) .nav-story::before,body[data-people="open"] .nav-people::before{opacity:1}
+
+/* ========================= People panel =========================== */
+/* Phone: a sheet over the story. Desktop: the left margin. */
+.scrim{position:absolute;z-index:20;inset:0 0 var(--nav-h);background:linear-gradient(var(--c-scrim) var(--top-h),var(--c-backdrop) var(--top-h));visibility:hidden;opacity:0;cursor:default}
+.people{position:absolute;z-index:21;left:0;right:0;top:calc(var(--top-h) + var(--s-3));bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));
+  display:flex;flex-direction:column;background:var(--c-raise);border-top:1px solid var(--c-line-strong);border-radius:var(--r-lg) var(--r-lg) 0 0;
+  box-shadow:var(--shadow-sheet);visibility:hidden;opacity:0;transform:translateY(var(--s-3))}
+body[data-people="open"] .people,body[data-people="open"] .scrim{visibility:visible;opacity:1;transform:none}
+.people-head{position:relative;flex:none;display:flex;align-items:baseline;gap:var(--s-3);padding:var(--s-4) calc(var(--tap) + var(--s-4)) var(--s-2) var(--s-5)}
+.people-head::before{content:"";position:absolute;top:var(--s-2);left:calc(50% - var(--s-4));width:var(--s-7);height:3px;border-radius:var(--r-xs);background:var(--c-line-strong)}
+.people-title{font:400 var(--fs-2xl)/1.2 var(--font-display);color:var(--c-ink)}
+.people-sub{font:italic var(--fs-sm)/1.2 var(--font-small);color:var(--c-ink-3)}
+.people-head .rule,.people-expand{display:none}
+.people-close{position:absolute;top:var(--s-1);right:var(--s-2)}
+.people-body{flex:1 1 auto;min-height:0;overflow-y:auto;padding:0 var(--s-2) var(--s-3);scrollbar-width:thin;scrollbar-color:var(--c-line) transparent;
+  -webkit-mask-image:linear-gradient(#000 calc(100% - var(--s-5)),transparent);mask-image:linear-gradient(#000 calc(100% - var(--s-5)),transparent)}
+.h-sub{display:flex;align-items:center;gap:var(--s-3);margin:var(--s-3) 0 var(--s-1);padding:0 var(--s-3);font:700 var(--fs-xs)/1.4 var(--font-small);letter-spacing:var(--track-wide);text-transform:uppercase;color:var(--c-gold)}
+.h-sub::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--c-line-strong),transparent)}
+
+.person{position:relative;padding:var(--s-2) var(--s-3);border:1px solid transparent;border-radius:var(--r-md)}
+.person+.person{margin-top:var(--s-1)}
+.person--mira{padding-block:var(--s-3);background:var(--c-raise-2);border-color:var(--c-line-mid)}
+.person-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;column-gap:var(--s-3);align-items:center}
+.person .disc{width:var(--tap);height:var(--tap);font-size:var(--fs-xl)}
+.person--mira .fav-badge{background:var(--c-raise-2)}
+.person-name{display:flex;align-items:center;gap:var(--s-2);font:400 var(--fs-xl)/1.25 var(--font-display);color:var(--c-ink)}
+.fav{font:700 var(--fs-xs)/1 var(--font-small);letter-spacing:var(--track-tight);text-transform:uppercase;color:var(--c-gold)}
+.person-role{font:var(--fs-sm)/1.35 var(--font-small);color:var(--c-ink-2)}
+.person-bond{display:flex;align-items:center;gap:var(--s-2);margin-top:var(--s-0);white-space:nowrap;font:var(--fs-sm)/1.35 var(--font-small);color:var(--c-ink-2);font-variant-numeric:lining-nums}
+.person-bond b{color:var(--c-ink)}
+.person-bond em{color:var(--c-bond)}
+.person-bond .pips i{width:7px;height:7px}
+.person-chev,.person-open,.btn.person-quick{display:none}
+.person-note{margin:var(--s-1) 0 0 calc(var(--tap) + var(--s-3));font:italic var(--fs-sm)/1.4 var(--font-small);color:var(--c-ink-2);text-wrap:pretty}
+.person-detail{margin-top:var(--s-2)}
+.memories{margin:var(--s-1) 0 var(--s-3)}
+.memories li{position:relative;padding-left:var(--s-4);font:italic var(--fs-md)/1.5 var(--font-story);color:var(--c-ink);text-wrap:balance}
+.memories li::before{content:"";position:absolute;left:var(--s-1);top:.6em;width:6px;height:6px;transform:rotate(45deg);background:var(--c-bond)}
+.actions{display:flex;flex-wrap:wrap;gap:var(--s-2)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s-2);min-height:var(--tap);padding:0 var(--s-3);border:1px solid var(--c-line-strong);border-radius:var(--r-pill);font:400 var(--fs-sm)/1 var(--font-story);color:var(--c-ink);white-space:nowrap}
+.actions .btn{flex:1 1 auto;padding:0 var(--s-2)}
+.btn--primary{border-color:var(--c-gold);background:var(--c-gold-wash);color:var(--c-gold-hi)}
+
+/* ===================== Desktop margins (hidden on phone) ========== */
+.side{display:none}
+
+/* ===================== Pointer feedback =========================== */
+@media (hover:hover){
+  .icon-btn:hover,.nav-item:hover{color:var(--c-gold)}
+  .btn:hover,.medal:hover .disc{border-color:var(--c-gold)}
+  .sug:hover,.person-open:hover,.person-talk:hover{background:var(--c-gold-wash)}
+  .continue:hover,.send:hover{filter:brightness(1.06)}
+}
+
+/* ===================== Motion ===================================== */
+@media (prefers-reduced-motion:no-preference){
+  body.is-ready .people{transition:opacity .16s ease-out,transform .16s ease-out,visibility .16s}
+  body.is-ready .scrim{transition:opacity .16s ease-out,visibility .16s}
+  .is-kindled{animation:kindle .5s ease-out}
+  body.just-rose .pips .rise{animation:rise .5s ease-out}
+  @keyframes kindle{from{color:var(--c-gold-hi)}}
+  @keyframes rise{from{transform:scale(1.9)}}
+}
+
+/* ===================== Small phones: below 375 ==================== */
+@media (max-width:374.98px){
+  .tb-place{font-size:var(--fs-sm)}
+  .actions .btn svg{display:none}
+  .check-vs{flex-basis:100%;margin-left:0}
+  .to-name{display:none}     /* the medallion alone names the addressee */
+}
+@media (max-width:349.98px){
+  .topbar{padding-inline:var(--s-2)}
+  .tb-meters{gap:var(--s-2)}
+  .destiny span,.tb-place svg{display:none}
+  .to{gap:var(--s-1);padding-right:var(--s-1)}
+  .field-input{padding:0 0 0 var(--s-2)}
+}
+
+/* ===================== From 700 up: the wide dice card ============ */
+@media (min-width:700px){
+  .die-head{display:block}
+  .die-roll{display:none}
+  .check-need{flex-basis:auto}
+}
+
+/* ===================== Tablet: 700 to 1099 ======================== */
+@media (min-width:700px) and (max-width:1099.98px){
+  :root{--fs-story:18px;--gutter:var(--s-8)}
+  .strip,.dock{padding-inline:max(var(--s-4),calc((100% - var(--sheet-w)) / 2))}
+  .people{top:auto;max-height:calc(100% - var(--top-h) - var(--s-3) - var(--nav-h));margin-inline:auto;width:min(100%,var(--sheet-w))}
+  .scrim{background:var(--c-scrim)}
+}
+
+/* ===================== Desktop: 1100 and up ======================= */
+@media (min-width:1100px){
+  :root{--tap:40px;--top-h:56px;--fs-story:18px;--gutter:var(--s-8)}
+
+  .app{display:grid;grid-template-columns:minmax(var(--margin-min),1fr) minmax(0,var(--page-w)) minmax(var(--margin-min),1fr);grid-template-rows:var(--top-h) minmax(0,1fr);background:var(--c-desk)}
+
+  /* Top bar */
+  .topbar{grid-column:1/-1;min-height:0;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);grid-template-rows:auto;grid-template-areas:none;column-gap:var(--s-7);padding:0 var(--s-5) 0 var(--s-6)}   /* the menu glyph ends on the right margin's text edge */
+  .tb-left{display:flex;align-items:center;gap:var(--s-4);min-width:0}
+  .brand{display:flex;align-items:center;gap:var(--s-2);flex:none;font:700 var(--fs-lg)/1 var(--font-display);letter-spacing:.02em;color:var(--c-gold)}
+  .tb-story{display:flex;align-items:baseline;gap:var(--s-3);min-width:0;padding-left:var(--s-4);border-left:1px solid var(--c-line);text-align:left}
+  .story-name{flex:none;font:italic 400 var(--fs-lg)/1.3 var(--font-display);letter-spacing:0;text-transform:none;color:var(--c-ink)}
+  .story-ch{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:var(--fs-sm)/1.3 var(--font-small);color:var(--c-ink-2)}
+  .tb-place{grid-area:auto;align-self:center}
+  .tb-right{display:flex;align-items:center;justify-content:flex-end;gap:var(--s-3);min-width:0}
+  .tb-cost{display:flex;align-items:baseline;white-space:nowrap}
+  .cost-item{flex-direction:row;align-items:baseline;gap:var(--s-1)}
+  .cost-item b{font-size:var(--fs-xs)}
+  .cost-more{display:flex}
+  .cost-more::before{content:"·";margin:0 var(--s-1) 0 var(--s-2);color:var(--c-line-strong)}
+  .tb-meters{display:none}
+
+  /* The page */
+  .page{grid-column:2;grid-row:2;border-inline:1px solid var(--c-line);box-shadow:0 0 70px rgba(0,0,0,.4);
+    background:radial-gradient(ellipse 80% 300px at 50% 100%,var(--glow-candle),transparent) var(--c-page)}
+  .log{padding:var(--s-7) var(--gutter) var(--s-4)}
+  .check-in{padding:var(--s-3) var(--s-4)}
+  .notes{max-width:none}
+  .note-i{display:inline;white-space:nowrap}
+  .note-sep{display:inline;margin:0 var(--s-2);color:var(--c-line-strong)}
+  .strip,.nav,.scrim{display:none}
+
+  /* Bottom control */
+  .dock{padding:var(--s-2) var(--gutter) var(--s-5)}
+  .dock-continue,.composer{max-width:var(--measure);margin:0 auto;font-size:var(--fs-story)}
+  .dock-continue{position:relative;display:flex;justify-content:center;align-items:center}
+  .continue{width:340px}
+  .kbd-hint{display:block;position:absolute;right:0;top:50%;transform:translateY(-50%);font:var(--fs-sm)/1 var(--font-small);color:var(--c-ink-3)}
+  .kbd-hint kbd{display:inline-block;margin-left:var(--s-1);padding:var(--s-1) var(--s-2);border:1px solid var(--c-line-strong);border-radius:var(--r-xs);font:var(--fs-xs)/1 var(--font-ui);color:var(--c-ink-2)}
+
+  /* Left margin: people */
+  .people{position:static;z-index:auto;grid-column:1;grid-row:2;justify-self:end;width:min(100%,var(--margin-w));min-height:0;overflow-y:auto;
+    padding:var(--s-6) var(--s-6) var(--s-4) var(--s-7);background:none;border:0;border-radius:0;box-shadow:none;visibility:visible;opacity:1;transform:none;
+    scrollbar-width:thin;scrollbar-color:var(--c-line) transparent}
+  .people-head{align-items:center;min-height:var(--s-6);margin-bottom:var(--s-1);padding:0}
+  .people-head::before,.people-sub,.people-close{display:none}
+  .people-head .rule{display:block}
+  .people-expand{display:grid}
+  .people-body{overflow:visible;padding:0;-webkit-mask-image:none;mask-image:none}
+  .h-sub{margin:var(--s-4) 0 var(--s-1);padding:0;letter-spacing:var(--track-caps);color:var(--c-ink-3)}
+  .h-sub::after{display:none}
+  .person{margin-inline:calc(var(--s-3) * -1)}
+  .person--mira{padding-block:var(--s-2);background:none;border-color:transparent}
+  .person--mira .fav-badge{background:var(--c-desk)}
+  .person .disc,.person-name{font-size:var(--fs-lg)}
+  .person-name{padding-right:var(--s-7)}
+  .person-head{position:relative;grid-template-columns:auto minmax(0,1fr)}
+  .person-open{display:block;position:absolute;inset:0;border-radius:var(--r-md)}
+  /* Talk becomes a quiet icon beside each name; the row itself opens the profile */
+  .person .person-talk{display:grid;place-items:center;position:absolute;top:calc(var(--s-2) * -1);right:calc(var(--s-3) * -1);width:var(--tap);height:var(--tap);min-height:0;padding:0;border:0;border-radius:50%;color:var(--c-ink-2)}
+  .person-talk span{display:none}
+  .person .disc--party~.person-talk{color:var(--c-gold)}
+  .person-detail,.person-bond .dot{display:none}
+  .person-bond{flex-wrap:wrap;gap:0 var(--s-2)}
+
+  /* Mira's profile, opened in the margin */
+  body[data-people="open"] .person--mira{margin-block:var(--s-1);padding:var(--s-3);background:var(--c-raise);border-color:var(--c-line-mid);box-shadow:var(--shadow-card)}
+  body[data-people="open"] .person--mira .fav-badge{background:var(--c-raise)}
+  body[data-people="open"] .person--mira .disc{width:var(--disc-lg);height:var(--disc-lg);font-size:var(--fs-2xl)}
+  body[data-people="open"] .person--mira .person-name{font-size:var(--fs-xl)}
+  body[data-people="open"] .person--mira .person-detail{display:block;margin-top:var(--s-3);padding-top:var(--s-3);border-top:1px solid var(--c-line)}
+  body[data-people="open"] .person--mira .person-talk{display:none}
+  body[data-people="open"] .person--mira .person-chev{display:block;position:absolute;top:var(--s-1);right:calc(var(--s-1) * -1);color:var(--c-gold);pointer-events:none}
+  body[data-people="open"] .person--mira .person-open{inset:0 0 auto;height:calc(var(--disc-lg) + var(--s-7))}
+  body[data-people="open"] .person--mira .btn--primary{flex-basis:100%}
+
+  /* Right margin: character, journal, map */
+  .side{display:flex;flex-direction:column;gap:var(--s-4);grid-column:3;grid-row:2;justify-self:start;width:min(100%,var(--margin-w));min-height:0;overflow-y:auto;
+    padding:var(--s-6) var(--s-7) var(--s-4) var(--s-6);scrollbar-width:thin;scrollbar-color:var(--c-line) transparent}
+  .sec-head{display:flex;align-items:center;gap:var(--s-3);min-height:var(--s-6);margin-bottom:var(--s-1)}
+  .h-sec,.people-title{font:700 var(--fs-xs)/1 var(--font-small);letter-spacing:var(--track-wide);text-transform:uppercase;color:var(--c-gold)}
+  .rule{flex:1;height:1px;background:linear-gradient(90deg,var(--c-line-strong),transparent)}
+  .icon-btn--sm{margin:calc(var(--s-2) * -1) calc(var(--s-3) * -1) calc(var(--s-2) * -1) calc(var(--s-1) * -1);color:var(--c-ink-3)}
+
+  .char-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s-2)}
+  .char-name{font:400 var(--fs-3xl)/1.1 var(--font-display);color:var(--c-ink)}
+  .char-tally{display:grid;grid-template-columns:auto auto;column-gap:var(--s-3);font:var(--fs-sm)/1.35 var(--font-small);color:var(--c-ink-2)}
+  .char-tally div{display:contents}
+  .char-tally dt{position:relative}
+  .char-tally dd{text-align:right;font-weight:700;color:var(--c-ink);font-variant-numeric:lining-nums}
+  .sparks{position:absolute;right:100%;top:calc(50% - 7px);display:flex;gap:var(--s-0);margin-right:var(--s-2);color:var(--c-gold)}
+  .bar{display:grid;grid-template-columns:1fr auto;align-items:baseline;row-gap:var(--s-1);margin-bottom:var(--s-2);font:var(--fs-sm)/1 var(--font-small);color:var(--c-ink-2)}
+  .bar .track{grid-column:1/-1}
+  .bar-v{font-variant-numeric:lining-nums tabular-nums}
+  .bar-v b{color:var(--c-ink);font-variant-numeric:lining-nums}
+  .attrs{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,auto);grid-auto-flow:column;gap:var(--s-0) var(--s-6);margin-top:var(--s-3);padding:var(--s-2) 0;border-block:1px solid var(--c-line);font:var(--fs-sm)/1.45 var(--font-small)}
+  .attrs div{display:flex;align-items:baseline;gap:var(--s-1)}
+  .attrs dt{flex:1;display:flex;align-items:baseline;gap:var(--s-1);color:var(--c-ink-2)}
+  .attrs dt::after{content:"";flex:1;border-bottom:1px dotted var(--c-line-strong);transform:translateY(-3px)}
+  .attrs dd{font-weight:700;color:var(--c-ink);font-variant-numeric:lining-nums}
+  .craft{display:grid;grid-template-columns:auto 1fr;gap:var(--s-2) var(--s-6);margin-top:var(--s-3);font:var(--fs-sm)/1.55 var(--font-small);color:var(--c-ink)}
+  .craft .lbl{margin-bottom:var(--s-0)}
+  .craft small{font-size:var(--fs-xs);color:var(--c-ink-3)}
+
+  .threads li{display:grid;grid-template-columns:var(--s-5) 1fr;margin-bottom:var(--s-2);text-wrap:pretty}
+  .th-mark{font:italic var(--fs-md)/1.4 var(--font-story);color:var(--c-gold)}
+  .th-title{font:var(--fs-md)/1.4 var(--font-story);color:var(--c-ink)}
+  .th-next{font:italic var(--fs-sm)/1.45 var(--font-small);color:var(--c-ink-2)}
+  .th-next .lbl{font-style:normal;color:var(--c-gold)}
+  .commit{margin-top:var(--s-3);padding:var(--s-2) var(--s-3);border:1px solid var(--c-line-mid);border-radius:var(--r-sm);background:var(--c-page)}
+  .commit-k{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s-0) var(--s-2);font:700 var(--fs-xs)/1.3 var(--font-small);letter-spacing:var(--track-caps);text-transform:uppercase;color:var(--c-ink-3)}
+  .commit-k svg{color:var(--c-gold)}
+  .commit-k em{margin-left:auto;font:italic 400 var(--fs-sm)/1.3 var(--font-small);letter-spacing:0;text-transform:none;color:var(--c-gold)}
+  .commit-t{margin-top:var(--s-1);font:var(--fs-md)/1.4 var(--font-story);color:var(--c-ink);text-wrap:balance}
+
+  .map{width:100%;height:116px}
+  .map-link{fill:none;stroke:var(--c-line-strong);stroke-width:1.25}
+  .map-node{fill:var(--c-desk);stroke:var(--c-ink-2);stroke-width:1.25}
+  .map-ring{stroke:var(--c-gold);stroke-width:1;opacity:.55}
+  .map-here{fill:var(--c-gold)}
+  .map text{font:var(--fs-xs) var(--font-small);fill:var(--c-ink-2);text-anchor:middle}
+  .map .map-start{text-anchor:start}
+  .map .map-you{font-style:italic;fill:var(--c-gold)}
+  .map .map-cur{fill:var(--c-ink)}
+}
+
+/* ===================== Narrower desktops: 1100 to 1399 ============ */
+@media (min-width:1100px) and (max-width:1399.98px){
+  :root{--gutter:var(--s-7)}
+  .ch-x{display:none}
+  .topbar{padding:0 var(--s-2) 0 var(--s-4)}
+  .people,.side{padding-inline:var(--s-5)}
+  .craft{column-gap:var(--s-4)}
+  .commit-k{letter-spacing:var(--track-tight)}
+  .commit-k svg{display:none}
+}
+@media (min-width:1100px) and (max-width:1199.98px){
+  .ch-s,.note-sep{display:none}      /* the top bar keeps "Chapter 2"; the scene is in the page heading */
+  .note-i{display:block}
+}
+</style>
+</head>
+<body data-mode="continue" data-bond="3">
+
+<svg class="sprite" aria-hidden="true">
+  <symbol id="o-rule" viewBox="0 0 62 11"><path d="M0 5.5h40" stroke="currentColor" opacity=".6"/><path d="M45 5.5l2-2 2 2-2 2z" fill="currentColor"/><path d="M56.5 1L61 5.5 56.5 10 52 5.5z" fill="none" stroke="currentColor" stroke-width="1.1"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 3c.4 2.6 4.5 4.8 4.5 9a4.5 4.5 0 0 1-9 0c0-1.7.8-2.9 1.7-3.8.3 1.3 1 2 1.8 2.2C10.6 8.3 10.7 5.5 12 3zM8.5 20.5h7"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6.6C10.4 5.4 8.2 4.8 5.5 4.8H4v13h1.5c2.7 0 4.9.6 6.5 1.8 1.6-1.2 3.8-1.8 6.5-1.8H20v-13h-1.5c-2.7 0-4.9.6-6.5 1.8zm0 0v13"/></symbol>
+  <symbol id="i-people" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.1"/><path d="M3.4 19.2c.5-3.2 2.7-5.2 5.6-5.2s5.1 2 5.6 5.2M15.2 5.9a2.8 2.8 0 1 1 1.3 5.3M17 14.3c2 .5 3.3 2.2 3.7 4.6"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3.6l7 2.5v5.3c0 4.2-2.8 7.4-7 9-4.2-1.6-7-4.8-7-9V6.1zM12 8.8l2.4 3.2-2.4 3.2-2.4-3.2z"/></symbol>
+  <symbol id="i-journal" viewBox="0 0 24 24"><path d="M7 3.5h10.5A1.5 1.5 0 0 1 19 5v14a1.5 1.5 0 0 1-1.5 1.5H7zM7 3.5v17M5 7.5h2M5 12h2M5 16.5h2M11.5 3.5v6l1.75-1.4L15 9.5v-6"/></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24"><path d="M3.5 6.5L9 4.5l6 2 5.5-2v13l-5.5 2-6-2-5.5 2zM9 4.5v13M15 6.5v13"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M6 14.5l6-6 6 6"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M12 19V5.5M6 11.5l6-6 6 6"/></symbol>
+  <symbol id="i-expand" viewBox="0 0 24 24"><path d="M14 5h5v5M19 5l-6 6M10 19H5v-5M5 19l6-6"/></symbol>
+  <symbol id="i-talk" viewBox="0 0 24 24"><path d="M5 5.5h14A1.5 1.5 0 0 1 20.5 7v8a1.5 1.5 0 0 1-1.5 1.5h-7.5L7.5 20v-3.5H5A1.5 1.5 0 0 1 3.5 15V7A1.5 1.5 0 0 1 5 5.5z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M7 3.5h10M7 20.5h10M8.5 3.5c0 4.5 3.5 5.5 3.5 8.5s-3.5 4-3.5 8.5M15.5 3.5c0 4.5-3.5 5.5-3.5 8.5s3.5 4 3.5 8.5"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M6.5 20.5V4M6.5 4.5H17l-2.5 3.75L17 12H6.5"/></symbol>
+  <symbol id="i-dusk" viewBox="0 0 24 24"><path d="M3 16.5h18M7 16.5a5 5 0 0 1 10 0M12 6v2.5M5.3 9.8l1.8 1.5M18.7 9.8l-1.8 1.5M8.5 20h7"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.4l2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.1 5.9-.8z"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 2.5c.7 5.2 4.3 8.8 9.5 9.5-5.2.7-8.8 4.3-9.5 9.5-.7-5.2-4.3-8.8-9.5-9.5 5.2-.7 8.8-4.3 9.5-9.5z"/></symbol>
+  <symbol id="i-die2" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><circle cx="9" cy="9" r="1.7" fill="currentColor" stroke="none"/><circle cx="15" cy="15" r="1.7" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 19.5s-7-4.3-7-9.7a3.9 3.9 0 0 1 7-2.4 3.9 3.9 0 0 1 7 2.4c0 5.4-7 9.7-7 9.7z"/></symbol>
+</svg>
+
+<div class="app">
+
+  <!-- ============================ Top bar ============================ -->
+  <header class="topbar">
+    <div class="tb-left">
+      <div class="brand"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="#i-flame"/></svg><span>Bitor Quest</span></div>
+      <div class="tb-story">
+        <h1 class="story-name">The Glass Road</h1>
+        <p class="story-ch">Chapter 2 <span class="ch-x"><span class="dot">·</span> “Borrowed Seals” </span><span class="ch-s"><span class="dot">·</span> Scene 4</span></p>
+      </div>
+    </div>
+    <p class="tb-place"><span class="place-name">Lantern Market</span> <span class="dot">·</span> <svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-dusk"/></svg>Dusk <span class="dot">·</span> Day 12</p>
+    <div class="tb-right">
+      <p class="tb-cost">
+        <span class="cost-item"><span>this turn</span> <b>$0.006</b></span>
+        <span class="cost-item cost-more"><span>session</span> <b>$0.21</b></span>
+        <span class="cost-item cost-more"><span>narrator</span> <b>Sonnet 5.5</b></span>
+      </p>
+      <button class="icon-btn tb-menu" type="button" aria-label="Menu and settings"><svg class="ic" width="24" height="24" aria-hidden="true"><use href="#i-menu"/></svg></button>
+    </div>
+    <div class="tb-meters">
+      <div class="meter meter--hp" role="img" aria-label="Hit points 12 of 15">
+        <span class="meter-k">HP</span> <span class="track"><i style="--v:80%"></i></span> <span class="meter-v">12<small>/15</small></span>
+      </div>
+      <div class="meter meter--en" role="img" aria-label="Energy 9 of 15">
+        <span class="meter-k">EN</span> <span class="track"><i style="--v:60%"></i></span> <span class="meter-v">9<small>/15</small></span>
+      </div>
+      <div class="destiny" role="img" aria-label="Destiny points 2">
+        <svg class="ic-f" width="12" height="12" aria-hidden="true"><use href="#i-spark"/></svg> <span>Destiny</span> <b>2</b>
+      </div>
+    </div>
+  </header>
+
+  <!-- ====================== People (sheet / left margin) ====================== -->
+  <aside class="people" id="people" aria-label="People">
+    <div class="people-head">
+      <h2 class="people-title">People</h2>
+      <p class="people-sub">With you at Lantern Market</p>
+      <span class="rule" aria-hidden="true"></span>
+      <button class="icon-btn icon-btn--sm people-expand" type="button" data-people-toggle aria-label="Open People"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-expand"/></svg></button>
+      <button class="icon-btn people-close" type="button" data-people-toggle aria-label="Close the People panel"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-close"/></svg></button>
+    </div>
+    <div class="people-body">
+      <h3 class="h-sub">Party</h3>
+
+      <article class="person person--mira">
+        <div class="person-head">
+          <span class="disc disc--party" aria-hidden="true">M<span class="fav-badge"><svg class="ic-f" width="11" height="11"><use href="#i-star"/></svg></span></span>
+          <div class="person-id">
+            <h4 class="person-name">Mira <span class="fav">Favourite</span></h4>
+            <p class="person-role">Scout</p>
+            <p class="person-bond"><span class="pips" role="img" aria-label="Bond level"><i class="on"></i><i class="on"></i><i class="on"></i><i class="rise"></i><i></i></span> <span>Bond <b data-bond-value>4</b> of 5</span> <span class="dot">·</span> <em>trusts you</em></p>
+          </div>
+          <button class="person-open" type="button" data-people-toggle aria-label="Show or hide Mira’s profile"></button>
+          <button class="btn person-talk person-quick" type="button" aria-label="Talk to Mira"><svg class="ic" width="17" height="17" aria-hidden="true"><use href="#i-talk"/></svg><span>Talk</span></button>
+          <svg class="ic person-chev" width="18" height="18" aria-hidden="true"><use href="#i-up"/></svg>
+        </div>
+        <div class="person-detail">
+          <h5 class="lbl">Shared memories</h5>
+          <ul class="memories">
+            <li>You shared your rations on the salt flats.</li>
+            <li>You did not use her as bait at the bridge.</li>
+          </ul>
+          <div class="actions">
+            <button class="btn btn--primary" type="button"><svg class="ic" width="17" height="17" aria-hidden="true"><use href="#i-talk"/></svg>Talk</button>
+            <button class="btn" type="button">Spend time together</button>
+            <button class="btn" type="button">Ask about…</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="person person--tobin">
+        <div class="person-head">
+          <span class="disc disc--party" aria-hidden="true">T</span>
+          <div class="person-id">
+            <h4 class="person-name">Tobin</h4>
+            <p class="person-role">Tinkerer’s apprentice</p>
+            <p class="person-bond"><span class="pips" role="img" aria-label="Bond level"><i class="on"></i><i></i><i></i><i></i><i></i></span> <span>Bond <b>1</b> of 5</span> <span class="dot">·</span> <em>curious</em></p>
+          </div>
+          <button class="btn person-talk person-quick" type="button" aria-label="Talk to Tobin"><svg class="ic" width="17" height="17" aria-hidden="true"><use href="#i-talk"/></svg><span>Talk</span></button>
+        </div>
+        <div class="person-detail">
+          <ul class="memories">
+            <li>You paid for his broken lens.</li>
+          </ul>
+          <div class="actions">
+            <button class="btn btn--primary" type="button"><svg class="ic" width="17" height="17" aria-hidden="true"><use href="#i-talk"/></svg>Talk</button>
+            <button class="btn" type="button">Spend time together</button>
+            <button class="btn" type="button">Ask about…</button>
+          </div>
+        </div>
+      </article>
+
+      <h3 class="h-sub">Also here</h3>
+
+      <article class="person person--roth">
+        <div class="person-head">
+          <span class="disc" aria-hidden="true">R</span>
+          <div class="person-id">
+            <h4 class="person-name">Captain Roth</h4>
+            <p class="person-role">City Watch</p>
+            <p class="person-bond"><span>No bond yet</span> <span class="dot">·</span> <em>wary</em></p>
+          </div>
+          <button class="btn person-talk" type="button" aria-label="Talk to Captain Roth"><svg class="ic" width="17" height="17" aria-hidden="true"><use href="#i-talk"/></svg><span>Talk</span></button>
+        </div>
+        <p class="person-note">Suspects a courier carried the forged seal.</p>
+      </article>
+
+      <article class="person person--seller">
+        <div class="person-head">
+          <span class="disc disc--stranger" aria-hidden="true">L</span>
+          <div class="person-id">
+            <h4 class="person-name">Lantern seller</h4>
+            <p class="person-role">A stranger</p>
+          </div>
+          <button class="btn person-talk" type="button" aria-label="Talk to the lantern seller"><svg class="ic" width="17" height="17" aria-hidden="true"><use href="#i-talk"/></svg><span>Talk</span></button>
+        </div>
+      </article>
+    </div>
+  </aside>
+
+  <!-- ============================ The page ============================ -->
+  <main class="page">
+    <div class="log" data-log role="log" tabindex="0" aria-label="Story">
+      <div class="log-in">
+
+        <header class="scene">
+          <p class="scene-no">
+            <svg width="62" height="11" viewBox="0 0 62 11" aria-hidden="true"><use href="#o-rule"/></svg>
+            <span>Scene 4</span>
+            <svg class="flip" width="62" height="11" viewBox="0 0 62 11" aria-hidden="true"><use href="#o-rule"/></svg>
+          </p>
+          <h2 class="scene-title">Lantern Market <span>·</span> Dusk</h2>
+        </header>
+
+        <p class="beat lead">Paper lanterns sway above the market stalls as the last light drains out of the canal. By the bridge, Captain Roth turns a wax seal over in his gloved hand while two watchmen search a courier’s bag.</p>
+
+        <div class="beat say">
+          <p class="who"><span class="who-name">Mira</span> <span class="who-how">whispering</span></p>
+          <p class="line">“He’s checking couriers. If he sees your satchel, we’re done. I can draw them off, or you talk your way through.”</p>
+        </div>
+
+        <div class="beat say">
+          <p class="who"><span class="who-name">Tobin</span></p>
+          <p class="line">“Or we wait for dark. I vote dark.”</p>
+        </div>
+
+        <div class="beat act">
+          <p class="who"><span class="who-name">Aren</span> <span class="who-how">you</span></p>
+          <p>I walk up to Roth openly and ask whether the bridge is closed, keeping the satchel under my cloak.</p>
+        </div>
+
+        <aside class="check" aria-label="Dice check">
+          <div class="check-in">
+            <div class="check-top">
+              <svg class="die die-head" width="32" height="32" viewBox="0 0 38 38" aria-hidden="true">
+                <rect x="1.5" y="1.5" width="35" height="35" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+                <rect x="5" y="5" width="28" height="28" rx="4.5" fill="none" stroke="currentColor" stroke-width=".8" opacity=".5"/>
+                <circle cx="13" cy="13" r="3" fill="currentColor"/>
+                <circle cx="25" cy="25" r="3" fill="currentColor"/>
+              </svg>
+              <div class="check-title">
+                <p class="check-kind seps"><span><span>Skill test</span><span>Medium</span></span></p>
+                <p class="check-skill">Manipulation <em>(bluff)</em></p>
+              </div>
+              <p class="stamp"><b>Success</b> <span>quality 2</span></p>
+            </div>
+            <div class="check-facts">
+              <p class="check-need"><span class="check-k">Needed</span> <span><b>4 or less</b> on one die</span></p>
+              <p><span class="check-k">Rolled</span> <svg class="ic die die-roll" width="18" height="18" aria-hidden="true"><use href="#i-die2"/></svg> <b>2</b></p>
+              <p class="check-vs">Opposed by Captain Roth</p>
+            </div>
+          </div>
+        </aside>
+
+        <p class="beat" data-latest>Roth’s eyes go from your face to your boots and back. “Bridge is open. Papers are not,” he says, but he is already looking past you at a cart with a broken axle. He waves you on.</p>
+
+        <div class="pending" data-pending>
+          <div class="beat say">
+            <p class="who"><span class="who-name">Mira</span> <span class="who-how">low, falling in beside you</span></p>
+            <p class="line">“You could have sent me in as the distraction. You didn’t.” A pause. “I noticed.”</p>
+          </div>
+          <div class="notes">
+            <p class="note note--bond"><span class="note-i"><svg class="ic" width="15" height="15" aria-hidden="true"><use href="#i-heart"/></svg>Bond with <b>Mira</b> rises from 3 to <b>4</b></span><span class="pips" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="rise"></i><i></i></span></p>
+          </div>
+        </div>
+
+        <div class="pending" data-pending>
+          <p class="beat">Behind you the cart finally gives way, and the whole market turns to look. The bridge ahead is empty, and beyond it the lamps of the Glass Road are being lit one by one.</p>
+          <div class="notes">
+            <p class="note"><span class="note-i"><svg class="ic-f" width="13" height="13" aria-hidden="true"><use href="#i-spark"/></svg><b>+1</b> experience</span> <span class="note-sep">·</span> <span class="note-i"><svg class="ic" width="15" height="15" aria-hidden="true"><use href="#i-flag"/></svg>Goal progress: <span class="nw">reach the Glass Road waystation</span></span></p>
+            <p class="note"><span class="note-i"><svg class="ic" width="15" height="15" aria-hidden="true"><use href="#i-clock"/></svg>10 minutes pass</span></p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- People strip (phone) -->
+    <div class="strip" role="group" aria-label="People with you">
+      <button class="medal medal--party" type="button" data-people-toggle aria-label="Mira, in your party, favourite. Open People">
+        <span class="disc disc--party">M<span class="fav-badge"><svg class="ic-f" width="11" height="11" aria-hidden="true"><use href="#i-star"/></svg></span></span>
+        <span class="medal-name">Mira</span>
+        <span class="pips" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="rise"></i><i></i></span>
+      </button>
+      <button class="medal medal--party" type="button" data-people-toggle aria-label="Tobin, in your party. Open People">
+        <span class="disc disc--party">T</span>
+        <span class="medal-name">Tobin</span>
+        <span class="pips" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i><i></i></span>
+      </button>
+      <span class="strip-sep" aria-hidden="true"></span>
+      <button class="medal" type="button" data-people-toggle aria-label="Captain Roth, present in the scene. Open People">
+        <span class="disc">R</span>
+        <span class="medal-name">Roth</span>
+      </button>
+      <button class="medal" type="button" data-people-toggle aria-label="Lantern seller, a stranger. Open People">
+        <span class="disc disc--stranger">L</span>
+        <span class="medal-name">Seller</span>
+      </button>
+      <button class="medal medal--all" type="button" data-people-toggle aria-label="Open the People panel">
+        <span class="disc disc--ghost"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="#i-up"/></svg></span>
+        <span class="medal-name">All</span>
+      </button>
+    </div>
+
+    <!-- Bottom control: Continue, or the input with suggestions -->
+    <div class="dock">
+      <div class="dock-continue">
+        <button class="continue" type="button" data-continue>
+          <span class="continue-l">Continue</span>
+          <span class="continue-c"><b data-continue-count>2</b> more</span>
+        </button>
+        <p class="kbd-hint">or press <kbd>Space</kbd></p>
+      </div>
+      <div class="composer">
+        <ul class="suggest" aria-label="Suggested actions">
+          <li><button class="sug" type="button"><span class="sug-n">i.</span> <span class="sug-t">Cross the bridge now</span><svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-right"/></svg></button></li>
+          <li><button class="sug" type="button"><span class="sug-n">ii.</span> <span class="sug-t">Ask Mira what she saw at the stalls</span><svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-right"/></svg></button></li>
+          <li><button class="sug" type="button"><span class="sug-n">iii.</span> <span class="sug-t">Take a closer look at the cart</span><svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-right"/></svg></button></li>
+        </ul>
+        <div class="field">
+          <button class="to" type="button" aria-label="Speaking to Mira. Change who you address"><span class="to-k">To:</span> <span class="disc disc--party disc--xs" aria-hidden="true">M</span> <span class="to-name">Mira</span> <svg class="ic" width="13" height="13" aria-hidden="true"><use href="#i-down"/></svg></button>
+          <input class="field-input" type="text" placeholder="What do you do?" aria-label="What do you do?" autocomplete="off">
+          <button class="send" type="button" aria-label="Send"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-send"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ================= Character, journal, map (right margin) ================= -->
+  <aside class="side" aria-label="Character and journal">
+    <section>
+      <div class="sec-head"><h2 class="h-sec">Character</h2><span class="rule" aria-hidden="true"></span><button class="icon-btn icon-btn--sm" type="button" aria-label="Open the character sheet"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-expand"/></svg></button></div>
+      <div class="char-top">
+        <h3 class="char-name">Aren</h3>
+        <dl class="char-tally">
+          <div><dt><span class="sparks" aria-hidden="true"><svg class="ic-f" width="13" height="13"><use href="#i-spark"/></svg><svg class="ic-f" width="13" height="13"><use href="#i-spark"/></svg></span>Destiny points</dt><dd>2</dd></div>
+          <div><dt>Experience</dt><dd>14</dd></div>
+        </dl>
+      </div>
+      <div class="bar bar--hp"><span>Hit points</span> <span class="bar-v"><b>12</b> / 15</span><span class="track"><i style="--v:80%"></i></span></div>
+      <div class="bar bar--en"><span>Energy</span> <span class="bar-v"><b>9</b> / 15</span><span class="track"><i style="--v:60%"></i></span></div>
+      <dl class="attrs">
+        <div><dt>Strength</dt><dd>1</dd></div>
+        <div><dt>Skill</dt><dd>3</dd></div>
+        <div><dt>Resistance</dt><dd>3</dd></div>
+        <div><dt>Armor</dt><dd>1</dd></div>
+        <div><dt>Firepower</dt><dd>0</dd></div>
+      </dl>
+      <div class="craft">
+        <div>
+          <h4 class="lbl">Paths</h4>
+          <ul><li>Air <b>2</b></li><li>Light <b>1</b></li></ul>
+        </div>
+        <div>
+          <h4 class="lbl">Abilities</h4>
+          <ul><li>Featherstep <small>Air 1</small></li><li>Gale Push <small>Air 2</small></li><li>Glimmer <small>Light 1</small></li></ul>
+        </div>
+        <div>
+          <h4 class="lbl">Skills</h4>
+          <ul><li>Manipulation</li><li>Survival</li></ul>
+        </div>
+        <div>
+          <h4 class="lbl">Advantages</h4>
+          <ul><li>Quick Reflexes</li><li>Patron: Couriers’ Guild</li></ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head"><h2 class="h-sec">Journal</h2><span class="rule" aria-hidden="true"></span><button class="icon-btn icon-btn--sm" type="button" aria-label="Open the journal"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-expand"/></svg></button></div>
+      <ol class="threads" aria-label="Threads">
+        <li><span class="th-mark">a.</span> <div><p class="th-title">Deliver the sealed letter to the Glass Road waystation.</p><p class="th-next"><span class="lbl">Next</span> cross the bridge before the gates close.</p></div></li>
+        <li><span class="th-mark">b.</span> <div><p class="th-title">Who copied the baron’s seal?</p><p class="th-next"><span class="lbl">Clue</span> Roth carries a copy.</p></div></li>
+      </ol>
+      <div class="commit">
+        <p class="commit-k"><svg class="ic" width="15" height="15" aria-hidden="true"><use href="#i-hourglass"/></svg> <span>Commitment</span> <em>due tonight</em></p>
+        <p class="commit-t">Meet Tobin’s master at the Old Mill.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head"><h2 class="h-sec">Map</h2><span class="rule" aria-hidden="true"></span><button class="icon-btn icon-btn--sm" type="button" aria-label="Open the map"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-expand"/></svg></button></div>
+      <svg class="map" viewBox="0 0 248 116" role="img" aria-label="Schematic map. Old Mill links to Lantern Market, where you are. Lantern Market links to North Gate and to Canal Bridge. Canal Bridge links to Glass Road Waystation, and beyond it lies one undiscovered place.">
+        <path class="map-link" d="M26 70h178M88 70V28"/>
+        <path class="map-link" d="M204 70h24" stroke-dasharray="2 4"/>
+        <circle class="map-node" cx="26" cy="70" r="4.5"/>
+        <circle class="map-node" cx="88" cy="28" r="4.5"/>
+        <circle class="map-node" cx="150" cy="70" r="4.5"/>
+        <circle class="map-node" cx="204" cy="70" r="4.5"/>
+        <circle class="map-node" cx="237" cy="70" r="8.5" stroke-dasharray="2 3"/>
+        <circle class="map-node map-ring" cx="88" cy="70" r="11"/>
+        <path class="map-here" d="M88 63.5l6.5 6.5-6.5 6.5-6.5-6.5z"/>
+        <text x="26" y="56">Old Mill</text>
+        <text class="map-start" x="98" y="32">North Gate</text>
+        <text x="150" y="56">Canal Bridge</text>
+        <text class="map-cur" x="88" y="96">Lantern Market</text>
+        <text class="map-you" x="88" y="111">you are here</text>
+        <text x="204" y="96">Glass Road</text>
+        <text x="204" y="111">Waystation</text>
+        <text x="237" y="74.5">?</text>
+      </svg>
+    </section>
+  </aside>
+
+  <!-- ====================== Bottom navigation (phone) ====================== -->
+  <nav class="nav" aria-label="Primary">
+    <button class="nav-item nav-story" type="button"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-book"/></svg><span>Story</span></button>
+    <button class="nav-item nav-people" type="button" data-people-toggle><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-people"/></svg><span>People</span></button>
+    <button class="nav-item" type="button"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-shield"/></svg><span>Character</span></button>
+    <button class="nav-item" type="button"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-journal"/></svg><span>Journal</span></button>
+    <button class="nav-item" type="button"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-map"/></svg><span>Map</span></button>
+  </nav>
+
+  <button class="scrim" type="button" data-people-toggle aria-label="Close the People panel" tabindex="-1"></button>
+</div>
+
+<script>
+(function () {
+  var state = new URLSearchParams(location.search).get('state') || 'continue';
+  var body = document.body;
+  var log = document.querySelector('[data-log]');
+  var pending = Array.prototype.slice.call(document.querySelectorAll('[data-pending]'));
+  var shown = (state === 'input' || state === 'people') ? pending.length : 0;
+
+  function each(sel, fn) { Array.prototype.forEach.call(document.querySelectorAll(sel), fn); }
+
+  function sync(byReader) {
+    pending.forEach(function (el, i) {
+      el.hidden = i >= shown;
+      el.classList.toggle('is-kindled', byReader === true && i === shown - 1);
+    });
+    var left = pending.length - shown;
+    body.dataset.mode = left > 0 ? 'continue' : 'input';
+    each('[data-continue-count]', function (c) { c.textContent = left; });
+
+    /* Mira's bond rises when the first pending beat is revealed. */
+    var bond = shown > 0 ? '4' : '3';
+    body.dataset.bond = bond;
+    body.classList.toggle('just-rose', byReader === true && shown === 1);
+    each('[data-bond-value]', function (c) { c.textContent = bond; });
+
+    /* The newest beat is lit a little brighter than what has been read. */
+    each('.is-new', function (el) { el.classList.remove('is-new'); });
+    var newest = shown > 0 ? pending[shown - 1] : document.querySelector('[data-latest]');
+    if (newest) newest.classList.add('is-new');
+
+    if (log) log.scrollTop = log.scrollHeight;
+  }
+
+  function advance() {
+    if (shown >= pending.length) return;
+    shown += 1;
+    sync(true);
+  }
+
+  if (state === 'people') body.dataset.people = 'open';
+
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest) return;
+    if (e.target.closest('[data-continue]')) advance();
+    if (e.target.closest('[data-people-toggle]')) {
+      body.dataset.people = body.dataset.people === 'open' ? '' : 'open';
+    }
+  });
+
+  /* Escape closes the People panel. Space continues the story when no control has the focus. */
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && body.dataset.people === 'open') { body.dataset.people = ''; return; }
+    if (e.key !== ' ' || body.dataset.mode !== 'continue') return;
+    if (e.target.closest && e.target.closest('button, input, textarea, select, a')) return;
+    e.preventDefault();
+    advance();
+  });
+
+  sync(false);
+  requestAnimationFrame(function () { requestAnimationFrame(function () { body.classList.add('is-ready'); }); });
+})();
+</script>
+</body>
+</html>

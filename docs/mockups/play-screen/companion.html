@@ -1,0 +1,880 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitor Quest - Play (Companion)</title>
+<style>
+/* ---------- Design tokens: Companion ---------- */
+:root{
+  color-scheme:light;
+  /* colour roles: surfaces */
+  --page:#F6E7DF;            /* desktop gutters, deepest blush */
+  --bg:#FCF3EC;              /* conversation surface, warm cream */
+  --bg-0:rgba(252,243,236,0);   /* the same cream, transparent, for fades */
+  --surface:#FFFFFF;         /* bubbles, cards, bars */
+  --surface-2:#FFF9F4;       /* shelves, quiet fills */
+  --line:#EFDFD5;            /* hairlines */
+  --line-2:#E2CCC1;          /* dividers */
+  --border:#B87286;          /* control borders, 3:1 */
+  --track:#EFE3DC;           /* meter tracks */
+  /* colour roles: text */
+  --ink:#2B1F24;             /* story and primary text */
+  --ink-2:#5B4A50;           /* secondary text */
+  --ink-3:#6F5D63;           /* captions, placeholders */
+  /* colour roles: accent (bonds, the player, main actions) */
+  --accent:#A3134A;          /* the player bubble and main button; white text at 7.6:1 */
+  --accent-hi:#B21A54;       /* top stop of primary buttons */
+  --accent-press:#8F1041;    /* hover and pressed */
+  --on-accent:#FFFFFF;
+  --on-accent-2:#FFDCE5;     /* secondary text on accent */
+  --accent-soft:#FCE3EA;     /* active and tinted fills */
+  --accent-wash:#FFF2F5;     /* suggestion, chip and tile fills */
+  --accent-line:#F0B4C3;     /* decorative accent edges */
+  --heart:#DE3E69;           /* filled bond hearts, outlined controls */
+  --heart-off:#B07787;       /* empty bond hearts */
+  /* colour roles: character identity (avatar, name ink, soft fill, bubble edge) */
+  --mira:#CB4A26;    --mira-ink:#B03A1E;    --mira-soft:#FDEAE4;    --mira-line:#EFAB96;
+  --tobin:#12806D;   --tobin-ink:#0C6B5B;   --tobin-soft:#E0F4EF;   --tobin-line:#92D1C4;
+  --roth:#5A7096;    --roth-ink:#40557A;    --roth-soft:#E9EEF6;    --roth-line:#ACBBD6;
+  --stranger:#7A7074;--stranger-ink:#62585C;--stranger-soft:#F2EDEC;--stranger-line:#CDC3C5;
+  /* colour roles: status */
+  --hp:#258556; --energy:#B5700A; --destiny:#7A58C2;
+  --gold:#BF7A08;            /* favourite star */
+  --ok:#176B41; --ok-soft:#E3F4EA;                       /* success */
+  --due:#8A5300; --due-soft:#FFF3DA; --due-line:#F0D7A0; /* commitments and favourites */
+  /* font stacks */
+  --serif:"Sitka Text","Iowan Old Style","Palatino Linotype","Noto Serif",Georgia,serif;
+  --sans:"Segoe UI Variable Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  /* type scale */
+  --fs-story:17px;  --lh-story:1.62;   /* narration */
+  --fs-speech:16px; --lh-speech:1.5;   /* bubbles */
+  --fs-title:17px; --fs-body:15px; --fs-ui:14px; --fs-small:13px; --fs-micro:12px;
+  /* spacing steps */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px; --sp-7:32px;
+  /* radii */
+  --r-sm:10px; --r-md:16px; --r-lg:20px; --r-xl:24px; --r-pill:999px; --r-tail:6px;
+  /* elevation */
+  --shadow-1:0 1px 2px rgba(122,60,48,.07),0 4px 12px rgba(122,60,48,.06);
+  --shadow-2:0 -6px 30px rgba(86,34,40,.22);
+  --shadow-accent:0 8px 18px -6px rgba(163,19,74,.5);
+  --shade:rgba(122,60,48,.14);  /* top edge of the log while earlier story is scrolled out of view */
+}
+
+/* ---------- Base ---------- */
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+html{-webkit-text-size-adjust:100%}
+body{height:100dvh;overflow:hidden;display:flex;flex-direction:column;background:var(--bg);color:var(--ink);font:var(--fs-ui)/1.4 var(--sans);-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4,p,ul{margin:0;padding:0}
+ul{list-style:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:inherit;-webkit-tap-highlight-color:transparent}
+abbr{text-decoration:none}
+svg{display:block;flex:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ic{fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.ic.solid{fill:currentColor;stroke:none}
+.ib{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;color:var(--ink-2)}
+.dk{display:none}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+/* identity colours */
+.mira{--c:var(--mira);--ci:var(--mira-ink);--cs:var(--mira-soft);--cl:var(--mira-line)}
+.tobin{--c:var(--tobin);--ci:var(--tobin-ink);--cs:var(--tobin-soft);--cl:var(--tobin-line)}
+.roth{--c:var(--roth);--ci:var(--roth-ink);--cs:var(--roth-soft);--cl:var(--roth-line)}
+.seller{--c:var(--stranger);--ci:var(--stranger-ink);--cs:var(--stranger-soft);--cl:var(--stranger-line)}
+.me{--c:var(--accent);--ci:var(--accent);--cs:var(--accent-soft);--cl:var(--accent-line)}
+
+/* avatar */
+.av{--sz:36px;position:relative;flex:none;display:inline-grid;place-items:center;width:var(--sz);height:var(--sz);border-radius:50%;background:var(--c);color:#fff;font-weight:700;font-size:max(12px,calc(var(--sz)*.42));line-height:1}
+.av.xs{--sz:20px}
+.star{fill:currentColor;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round}
+.av .star{position:absolute;top:-6px;right:-8px;width:19px;height:19px;padding:3px;border-radius:50%;background:var(--surface);color:var(--gold);box-shadow:0 1px 3px rgba(86,34,40,.28)}
+
+/* bond hearts */
+.hearts{width:62px;height:11px;color:var(--heart);fill:currentColor;stroke:currentColor;stroke-width:2.2;stroke-linejoin:round;overflow:visible}
+.hearts.md{width:79px;height:14px}
+.hearts.lg{width:113px;height:20px}
+.hearts use{transition:color .35s,fill .35s}
+.hearts .off,body[data-shown="0"] .hearts .gain{color:var(--heart-off);fill:none}
+
+/* ---------- Header (phone) ---------- */
+.top{flex:none;position:relative;z-index:3;display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;column-gap:2px;padding:max(4px,env(safe-area-inset-top)) 8px 9px 4px;background:var(--surface)}
+.brand,.story,.gear,.rail-me{display:none}
+.where{min-width:0;padding-left:4px}
+.where>.ic{display:none}
+.where strong{display:block;font-size:var(--fs-title);line-height:1.3;font-weight:700;letter-spacing:-.01em}
+.where .sub{display:block;font-size:12.5px;line-height:1.35;color:var(--ink-2)}
+.where strong,.where .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crew{display:flex;align-items:center;gap:3px;min-height:44px;padding:0 2px 0 8px;border-radius:22px;color:var(--ink-2)}
+.crew .av{--sz:28px;box-shadow:0 0 0 2px var(--surface)}
+.crew .av+.av{margin-left:-8px}
+.crew .av:first-child{z-index:1}
+.status{grid-column:1/-1;display:flex;align-items:center;gap:11px;min-width:0;overflow:hidden;padding:3px 4px 0 12px;font-size:var(--fs-micro);line-height:1.25;color:var(--ink-2);white-space:nowrap}
+.vital{display:flex;align-items:center;gap:5px;min-width:0}
+.vital.fx{flex:none}   /* no bar to give up: only the meters shrink on narrow phones */
+.vital .k{font-weight:700;letter-spacing:.03em}
+.num{font-size:12.5px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.num i{font-style:normal;font-weight:600;color:var(--ink-2)}
+.bar{display:block;flex:0 1 auto;width:34px;min-width:14px;height:6px;border-radius:3px;background:var(--track);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:3px;background:var(--hp)}
+.bar.en i{background:var(--energy)}
+.gem{color:var(--destiny)}
+.cost{margin-left:auto;padding-left:9px;border-left:1px solid var(--line-2)}
+.cost span{display:none}
+.cost .c-turn{display:inline}
+
+/* ---------- People strip (phone) / contact list (desktop) ---------- */
+.left{flex:none;position:relative;z-index:2;background:var(--surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.people{display:flex;align-items:stretch;justify-content:space-between;padding:1px 8px 5px}
+.people-h,.sec,.pa,.pl,.map{display:none}
+.person{position:relative;min-width:0;display:grid;justify-items:center;align-content:start;row-gap:1px;padding:7px 5px 0;border-radius:var(--r-md);font-size:12.5px;line-height:1.2;color:var(--ink)}
+.person .av{--sz:38px;margin-bottom:5px}
+.person.pty .av{box-shadow:0 0 0 2.5px var(--surface-2),0 0 0 4.5px var(--c)}
+.pn,.nb{max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;line-height:1.35}
+.pn{font-weight:600}
+.nb{font-size:var(--fs-micro);color:var(--ink-3)}
+.vsep{flex:none;width:1px;margin:10px 0 22px;background:var(--line-2)}
+.all{display:grid;justify-items:center;align-content:start;row-gap:2px;min-width:48px;padding:7px 2px 1px;font-size:12.5px;line-height:1.2;font-weight:600;color:var(--accent)}
+.all i{display:grid;place-items:center;width:38px;height:38px;margin-bottom:5px;border-radius:50%;background:var(--accent-soft)}
+
+/* ---------- Conversation ---------- */
+.chat{flex:1 1 auto;min-height:0;position:relative;display:flex;flex-direction:column;background:var(--bg)}
+.chat::before{content:"";position:absolute;z-index:1;top:0;left:0;right:0;height:9px;background:linear-gradient(var(--shade),rgba(122,60,48,0));pointer-events:none;opacity:0;transition:opacity .15s}
+.chat.scrolled::before{opacity:1}
+.log{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:var(--sp-4);padding:var(--sp-4) var(--sp-4) var(--sp-3);scrollbar-width:thin;scrollbar-color:var(--line-2) transparent}
+.log>*,.beat>*{flex:none}
+.beat{display:flex;flex-direction:column;gap:var(--sp-4)}
+
+.scene{display:flex;align-items:center;gap:10px;font-size:12.5px;font-weight:600;letter-spacing:.02em;color:var(--ink-2)}
+.scene::before,.scene::after{content:"";flex:1;height:1px;background:var(--line-2)}
+.scene span{padding:5px 13px;border-radius:var(--r-pill);background:var(--surface);border:1px solid var(--line)}
+
+/* narration: stage directions, never a bubble */
+.nar{padding:2px 2px;font:var(--fs-story)/var(--lh-story) var(--serif);color:var(--ink);text-wrap:pretty}
+
+/* speech bubbles */
+.msg{display:flex;align-items:flex-start;gap:var(--sp-2);padding-right:var(--sp-5)}
+.bub{min-width:0;padding:8px 14px 10px;background:var(--surface);border:1.5px solid var(--cl);border-radius:var(--r-tail) var(--r-lg) var(--r-lg) var(--r-lg);box-shadow:var(--shadow-1);font-size:var(--fs-speech);line-height:var(--lh-speech);text-wrap:pretty}
+.who{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:5px;margin-bottom:1px;font-size:var(--fs-small);line-height:1.35}
+.who b{font-size:13.5px;font-weight:700;color:var(--ci)}
+.who i{color:var(--ink-3)}
+.who i::before{content:"· ";font-style:normal}
+.bub em{font-family:var(--serif);color:var(--ink-2)}
+.msg.me{justify-content:flex-end;padding:0 0 0 46px}
+.me .bub{background:var(--accent);border-color:transparent;border-radius:var(--r-lg) var(--r-lg) var(--r-tail) var(--r-lg);color:var(--on-accent);box-shadow:0 6px 16px -8px rgba(163,19,74,.6)}
+.me .who b{color:var(--on-accent)}
+.me .who i{color:var(--on-accent-2)}
+
+/* dice check */
+.roll{align-self:flex-end;width:min(100%,372px);display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:9px 12px;padding:12px 14px 11px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-1);font-size:13.5px;line-height:1.35;color:var(--ink-2)}
+.die{width:44px;height:44px;color:var(--accent);transform:rotate(-8deg);filter:drop-shadow(0 3px 4px rgba(163,19,74,.28))}
+.die rect{fill:currentColor}
+.die circle{fill:var(--on-accent)}
+.roll-k{font-size:var(--fs-micro);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.roll-t{font-size:16px;font-weight:700;line-height:1.3;color:var(--ink)}
+.roll-o{text-align:right}
+.ok{display:inline-flex;align-items:center;gap:4px;padding:4px 10px 4px 7px;border-radius:var(--r-pill);background:var(--ok-soft);color:var(--ok);font-size:13.5px;font-weight:700}
+.roll-o .q{display:block;margin:3px 4px 0 0;font-size:12.5px}
+.roll-f{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 16px;padding-top:9px;border-top:1px dashed var(--line-2)}
+.roll-f b{color:var(--ink);font-weight:600}
+.roll-f .vs{display:inline-flex;align-items:center;gap:5px}
+
+/* system notes */
+.bond{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;margin:-8px 0 0 44px;padding:6px 14px 6px 9px;border-radius:var(--r-pill);background:var(--accent-wash);border:1px solid var(--accent-line);box-shadow:0 3px 10px -4px rgba(163,19,74,.3);font-size:13.5px;font-weight:600;line-height:1.3;color:var(--accent)}
+.bond svg{color:var(--heart);fill:currentColor;stroke:currentColor;stroke-width:2;stroke-linejoin:round}
+.notes{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 8px}
+.note{display:inline-flex;align-items:center;gap:6px;padding:5px 12px 5px 9px;border-radius:var(--r-pill);background:rgba(255,255,255,.7);border:1px solid var(--line-2);font-size:var(--fs-small);line-height:1.3;color:var(--ink-2);text-wrap:balance}
+.note.n-xp svg{color:var(--gold)}
+.note.n-goal svg{color:var(--tobin-ink)}
+.time{display:flex;align-items:center;justify-content:center;gap:7px;font-size:12.5px;color:var(--ink-2)}
+.time::before,.time::after{content:"";flex:0 1 44px;height:1px;background:var(--line-2)}
+
+/* more is waiting */
+.more{display:none;align-items:center;gap:8px}
+body[data-mode="continue"] .more{display:flex}
+.more .av{--sz:28px}
+.dots{display:flex;gap:5px;padding:11px 13px;background:var(--surface);border-radius:var(--r-tail) 16px 16px 16px;box-shadow:var(--shadow-1)}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--c,var(--ink-3));opacity:.9;animation:blink 1.4s 3}
+.dots i:nth-child(2){opacity:.65;animation-delay:.2s}
+.dots i:nth-child(3){opacity:.4;animation-delay:.4s}
+body[data-shown="1"] .more{justify-content:center}
+body[data-shown="1"] .more .av{display:none}
+body[data-shown="1"] .dots{background:none;box-shadow:none;padding:2px 0}
+body[data-shown="1"] .dots i{background:var(--ink-3)}
+
+/* suggested actions: drafts of your next bubble */
+.sugg{display:none;flex-direction:column;align-items:flex-end;gap:8px;padding-top:2px}
+body[data-mode="input"] .sugg{display:flex}
+.chip{min-height:44px;padding:9px 16px;background:var(--accent-wash);border:1.5px solid var(--heart);border-radius:var(--r-lg) var(--r-lg) var(--r-tail) var(--r-lg);font-size:15px;font-weight:600;line-height:1.3;color:var(--accent)}
+
+/* ---------- Composer ---------- */
+.composer{flex:none;position:relative;padding:var(--sp-1) var(--sp-3) var(--sp-3);background:var(--bg)}
+.composer::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:var(--sp-3);background:linear-gradient(var(--bg-0),var(--bg));pointer-events:none}
+.continue{display:none;position:relative;align-items:center;justify-content:center;gap:6px;width:100%;min-height:52px;padding:0 20px;border-radius:26px;background:linear-gradient(var(--accent-hi),var(--accent) 70%);color:var(--on-accent);font-size:16.5px;font-weight:700;letter-spacing:.01em;box-shadow:var(--shadow-accent),inset 0 1px 0 rgba(255,255,255,.16)}
+body[data-mode="continue"] .continue{display:flex}
+.cnt{position:absolute;right:9px;top:50%;transform:translateY(-50%);padding:5px 11px;border-radius:var(--r-pill);background:rgba(255,255,255,.18);font-size:var(--fs-small);font-weight:600;letter-spacing:0}
+.field{display:none;align-items:center;gap:8px}
+body[data-mode="input"] .field{display:flex}
+.box{flex:1;min-width:0;display:flex;align-items:center;min-height:52px;padding:0 6px 0 4px;background:var(--surface);border:1.5px solid var(--border);border-radius:26px;box-shadow:var(--shadow-1)}
+.to{flex:none;display:flex;align-items:center;min-height:44px}
+.to span.c{display:flex;align-items:center;gap:5px;height:36px;padding:0 6px 0 9px;border-radius:18px;background:var(--cs);font-size:13.5px;font-weight:600;color:var(--ci)}
+.to .l{font-weight:400;color:var(--ink-2)}
+.say{flex:1;min-width:0;height:44px;padding:0 8px;border:0;outline:0;background:none;font:16px var(--sans);color:var(--ink)}
+.say::placeholder{color:var(--ink-3);opacity:1}
+.send{flex:none;display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:linear-gradient(var(--accent-hi),var(--accent) 70%);color:var(--on-accent);box-shadow:var(--shadow-accent)}
+
+/* ---------- Primary navigation: bottom bar (phone) / rail (desktop) ---------- */
+.tabs{order:9;flex:none;display:flex;padding:4px 4px max(6px,env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--line)}
+.tab{flex:1;min-width:0;min-height:48px;display:grid;justify-items:center;align-content:center;row-gap:1px;font-size:var(--fs-micro);font-weight:600;line-height:1.25;color:var(--ink-2)}
+.tab .pill{display:grid;place-items:center;width:54px;height:28px;border-radius:14px}
+.tab[aria-current]{color:var(--accent)}
+.tab[aria-current] .pill{background:var(--accent-soft)}
+
+/* ---------- People panel: sheet (phone) / profile card (desktop) ---------- */
+.side{display:contents}
+.side>.card{display:none}
+.scrim{display:none;position:fixed;z-index:20;inset:0;width:100%;height:100%;background:rgba(62,26,36,.42)}
+.panel{display:none;position:fixed;z-index:21;left:0;right:0;bottom:0;max-height:calc(100% - 44px);flex-direction:column;background:var(--bg);border-radius:var(--r-xl) var(--r-xl) 0 0;box-shadow:var(--shadow-2)}
+.panel::before{content:"";flex:none;align-self:center;width:40px;height:4px;margin-top:8px;border-radius:2px;background:var(--line-2)}
+body[data-people="open"] .scrim{display:block}
+body[data-people="open"] .panel{display:flex;animation:sheet .22s ease-out}
+.panel-h{flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 8px 0 20px}
+.panel-h>div{display:flex;align-items:baseline;gap:10px}
+.panel-h h2{font-size:20px;font-weight:700;line-height:1.2;letter-spacing:-.01em}
+.panel-h p{font-size:var(--fs-small);color:var(--ink-2)}
+.panel-b{flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:var(--sp-2);padding:2px var(--sp-3) max(14px,env(safe-area-inset-bottom))}
+.pc{flex:none;position:relative;display:grid;gap:10px;padding:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-1)}
+.pc-h{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:0 12px}
+.pc-h .av{--sz:44px;grid-row:1/3}
+.pc-id{display:contents}
+.pc-id h3{display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;font-size:17px;font-weight:700;line-height:1.3}
+.pc-id p{grid-column:2/4;font-size:13.5px;color:var(--ink-2)}
+.pc-r{grid-area:1/3;font-size:var(--fs-micro);color:var(--ink-2)}
+.feat .pc-h{display:flex;gap:12px}
+.feat .pc-id{display:block;flex:1;min-width:0}
+.att{display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 8px;border-radius:var(--r-pill);background:var(--cs);font-size:var(--fs-small);font-weight:600;line-height:1.3;color:var(--ci);white-space:nowrap}
+.att::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--c)}
+.pc.feat{padding-top:16px;background:linear-gradient(var(--cs),var(--surface) 92px)}
+.pty .pc-h .av{box-shadow:0 0 0 2.5px var(--surface),0 0 0 4.5px var(--c)}   /* the ring means: in your party */
+.feat .pc-h .av{--sz:56px;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--c)}
+.feat .pc-h .av .star{top:-7px;right:-9px;width:22px;height:22px}
+.feat .pc-id h3{font-size:21px;letter-spacing:-.01em}
+.fav{flex:none;display:flex;align-items:center;min-height:44px}
+.fav span{display:flex;align-items:center;gap:5px;height:32px;padding:0 11px 0 8px;border-radius:16px;background:var(--due-soft);border:1px solid var(--gold);font-size:var(--fs-small);font-weight:600;color:var(--due)}
+.fav .star{color:var(--gold)}
+.fav[aria-pressed="false"] span{background:var(--surface);border-color:var(--border);color:var(--ink-2)}
+.fav[aria-pressed="false"] .star{fill:none;color:var(--ink-3)}
+.pc-bond{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.bl{font-size:var(--fs-ui);color:var(--ink-2)}
+.bl b{color:var(--ink)}
+.pc-bond .att{margin-left:auto}
+/* the sheet keeps everyone but the favourite to a summary; the desktop profile shows the rest */
+/* (someone outside the party gets Talk and Ask about… once you pick them) */
+.pc:not(.feat) .fav,.pc:not(.feat) h4,.pc-r .bl,.acts.dx{display:none}
+.pc h4{margin-bottom:-4px;font-size:var(--fs-micro);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.mem{display:grid;gap:6px}
+.mem li,.pc-note{display:flex;align-items:flex-start;gap:9px;padding:7px 12px 7px 10px;border-radius:var(--r-sm);background:var(--surface-2);border:1px solid var(--line);font:15px/1.4 var(--serif);color:var(--ink);text-wrap:balance}
+.mem svg{margin-top:4px;color:var(--heart);fill:none;stroke:currentColor;stroke-width:2.4;stroke-linejoin:round}
+.pc-note{background:var(--roth-soft);border-color:var(--roth-line)}
+.pc-note svg{margin-top:2px;color:var(--roth-ink)}
+.acts{display:grid;grid-template-columns:.85fr 1.7fr 1.1fr;gap:8px}
+.pc.cur .acts.dx{display:grid;grid-template-columns:1fr 1fr}   /* the person you picked offers what you can do with them */
+.act{display:grid;justify-items:center;align-content:center;row-gap:3px;min-height:54px;padding:6px;background:var(--accent-wash);border:1.5px solid var(--heart);border-radius:var(--r-md);font-size:var(--fs-small);font-weight:600;line-height:1.2;text-align:center;color:var(--accent)}
+.act.pri{background:linear-gradient(var(--accent-hi),var(--accent) 70%);border-color:var(--accent);color:var(--on-accent);box-shadow:var(--shadow-accent)}
+
+/* ---------- Cards (desktop side panes; hidden on the phone) ---------- */
+.card{background:var(--surface);border-radius:var(--r-xl);padding:var(--sp-5)}
+.card h3{margin:16px 0 8px;font-size:var(--fs-micro);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.you{background:linear-gradient(var(--accent-wash),var(--surface) 104px)}
+.you-h{display:flex;align-items:center;gap:12px}
+.you-h .av{--sz:48px}
+.you-h h2{font-size:20px;font-weight:700;line-height:1.2;letter-spacing:-.01em}
+.you-h p{font-size:var(--fs-small);color:var(--ink-2)}
+.xp{margin-left:auto;text-align:right;font-size:var(--fs-micro);line-height:1.2;color:var(--ink-2)}
+.xp b{display:block;font-size:19px;color:var(--ink)}
+.meters{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:9px 12px;margin-top:16px;font-size:13.5px}
+.meters .k{font-weight:600;color:var(--ink-2)}
+.meters .bar{width:auto;height:8px;border-radius:4px}
+.meters .bar i{border-radius:4px}
+.meters .num{font-size:var(--fs-ui);text-align:right}
+.gems{display:flex;gap:5px;color:var(--destiny)}
+.attrs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));font-size:var(--fs-micro);color:var(--ink-2)}
+.attrs li{display:grid;justify-items:center;row-gap:4px;white-space:nowrap}
+.attrs b{display:grid;place-items:center;width:38px;height:38px;border-radius:var(--r-sm);background:var(--surface-2);border:1px solid var(--line);font-size:17px;color:var(--ink)}
+.paths{display:grid;gap:7px}
+.paths li{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.pth{min-width:64px;padding:4px 10px;border-radius:var(--r-sm);background:var(--tobin-soft);font-size:var(--fs-small);font-weight:700;color:var(--tobin-ink)}
+.pth.light{background:var(--due-soft);color:var(--due)}
+.ab{padding:3px 10px;border-radius:var(--r-pill);border:1px solid var(--line-2);font-size:var(--fs-small);color:var(--ink)}
+.ab i{font-style:normal;font-size:var(--fs-micro);color:var(--ink-3)}
+.duo{display:grid;grid-template-columns:1.35fr 1fr;gap:12px}
+.duo li{font-size:var(--fs-ui);line-height:1.6;color:var(--ink)}
+.journal h2,.map h2{font-size:17px;font-weight:700;line-height:1.3}
+.journal h3{margin-top:10px}
+.thread{position:relative;padding:0 0 12px 22px}
+.thread::before{content:"";position:absolute;left:3px;top:6px;width:9px;height:9px;border-radius:50%;border:2.5px solid var(--heart)}
+.thread::after{content:"";position:absolute;left:7px;top:19px;bottom:1px;width:1.5px;background:var(--line-2)}
+.thread .t{font-size:var(--fs-body);font-weight:600;line-height:1.35;text-wrap:balance}
+.thread .n{margin-top:2px;font-size:13.5px;color:var(--ink-2)}
+.thread .n b{font-weight:700;color:var(--ink-3)}
+.commit{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:2px 10px;margin-top:2px;padding:10px 12px;border-radius:var(--r-md);background:var(--due-soft);border:1px solid var(--due-line)}
+.commit>.ic{grid-row:1/3;color:var(--due)}
+.commit .k{font-size:var(--fs-micro);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--due)}
+.commit .t{grid-column:2;font-size:14.5px;line-height:1.35;color:var(--ink);text-wrap:balance}
+.commit .av{grid-area:1/3/3/4}
+
+/* ---------- Motion ---------- */
+@keyframes blink{0%,60%,100%{opacity:.35}30%{opacity:1}}
+@keyframes rise{from{opacity:.4;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(.92)}60%{transform:scale(1.05)}100%{transform:scale(1)}}
+@keyframes sheet{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}
+.beat:not([hidden])>*{animation:rise .24s ease-out both}
+.beat:not([hidden])>.bond{animation:pop .32s ease-out both}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* ---------- Small phones: keep four people and the All button on one row ---------- */
+@media (max-width:379.98px){
+  .people{padding-left:4px;padding-right:4px}
+  .person{padding-left:2px;padding-right:2px}
+  .person .hearts{width:56px;height:10px}
+  .all{min-width:44px}
+  .status{gap:8px;padding-left:10px}
+}
+@media (max-width:339.98px){
+  .status .bar{display:none}
+  .person .hearts{width:50px;height:9px}
+}
+
+/* a phone on its side: the story keeps the height; the party stays in the header */
+@media (max-width:1099.98px) and (max-height:520px){
+  .left{display:none}
+}
+
+/* ---------- Tablet: the phone layout, centred ---------- */
+@media (min-width:700px) and (max-width:1099.98px){
+  .top{padding-left:max(4px,calc(50% - 356px));padding-right:max(8px,calc(50% - 352px))}
+  .people{justify-content:center;gap:22px}
+  .log,.composer{padding-left:max(16px,calc(50% - 340px));padding-right:max(16px,calc(50% - 340px))}
+  .tabs{justify-content:center}
+  .tab{flex:0 0 120px}
+  .panel{left:max(0px,calc(50% - 320px));right:max(0px,calc(50% - 320px))}
+  .nar{max-width:640px}
+}
+
+/* ---------- Desktop: contacts | conversation | profile ---------- */
+@media (min-width:1100px){
+  :root{--fs-story:18px;--lh-story:1.68;--fs-speech:17px;--lh-speech:1.52}
+  body{display:grid;grid-template-columns:72px clamp(240px,20vw,288px) minmax(0,1fr) clamp(292px,26.4vw,380px);grid-template-rows:56px minmax(0,1fr);gap:0 var(--sp-3);padding:0 var(--sp-3) var(--sp-3) 0;background:radial-gradient(1100px 560px at 16% -12%,#FCF1EA,rgba(252,241,234,0) 72%),var(--page)}
+  .dk{display:inline}
+  .ib:hover{background:rgba(255,255,255,.6)}
+  .chip:hover,.act:hover{background:var(--accent-soft)}
+  .continue:hover,.send:hover,.act.pri:hover,.acts .act:first-child:hover{background:var(--accent-press)}
+
+  /* top bar */
+  .top{grid-area:1/1/2/-1;display:flex;gap:16px;padding:0 0 0 14px;background:none}
+  .menu{margin-right:10px}
+  .brand{display:flex;align-items:center;gap:9px;font-size:17px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+  .logo{display:grid;place-items:center;width:30px;height:30px;border-radius:var(--r-sm);background:var(--accent);box-shadow:var(--shadow-accent)}
+  .logo svg{color:var(--on-accent);fill:currentColor}
+  .story{display:flex;align-items:baseline;gap:10px;min-width:0;padding-left:16px;border-left:1px solid var(--line-2);font-size:var(--fs-ui);color:var(--ink-2);white-space:nowrap}
+  .story b{font-size:var(--fs-body);color:var(--ink)}
+  .story span{overflow:hidden;text-overflow:ellipsis}
+  .where{flex:none;display:flex;align-items:center;gap:6px;margin-left:auto;padding:6px 14px 6px 10px;border-radius:var(--r-pill);background:rgba(255,255,255,.7);font-size:var(--fs-ui)}
+  .where>.ic{display:block;color:var(--accent)}
+  .where strong,.where .sub{display:inline;overflow:visible;font-size:var(--fs-ui);letter-spacing:0;line-height:1.4}
+  .where .sub::before{content:"· "}
+  .st,.crew,.vital{display:none}
+  .status{flex:none;gap:0;padding:0;font-size:var(--fs-small)}
+  .cost{margin:0;padding:0;border:0}
+  .cost span{display:inline}
+  .cost span+span::before{content:"·";margin:0 7px 0 5px;color:var(--ink-3)}
+  .cost .num{font-size:var(--fs-small)}
+  .gear{display:grid;margin-left:-8px}
+
+  /* rail */
+  .tabs{grid-area:2/1;order:0;flex-direction:column;align-items:center;gap:4px;padding:2px 6px 0;background:none;border:0}
+  .tab{flex:none;width:60px;min-height:58px;border-radius:var(--r-md)}
+  .tab .pill{width:46px;height:32px;border-radius:16px}
+  .tab:hover .pill{background:rgba(255,255,255,.6)}
+  .tab[aria-current] .pill{background:var(--surface);box-shadow:var(--shadow-1)}
+  .rail-me{display:grid;--sz:40px;margin:auto 0 4px;box-shadow:0 0 0 3px var(--surface)}
+
+  /* contact list */
+  .left{grid-area:2/2;display:flex;flex-direction:column;gap:var(--sp-3);min-height:0;overflow-y:auto;background:none;border:0;scrollbar-width:thin}
+  .people{flex:none;display:block;padding:14px 8px 8px;background:var(--surface);border-radius:var(--r-xl)}
+  .people-h{display:flex;align-items:baseline;justify-content:space-between;padding:0 10px 6px}
+  .people-h h2{font-size:19px;font-weight:700;letter-spacing:-.01em}
+  .people-h span{font-size:var(--fs-small);color:var(--ink-3)}
+  .sec{display:block;padding:10px 10px 4px;font-size:var(--fs-micro);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+  .vsep,.all{display:none}
+  .person{width:100%;min-height:68px;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"pn hb" "pa pa" "pl pl";justify-items:start;align-items:center;align-content:center;gap:1px 12px;padding:10px 10px 10px 70px;font-size:var(--fs-small);line-height:1.4}
+  .person:hover{background:var(--surface-2)}
+  .person .av{position:absolute;left:10px;top:50%;--sz:44px;margin:-22px 0 0}
+  .person.pty .av{box-shadow:0 0 0 2.5px var(--surface),0 0 0 4.5px var(--c)}
+  .pn{grid-area:pn;font-size:15.5px;font-weight:700}
+  .person .hearts,.nb{grid-area:hb}
+  .person .hearts{width:68px;height:12px}
+  .pa{grid-area:pa;display:flex;align-items:center;gap:6px;font-weight:600;color:var(--ci)}
+  .pa::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--c)}
+  .pl{grid-area:pl;display:block;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:var(--ink-2)}
+  .pv1,body:not([data-shown="0"]) .pv0{display:none}
+  body:not([data-shown="0"]) .pv1{display:inline}
+  body[data-people="open"] .person.cur{background:var(--accent-wash);box-shadow:inset 0 0 0 1.5px var(--accent-line)}
+
+  /* map */
+  .map{flex:1 0 auto;display:flex;flex-direction:column;padding:16px 10px 10px}
+  .map h2{padding:0 8px}
+  .mapv{width:100%;height:auto;max-width:268px;margin:auto;font:600 12.5px var(--sans)}
+  .mapv .ln{fill:none;stroke:var(--border);stroke-width:2;stroke-linecap:round}
+  .mapv .ln.q{stroke-dasharray:1 6}
+  .mapv circle{fill:var(--surface);stroke:var(--ink-3);stroke-width:2}
+  .mapv .halo{fill:var(--accent-soft);stroke:none}
+  .mapv .here{fill:var(--accent);stroke:var(--surface);stroke-width:2.5}
+  .mapv .unk{stroke:var(--border);stroke-dasharray:3 3}
+  .mapv text{fill:var(--ink-2)}
+  .mapv .cur{fill:var(--ink);font-weight:700;font-size:13px}
+  .mapv .tag{fill:var(--accent)}
+  .mapv .qm{fill:var(--ink-3);font-weight:700;text-anchor:middle}
+
+  /* conversation */
+  .chat{grid-area:2/3;border-radius:var(--r-xl);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.6)}
+  .log{padding:var(--sp-5) max(28px,calc(50% - 310px)) var(--sp-3)}
+  .nar{max-width:600px}
+  .msg{gap:var(--sp-3);padding-right:56px}
+  .msg .av{--sz:40px}
+  .bub{padding:9px 16px 11px}
+  .who b{font-size:var(--fs-ui)}
+  .msg.me{padding:0 0 0 110px}
+  .roll{width:min(100%,430px);padding:14px 16px 12px}
+  .bond{margin:-8px 0 0 52px;font-size:var(--fs-ui)}
+  /* the "more is waiting" hint sits beside Continue instead of taking a row of the log */
+  .more,body[data-shown="1"] .more{position:absolute;z-index:2;left:max(28px,calc(50% - 310px));bottom:28px;justify-content:flex-start}
+  .more .av{--sz:32px}
+  body[data-shown="1"] .dots{padding:11px 13px;background:var(--surface);box-shadow:var(--shadow-1)}
+  .sugg{flex-direction:row;flex-wrap:wrap;justify-content:flex-end}
+  .chip{min-height:40px;padding:8px 16px}
+  .composer{padding:6px max(28px,calc(50% - 310px)) 18px}
+  .continue{width:auto;min-width:clamp(290px,calc(100% - 240px),340px);margin:0 auto;padding:0 88px}
+  .to span.c{font-size:var(--fs-ui)}
+  .say{font-size:17px}
+
+  /* profile pane */
+  .side{grid-area:2/4;display:flex;flex-direction:column;gap:var(--sp-3);min-height:0;overflow-y:auto;scrollbar-width:thin}
+  .side>.card{display:block;flex:none}
+  .side>.journal{flex:1 0 auto}
+  .scrim,body[data-people="open"] .scrim{display:none}
+  .panel{position:relative;z-index:auto;inset:auto;max-height:none;flex:none;background:var(--surface);border-radius:var(--r-xl);box-shadow:none}
+  body[data-people="open"] .panel{display:block;animation:rise .2s ease-out}
+  .panel::before{display:none}
+  .panel-h{position:absolute;z-index:1;top:8px;right:8px;padding:0}
+  .panel-h>div{display:none}
+  .panel-b{display:block;padding:0;overflow:visible}
+  /* one profile at a time: whoever was picked in the contact list (Mira until then) */
+  .pc,.pc.feat{display:none;justify-items:center;gap:var(--sp-3);padding:var(--sp-6) var(--sp-5) var(--sp-5);border:0;border-radius:var(--r-xl);box-shadow:none;background:linear-gradient(var(--cs),var(--surface) 150px);text-align:center}
+  .pc.cur{display:grid}
+  .feat .pc-h{flex-direction:column;gap:9px}
+  .pc-h .av,.feat .pc-h .av{--sz:68px}
+  .pty .pc-h .av{box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--c)}
+  .feat .pc-id h3{justify-content:center;font-size:24px;line-height:1.2}
+  .pc-id p,.feat .pc-id p{font-size:var(--fs-ui)}
+  /* the summary cards re-flow into the same profile: avatar, name, role, then bond and attitude */
+  .pc:not(.feat) .pc-h{display:flex;flex-wrap:wrap;justify-content:center;gap:9px var(--sp-3)}
+  .pc:not(.feat) h3{display:contents}
+  .nm{flex:0 0 100%;order:1;font-size:24px;line-height:1.2;letter-spacing:-.01em}
+  .pc:not(.feat) .pc-id p{flex:0 0 100%;order:2;margin-top:-9px}
+  .pc-r{order:3;display:flex;align-items:center;gap:var(--sp-3);margin-top:3px;font-size:var(--fs-ui)}
+  .pc:not(.feat) .att{order:4;margin-top:3px}
+  .pc-r .bl{display:inline}
+  .pc:not(.feat) .fav{display:flex}
+  .pc:not(.feat) h4{display:block}
+  .fav{position:absolute;top:8px;left:12px}
+  .pc-bond{justify-content:center;gap:8px 12px}
+  .pc .hearts{width:125px;height:22px}
+  .pc-bond .att{margin:0}
+  .pc h4,.mem,.acts,.pc-note{justify-self:stretch;text-align:left}
+  .pc h4{margin-top:2px}
+  .mem li,.pc-note{font-size:14.5px}
+  .act{min-height:60px}
+  .act:first-child{background:linear-gradient(var(--accent-hi),var(--accent) 70%);border-color:var(--accent);color:var(--on-accent);box-shadow:var(--shadow-accent)}
+  .thread{padding-bottom:10px}
+  body[data-people="open"] .you{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:0 18px;padding:var(--sp-3) var(--sp-5)}
+  body[data-people="open"] .you-more,body[data-people="open"] .you-h p,body[data-people="open"] .xp{display:none}
+  body[data-people="open"] .you-h .av{--sz:40px}
+  body[data-people="open"] .meters{margin:0;gap:5px 10px;font-size:var(--fs-small)}
+  body[data-people="open"] .meters .bar{height:6px}
+}
+
+/* shorter desktop windows: the map moves to its tab and the character card keeps to the essentials */
+@media (min-width:1100px) and (max-height:829.98px){
+  .map,.duo{display:none}
+  .people{flex:1 0 auto}
+  .card{padding:var(--sp-4) var(--sp-5)}
+  .card h3{margin-top:var(--sp-3)}
+  .journal h3{margin-top:var(--sp-2)}
+}
+
+/* narrower desktop windows: drop what no longer fits beside the conversation */
+@media (min-width:1100px) and (max-width:1359.98px){
+  .nb{display:none}
+  .mapv{font-size:15px}
+  .mapv .cur{font-size:15.5px}
+}
+@media (min-width:1100px) and (max-width:1279.98px){
+  .more{display:none!important}
+  body[data-people="open"] .you{display:block}
+  body[data-people="open"] .meters{margin-top:12px}
+}
+</style>
+</head>
+<body data-mode="continue" data-shown="0">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <path id="h" d="M12 20.5 3.6 12.1a5.1 5.1 0 0 1 7.2-7.2L12 6.1l1.2-1.2a5.1 5.1 0 0 1 7.2 7.2Z"/>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.4l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 16.8l-5.3 2.8 1.1-5.9-4.3-4.1 5.9-.8z"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><path d="M4 8h8M18 8h2M4 16h2M12 16h8"/><circle cx="15" cy="8" r="2.6"/><circle cx="9" cy="16" r="2.6"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5.5M6 11.5l6-6 6 6"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M5.5 4.5h13A2.5 2.5 0 0 1 21 7v7.5a2.5 2.5 0 0 1-2.5 2.5H12l-4.8 3.6V17H5.5A2.5 2.5 0 0 1 3 14.5V7a2.5 2.5 0 0 1 2.5-2.5z"/></symbol>
+    <symbol id="i-people" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.3"/><path d="M2.8 19.2c.5-3.3 3-5.2 6.2-5.2s5.7 1.9 6.2 5.2M17.2 14.4c2.2.2 3.7 1.7 4.1 4.3"/><circle cx="17.2" cy="9.3" r="2.6"/></symbol>
+    <symbol id="i-char" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.8"/><path d="M4.5 20c.7-4.1 3.7-6.3 7.5-6.3s6.8 2.2 7.5 6.3"/></symbol>
+    <symbol id="i-journal" viewBox="0 0 24 24"><rect x="5.5" y="3.5" width="14" height="17" rx="2.5"/><path d="M9.5 3.5v17M13 8.5h3M13 12h3"/></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24"><path d="M9 4.5 3.5 6.8v12.7L9 17.2l6 2.3 5.5-2.3V4.5L15 6.8 9 4.5zM9 4.5v12.7M15 6.8v12.7"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.8l4.4 4.4L19 7.6"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3c.9 5.2 3.8 8.1 9 9-5.2.9-8.1 3.8-9 9-.9-5.2-3.8-8.1-9-9 5.2-.9 8.1-3.8 9-9z"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path d="M6 21V4.5M6 5h11.5l-2.6 3.7 2.6 3.8H6"/></symbol>
+    <symbol id="i-cup" viewBox="0 0 24 24"><path d="M5 9.5h11V15a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V9.5zM16 11h1.3a2.4 2.4 0 0 1 0 4.8H16M8.5 3.5V6M12.5 3.5V6"/></symbol>
+    <symbol id="i-ask" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M9.7 9.6a2.4 2.4 0 1 1 3.5 2.1c-.8.5-1.2 1-1.2 1.8M12 16.6v.2"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21c-3.8-3.6-6-6.8-6-10a6 6 0 0 1 12 0c0 3.2-2.2 6.4-6 10z"/><circle cx="12" cy="10.8" r="2.2"/></symbol>
+    <symbol id="i-gem" viewBox="0 0 24 24"><path d="M12 2.8 19.6 12 12 21.2 4.4 12z"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></symbol>
+  </defs>
+</svg>
+
+<header class="top">
+  <button class="ib menu" type="button" aria-label="Menu"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-menu"/></svg></button>
+  <p class="brand"><span class="logo"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><use href="#h"/></svg></span>Bitor Quest</p>
+  <p class="story"><b>The Glass Road</b> <span>Chapter 2 · "Borrowed Seals" · Scene 4</span></p>
+  <div class="where">
+    <svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-pin"/></svg>
+    <strong>Lantern Market</strong>
+    <span class="sub">Dusk · Day 12<span class="st"> · The Glass Road</span></span>
+  </div>
+  <button class="crew" type="button" data-people-toggle aria-label="Your party: Mira and Tobin. Open people">
+    <span class="av mira" aria-hidden="true">M</span><span class="av tobin" aria-hidden="true">T</span>
+    <svg class="ic" width="16" height="16" aria-hidden="true"><use href="#i-down"/></svg>
+  </button>
+  <div class="status">
+    <span class="vital"><abbr class="k" title="Hit points">HP</abbr> <span class="num">12<i>/15</i></span> <span class="bar"><i style="width:80%"></i></span></span>
+    <span class="vital"><abbr class="k" title="Energy">EN</abbr> <span class="num">9<i>/15</i></span> <span class="bar en"><i style="width:60%"></i></span></span>
+    <span class="vital fx"><span class="k">Destiny</span> <svg class="ic solid gem" width="12" height="12" aria-hidden="true"><use href="#i-gem"/></svg> <span class="num">2</span></span>
+    <span class="cost"><span class="c-turn"><span class="dk">this </span>turn <b class="num">$0.006</b></span> <span>session <b class="num">$0.21</b></span> <span>narrator <b class="num">Sonnet 5.5</b></span></span>
+  </div>
+  <button class="ib gear" type="button" aria-label="Settings"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="#i-gear"/></svg></button>
+</header>
+
+<nav class="tabs" aria-label="Primary">
+  <button class="tab" type="button" aria-current="page"><span class="pill"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-chat"/></svg></span>Story</button>
+  <button class="tab" type="button" data-people-toggle><span class="pill"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-people"/></svg></span>People</button>
+  <button class="tab" type="button"><span class="pill"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-char"/></svg></span>Character</button>
+  <button class="tab" type="button"><span class="pill"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-journal"/></svg></span>Journal</button>
+  <button class="tab" type="button"><span class="pill"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-map"/></svg></span>Map</button>
+  <span class="av me rail-me" role="img" aria-label="Aren, your character">A</span>
+</nav>
+
+<aside class="left">
+  <nav class="people" aria-label="People here">
+    <div class="people-h"><h2>People</h2><span>4 here</span></div>
+    <h3 class="sec">Favourites</h3>
+    <button class="person mira pty cur" type="button" data-people-toggle data-who="mira">
+      <span class="av" aria-hidden="true">M<svg class="star" width="19" height="19"><use href="#i-star"/></svg></span>
+      <span class="pn">Mira<span class="vh">, favourite</span></span>
+      <svg class="hearts" data-bond-live width="62" height="11" viewBox="0 0 136 24" role="img" aria-label="Bond 4 of 5"><use href="#h"/><use href="#h" x="28"/><use href="#h" x="56"/><use href="#h" x="84" class="gain"/><use href="#h" x="112" class="off"/></svg>
+      <span class="pa">Trusts you</span>
+      <span class="pl"><span class="pv0">"He's checking couriers. If he sees your satchel, we're done. I can draw them off, or you talk your way through."</span><span class="pv1">"You could have sent me in as the distraction. You didn't." A pause. "I noticed."</span></span>
+    </button>
+    <h3 class="sec">Party</h3>
+    <button class="person tobin pty" type="button" data-people-toggle data-who="tobin">
+      <span class="av" aria-hidden="true">T</span>
+      <span class="pn">Tobin</span>
+      <svg class="hearts" width="62" height="11" viewBox="0 0 136 24" role="img" aria-label="Bond 1 of 5"><use href="#h"/><use href="#h" x="28" class="off"/><use href="#h" x="56" class="off"/><use href="#h" x="84" class="off"/><use href="#h" x="112" class="off"/></svg>
+      <span class="pa">Curious</span>
+      <span class="pl">"Or we wait for dark. I vote dark."</span>
+    </button>
+    <i class="vsep" aria-hidden="true"></i>
+    <h3 class="sec">In this scene</h3>
+    <button class="person roth" type="button" data-people-toggle data-who="roth">
+      <span class="av" aria-hidden="true">R</span>
+      <span class="pn">Captain Roth</span>
+      <span class="nb">No bond yet</span>
+      <span class="pa">Wary</span>
+      <span class="pl">Suspects a courier carried the forged seal.</span>
+    </button>
+    <button class="person seller" type="button" data-people-toggle data-who="seller">
+      <span class="av" aria-hidden="true">L</span>
+      <span class="pn">Lantern seller</span>
+      <span class="nb">Stranger</span>
+      <span class="pl">No details yet</span>
+    </button>
+    <button class="all" type="button" data-people-toggle aria-label="Open the People panel"><i><svg class="ic" width="20" height="20" aria-hidden="true"><use href="#i-right"/></svg></i>All</button>
+  </nav>
+
+  <section class="card map" aria-label="Map">
+    <h2>Map</h2>
+    <svg class="mapv" width="268" height="246" viewBox="0 8 268 246" role="img" aria-label="Schematic map. Old Mill links to Lantern Market, where you are. Lantern Market links to Canal Bridge and to North Gate. Canal Bridge links to Glass Road Waystation. One undiscovered place lies beyond the waystation.">
+      <path class="ln" d="M36 240 88 170 158 128 214 66M88 170 42 92"/>
+      <path class="ln q" d="M214 66 246 26"/>
+      <circle cx="36" cy="240" r="6"/><circle cx="42" cy="92" r="6"/><circle cx="158" cy="128" r="6"/><circle cx="214" cy="66" r="6"/>
+      <circle class="halo" cx="88" cy="170" r="15"/><circle class="here" cx="88" cy="170" r="8"/>
+      <circle class="unk" cx="246" cy="26" r="10"/><text class="qm" x="246" y="30.5">?</text>
+      <text x="49" y="244">Old Mill</text>
+      <text x="55" y="96">North Gate</text>
+      <text x="170" y="147">Canal Bridge</text>
+      <text x="205" y="53" text-anchor="end">Glass Road Waystation</text>
+      <text class="cur" x="107" y="184">Lantern Market</text>
+      <text class="tag" x="107" y="200">You are here</text>
+    </svg>
+  </section>
+</aside>
+
+<main class="chat">
+  <div class="log" data-log role="log" aria-label="Story" tabindex="0">
+    <h2 class="scene"><span>Scene 4 · Lantern Market · Dusk</span></h2>
+
+    <p class="nar">Paper lanterns sway above the market stalls as the last light drains out of the canal. By the bridge, Captain Roth turns a wax seal over in his gloved hand while two watchmen search a courier's bag.</p>
+
+    <div class="msg mira">
+      <span class="av" aria-hidden="true">M</span>
+      <div class="bub"><p class="who"><b>Mira</b> <i>whispering</i></p><p>"He's checking couriers. If he sees your satchel, we're done. I can draw them off, or you talk your way through."</p></div>
+    </div>
+
+    <div class="msg tobin">
+      <span class="av" aria-hidden="true">T</span>
+      <div class="bub"><p class="who"><b>Tobin</b></p><p>"Or we wait for dark. I vote dark."</p></div>
+    </div>
+
+    <div class="msg me">
+      <div class="bub"><p class="who"><b>Aren</b> <i>your action</i></p><p>I walk up to Roth openly and ask whether the bridge is closed, keeping the satchel under my cloak.</p></div>
+    </div>
+
+    <div class="roll" role="group" aria-label="Dice check">
+      <svg class="die" width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><rect x="2" y="2" width="40" height="40" rx="11"/><circle cx="15" cy="15" r="4.2"/><circle cx="29" cy="29" r="4.2"/></svg>
+      <div><p class="roll-k">Skill test · Medium</p><p class="roll-t">Manipulation (bluff)</p></div>
+      <p class="roll-o"><span class="ok"><svg class="ic" width="15" height="15" style="stroke-width:2.8" aria-hidden="true"><use href="#i-check"/></svg>Success</span> <span class="q">quality 2</span></p>
+      <p class="roll-f"><span>Needed <b>4 or less</b> on one die</span> <span>Rolled <b>2</b></span> <span class="vs">Opposed by <span class="av xs roth" aria-hidden="true">R</span> <b>Captain Roth</b></span></p>
+    </div>
+
+    <p class="nar">Roth's eyes go from your face to your boots and back. "Bridge is open. Papers are not," he says, but he is already looking past you at a cart with a broken axle. He waves you on.</p>
+
+    <div class="beat" data-pending>
+      <div class="msg mira">
+        <span class="av" aria-hidden="true">M</span>
+        <div class="bub"><p class="who"><b>Mira</b> <i>low, falling in beside you</i></p><p>"You could have sent me in as the distraction. You didn't." <em>A pause.</em> "I noticed."</p></div>
+      </div>
+      <p class="bond"><svg width="26" height="22" viewBox="0 0 30 26" aria-hidden="true"><use href="#h" transform="translate(0 4.5) scale(.88)"/><use href="#h" transform="translate(17 0) scale(.5)"/><use href="#h" transform="translate(21.5 13.5) scale(.3)"/></svg>Bond with Mira rises from 3 to 4</p>
+    </div>
+
+    <div class="beat" data-pending>
+      <p class="nar">Behind you the cart finally gives way, and the whole market turns to look. The bridge ahead is empty, and beyond it the lamps of the Glass Road are being lit one by one.</p>
+      <div class="notes">
+        <span class="note n-xp"><svg class="ic solid" width="14" height="14" aria-hidden="true"><use href="#i-spark"/></svg>+1 experience</span>
+        <span class="note n-goal"><svg class="ic" width="14" height="14" aria-hidden="true"><use href="#i-flag"/></svg>Goal progress: reach the Glass Road waystation</span>
+      </div>
+      <p class="time"><svg class="ic" width="14" height="14" aria-hidden="true"><use href="#i-clock"/></svg>10 minutes pass</p>
+    </div>
+
+    <div class="more mira" aria-hidden="true"><span class="av">M</span><span class="dots"><i></i><i></i><i></i></span></div>
+
+    <div class="sugg" role="group" aria-label="Suggested actions">
+      <button class="chip" type="button">Cross the bridge now</button>
+      <button class="chip" type="button">Ask Mira what she saw at the stalls</button>
+      <button class="chip" type="button">Take a closer look at the cart</button>
+    </div>
+  </div>
+
+  <div class="composer">
+    <button class="continue" type="button" data-continue>Continue <svg class="ic" width="20" height="20" style="stroke-width:2.3" aria-hidden="true"><use href="#i-down"/></svg> <span class="cnt"><span data-continue-count>2</span> more</span></button>
+    <div class="field">
+      <div class="box">
+        <button class="to mira" type="button" aria-label="Speaking to Mira. Change who you address"><span class="c"><span class="l">To:</span><span class="av xs" aria-hidden="true">M</span>Mira<svg class="ic" width="14" height="14" aria-hidden="true"><use href="#i-down"/></svg></span></button>
+        <input class="say" type="text" placeholder="What do you do?" aria-label="What do you do?" autocomplete="off" enterkeyhint="send">
+      </div>
+      <button class="send" type="button" aria-label="Send"><svg class="ic" width="22" height="22" style="stroke-width:2.3" aria-hidden="true"><use href="#i-up"/></svg></button>
+    </div>
+  </div>
+</main>
+
+<aside class="side">
+  <section class="panel" aria-label="People">
+    <header class="panel-h">
+      <div><h2>People</h2><p>4 here · 2 in your party</p></div>
+      <button class="ib" type="button" data-people-toggle aria-label="Close"><svg class="ic" width="22" height="22" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </header>
+    <div class="panel-b">
+      <article class="pc feat pty mira cur" data-who="mira">
+        <div class="pc-h">
+          <span class="av" aria-hidden="true">M<svg class="star" width="22" height="22"><use href="#i-star"/></svg></span>
+          <div class="pc-id"><h3>Mira</h3><p>Scout · In your party</p></div>
+          <button class="fav" type="button" aria-pressed="true"><span><svg class="star" width="14" height="14" aria-hidden="true"><use href="#i-star"/></svg>Favourite</span></button>
+        </div>
+        <div class="pc-bond">
+          <svg class="hearts lg" data-bond-live width="113" height="20" viewBox="0 0 136 24" role="img" aria-label="Bond 4 of 5"><use href="#h"/><use href="#h" x="28"/><use href="#h" x="56"/><use href="#h" x="84" class="gain"/><use href="#h" x="112" class="off"/></svg>
+          <span class="bl">Bond <b data-bond-n>4</b> of 5</span>
+          <span class="att">Trusts you</span>
+        </div>
+        <h4>Shared memories</h4>
+        <ul class="mem">
+          <li><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><use href="#h"/></svg>You shared your rations on the salt flats.</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><use href="#h"/></svg>You did not use her as bait at the bridge.</li>
+        </ul>
+        <div class="acts">
+          <button class="act pri" type="button"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="#i-chat"/></svg>Talk</button>
+          <button class="act" type="button"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="#i-cup"/></svg>Spend time together</button>
+          <button class="act" type="button"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="#i-ask"/></svg>Ask about…</button>
+        </div>
+      </article>
+
+      <article class="pc pty tobin" data-who="tobin">
+        <div class="pc-h">
+          <span class="av" aria-hidden="true">T</span>
+          <div class="pc-id"><h3><span class="nm">Tobin</span> <span class="att">Curious</span></h3><p>Tinkerer's apprentice · In your party</p></div>
+          <span class="pc-r"><svg class="hearts md" width="79" height="14" viewBox="0 0 136 24" role="img" aria-label="Bond 1 of 5"><use href="#h"/><use href="#h" x="28" class="off"/><use href="#h" x="56" class="off"/><use href="#h" x="84" class="off"/><use href="#h" x="112" class="off"/></svg><span class="bl">Bond <b>1</b> of 5</span></span>
+          <button class="fav" type="button" aria-pressed="false"><span><svg class="star" width="14" height="14" aria-hidden="true"><use href="#i-star"/></svg>Favourite</span></button>
+        </div>
+        <h4>Shared memories</h4>
+        <ul class="mem">
+          <li><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><use href="#h"/></svg>You paid for his broken lens.</li>
+        </ul>
+        <div class="acts">
+          <button class="act" type="button"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="#i-chat"/></svg>Talk</button>
+          <button class="act" type="button"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="#i-cup"/></svg>Spend time together</button>
+          <button class="act" type="button"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="#i-ask"/></svg>Ask about…</button>
+        </div>
+      </article>
+
+      <article class="pc roth" data-who="roth">
+        <div class="pc-h">
+          <span class="av" aria-hidden="true">R</span>
+          <div class="pc-id"><h3><span class="nm">Captain Roth</span> <span class="att">Wary</span></h3><p>City Watch · Present in the scene</p></div>
+          <span class="pc-r">No bond yet</span>
+          <button class="fav" type="button" aria-pressed="false"><span><svg class="star" width="14" height="14" aria-hidden="true"><use href="#i-star"/></svg>Favourite</span></button>
+        </div>
+        <h4>Note</h4>
+        <p class="pc-note"><svg class="ic" width="18" height="18" aria-hidden="true"><use href="#i-eye"/></svg>Suspects a courier carried the forged seal.</p>
+        <div class="acts dx">
+          <button class="act" type="button"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="#i-chat"/></svg>Talk</button>
+          <button class="act" type="button"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="#i-ask"/></svg>Ask about…</button>
+        </div>
+      </article>
+
+      <article class="pc seller" data-who="seller">
+        <div class="pc-h">
+          <span class="av" aria-hidden="true">L</span>
+          <div class="pc-id"><h3><span class="nm">Lantern seller</span></h3><p>Stranger · Present in the scene</p></div>
+          <span class="pc-r">No details yet</span>
+          <button class="fav" type="button" aria-pressed="false"><span><svg class="star" width="14" height="14" aria-hidden="true"><use href="#i-star"/></svg>Favourite</span></button>
+        </div>
+        <div class="acts dx">
+          <button class="act" type="button"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="#i-chat"/></svg>Talk</button>
+          <button class="act" type="button"><svg class="ic" width="20" height="20" aria-hidden="true"><use href="#i-ask"/></svg>Ask about…</button>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="card you" aria-label="Your character">
+    <div class="you-h">
+      <span class="av me" aria-hidden="true">A</span>
+      <div><h2>Aren</h2><p>Your character</p></div>
+      <p class="xp"><b>14</b> Experience</p>
+    </div>
+    <div class="meters">
+      <span class="k">Hit points</span> <span class="bar"><i style="width:80%"></i></span> <span class="num">12<i>/15</i></span>
+      <span class="k">Energy</span> <span class="bar en"><i style="width:60%"></i></span> <span class="num">9<i>/15</i></span>
+      <span class="k">Destiny points</span> <span class="gems"><svg class="ic solid" width="14" height="14" aria-hidden="true"><use href="#i-gem"/></svg><svg class="ic solid" width="14" height="14" aria-hidden="true"><use href="#i-gem"/></svg></span> <span class="num">2</span>
+    </div>
+    <div class="you-more">
+      <h3>Attributes</h3>
+      <ul class="attrs">
+        <li><b>1</b> Strength</li><li><b>3</b> Skill</li><li><b>3</b> Resistance</li><li><b>1</b> Armor</li><li><b>0</b> Firepower</li>
+      </ul>
+      <h3>Paths and abilities</h3>
+      <ul class="paths">
+        <li><span class="pth">Air 2</span> <span class="ab">Featherstep <i>Air 1</i></span> <span class="ab">Gale Push <i>Air 2</i></span></li>
+        <li><span class="pth light">Light 1</span> <span class="ab">Glimmer <i>Light 1</i></span></li>
+      </ul>
+      <div class="duo">
+        <div><h3>Advantages</h3><ul><li>Quick Reflexes</li><li>Patron: Couriers' Guild</li></ul></div>
+        <div><h3>Skills</h3><ul><li>Manipulation</li><li>Survival</li></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card journal" aria-label="Journal">
+    <h2>Journal</h2>
+    <h3>Threads</h3>
+    <div class="thread"><p class="t">Deliver the sealed letter to the Glass Road waystation.</p><p class="n"><b>Next:</b> cross the bridge before the gates close.</p></div>
+    <div class="thread"><p class="t">Who copied the baron's seal?</p><p class="n"><b>Clue:</b> Roth carries a copy.</p></div>
+    <div class="commit">
+      <svg class="ic" width="20" height="20" aria-hidden="true"><use href="#i-clock"/></svg>
+      <p class="k">Commitment · due tonight</p>
+      <p class="t">Meet Tobin's master at the Old Mill.</p>
+      <span class="av xs tobin" aria-hidden="true">T</span>
+    </div>
+  </section>
+</aside>
+
+<button class="scrim" type="button" data-people-toggle aria-label="Close the People panel"></button>
+
+<script>
+(function () {
+  var state = new URLSearchParams(location.search).get('state') || 'continue';
+  var body = document.body;
+  var pending = Array.prototype.slice.call(document.querySelectorAll('[data-pending]'));
+  var shown = (state === 'input' || state === 'people') ? pending.length : 0;
+  var log = document.querySelector('[data-log]');
+  var who = 'mira'; /* whose profile the People panel shows; the desktop contact list changes it */
+  function each(sel, fn) { Array.prototype.forEach.call(document.querySelectorAll(sel), fn); }
+  function sync() {
+    pending.forEach(function (el, i) { el.hidden = i >= shown; });
+    var left = pending.length - shown;
+    var bond = shown > 0 ? 4 : 3; /* Mira's bond rises when the first pending beat is revealed */
+    body.dataset.mode = left > 0 ? 'continue' : 'input';
+    body.dataset.shown = shown;
+    each('[data-continue-count]', function (c) { c.textContent = left; });
+    each('[data-bond-live]', function (h) { h.setAttribute('aria-label', 'Bond ' + bond + ' of 5'); });
+    each('[data-bond-n]', function (n) { n.textContent = bond; });
+    if (log) { log.scrollTop = log.scrollHeight; edge(); }
+  }
+  /* the soft shadow at the top of the log only shows while earlier text is scrolled out of view */
+  function edge() { log.parentNode.classList.toggle('scrolled', log.scrollTop > 2); }
+  if (log) log.addEventListener('scroll', edge, { passive: true });
+  if (state === 'people') body.dataset.people = 'open';
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') body.dataset.people = ''; });
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('[data-continue]')) { shown = Math.min(pending.length, shown + 1); sync(); }
+    var t = e.target.closest('[data-people-toggle]');
+    if (t) {
+      var w = t.getAttribute('data-who'), open = body.dataset.people === 'open';
+      if (w && w !== who) {
+        who = w;
+        each('[data-who]', function (el) { el.classList.toggle('cur', el.getAttribute('data-who') === who); });
+        if (open) return; /* another person while the panel is open: switch, do not close */
+      }
+      body.dataset.people = open ? '' : 'open';
+      /* the phone sheet opens at the top, or at the card of the person who was tapped */
+      var card = document.querySelector('.pc.cur');
+      if (!open && card) card.parentNode.scrollTop = w ? card.offsetTop - card.parentNode.offsetTop - 2 : 0;
+    }
+  });
+  sync();
+})();
+</script>
+</body>
+</html>

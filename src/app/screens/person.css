@@ -1,0 +1,106 @@
+/* One person's profile, and the full shared history as its second view. From docs/mockups/slate/person.html,
+   built from Slate tokens. Order on the page: where the bond stands, the waiting moment, what to do, then why.
+   Class names carry a pf- prefix: every screen's stylesheet is loaded together, and plain names such as
+   .sum, .next or .hl mean something else on other screens. */
+.pf{display:flex;flex-direction:column;gap:inherit}
+.who-none{--p:var(--c-text-2)}                    /* someone with no colour of their own */
+.pf-grief{--p:var(--c-err)}                       /* a grievance or a hostile attitude, in the error colour */
+.pf-crumb .link .i{margin-left:-4px}
+
+/* Header: who this is, and the pin */
+.pf-head{display:flex;align-items:center;gap:var(--sp-3)}
+.pf-head h1{font-size:var(--fs-2xl);font-weight:600;line-height:1.2;letter-spacing:-.01em;overflow-wrap:anywhere}
+.pf-head h1 span{font-size:var(--fs-lg);font-weight:400}
+.pf-head p{color:var(--c-text-2)}
+.pf-head .inline{margin-top:6px}
+.pf-head .inline:empty{display:none}
+.pf-pin{align-self:flex-start}
+.pf-pin[aria-pressed="true"]{border-color:color-mix(in srgb,var(--c-gold) 45%,var(--c-card));color:var(--c-gold)}
+
+/* The bond, large: number, stage, what is left, the bar and the five stage names */
+.pf-bond{display:grid;gap:10px}
+.pf-bond-top{display:flex;align-items:baseline;flex-wrap:wrap;gap:0 var(--sp-2)}
+.pf-bond-n{color:var(--c-text-2)}
+.pf-bond-n b{font-size:var(--fs-2xl);line-height:30px;color:var(--c-text)}
+.pf-bond-s{font-size:var(--fs-xl);font-weight:600;color:var(--p)}
+.pf-bond-next{margin-left:auto;font-size:var(--fs-sm);color:var(--c-text-2)}
+.pf-stages{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--sp-1);justify-items:center;margin-top:-4px;font-size:var(--fs-xs);line-height:16px;color:var(--c-text-3);white-space:nowrap}
+.pf-stages .was{color:var(--c-text-2)}
+.pf-stages .on{font-weight:600;color:var(--p)}
+.pf-att{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-1) var(--sp-2);padding-top:10px;border-top:1px solid var(--c-line);font-size:var(--fs-sm);color:var(--c-text-2)}
+.pf-att.is-alone{padding-top:13px;border-top-color:var(--c-line)}
+.pf-att-k{min-width:56px}
+
+/* What to do next: the waiting moment, a grievance, then the actions or where to find them */
+.pf-next{display:flex;flex-direction:column;gap:var(--sp-2)}
+.pf-next .moment{margin-bottom:0}
+.pf-next .acts{margin-top:0}
+.pf-away{align-items:center}
+.pf-away>.i{align-self:flex-start}
+.pf-away>div{flex:1;min-width:0}
+
+/* Memories: the second group is what the player chose to keep */
+.pf-kept{margin-top:var(--sp-2);padding-top:var(--sp-3);border-top:1px solid var(--c-line)}
+.pf-kept .mem-k{display:flex;align-items:center;justify-content:space-between}
+.pf .card .mem-more{margin-bottom:-6px}
+.pf-unk{background:none;box-shadow:inset 0 0 0 1px var(--c-line-strong);color:var(--c-text-2)}
+.pf .card .help{margin-top:10px}
+
+/* History: a running total, then every moment by day */
+.pf-sum{display:grid;gap:var(--sp-3)}
+.pf-sum-who{display:flex;align-items:center;gap:10px}
+.pf-eq{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto minmax(0,1fr);gap:var(--sp-2);align-items:start}
+.pf-eq.is-one{grid-template-columns:auto auto minmax(0,1fr)}
+.pf-eq div{display:grid;gap:2px;font-size:var(--fs-xs);line-height:15px;color:var(--c-text-2)}
+.pf-eq b{font-size:var(--fs-2xl);line-height:28px;font-variant-numeric:tabular-nums;color:var(--c-text)}
+.pf-eq .part b{color:var(--p)}
+.pf-eq-op{font-size:var(--fs-xl);line-height:28px;color:var(--c-text-3)}
+.pf-legend{display:grid;gap:6px;font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.pf-legend li{display:flex;align-items:center;gap:var(--sp-2)}
+.pf-legend .dot{flex:none;width:9px;height:9px;margin:0 3px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--p)}
+.pf-legend .dot.full{background:var(--p)}
+.pf-legend .i{color:var(--c-gold)}
+.pf-legend b{color:var(--c-text)}
+.pf-hl{gap:0}
+.pf-hl li{display:flex;align-items:center;gap:var(--sp-2);min-height:44px}
+.pf-hl li::before{top:50%;margin-top:-5px}
+.pf-hl .ev-t{flex:1;min-width:0;padding:var(--sp-1) 0;line-height:19px;text-wrap:pretty}
+.pf-hl .big .ev-t{font-weight:600}
+.pf-hl .ev-t .tag{margin-left:var(--sp-1);font-weight:400}
+.pf-hl .mem-x{min-width:26px;text-align:right;font-size:var(--fs-md)}
+.pf-hl .lost{--p:var(--c-err)}
+.pf-hl .day{justify-content:space-between;align-items:flex-end;min-height:30px;padding-bottom:var(--sp-1);font-size:var(--fs-xs);font-weight:600;letter-spacing:.04em;color:var(--c-text-2)}
+.pf-hl .day:first-child{min-height:20px}
+.pf-hl .day::before,.pf-hl .mark::before{display:none}
+.pf-hl .day span+span{font-weight:400;letter-spacing:0}
+.pf-hl .mark{min-height:36px}
+.pf-keep{margin-right:-10px;color:var(--c-text-3)}
+.pf-keep[aria-pressed="true"]{color:var(--c-gold)}
+.pf-keep[aria-pressed="true"] .i{fill:currentColor;stroke:none}
+.pf-keep[disabled]{opacity:.35;pointer-events:none}
+
+@media (max-width:1099.98px){
+  /* one column: the cards of both columns flow as one list */
+  .pf-cols>div{display:contents}
+  .pf-legend{display:flex;flex-wrap:wrap;gap:6px var(--sp-4);padding:0 var(--sp-1)}
+}
+@media (min-width:1100px){
+  .pf-head{gap:var(--sp-4)}
+  .pf-hl li{min-height:36px}
+  .pf-keep{margin-right:-6px}
+  .pf-side{position:sticky;top:var(--sp-6)}
+  .pf-legend{padding:var(--sp-3) 14px;border:1px solid var(--c-line);border-radius:var(--r-lg);background:var(--c-card)}
+}
+
+/* ---- Kept apart from the story screen ----
+   styles/play.css is loaded for the whole app. On a PC it lays .app out for the story screen (four columns,
+   a top bar aligned to its panes) and stacks the buttons of .acts. This screen is a page: the rules below
+   give it the page layout of slate.css back. They do nothing once play.css is scoped. */
+.pf .av-l{--z:44px}
+@media (min-width:1100px){
+  .app:has(.pf){grid-template-columns:72px minmax(0,1fr)}
+  .app:has(.pf) .bar{grid-template-columns:auto minmax(0,1fr) auto}
+  .app:has(.pf) .bar-mid{padding:0 var(--sp-6)}
+  .pf-next .acts{flex-wrap:nowrap}
+  .pf-next .acts .btn-primary{flex:1 1 auto}
+}

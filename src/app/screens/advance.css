@@ -1,0 +1,67 @@
+/* Screen styles for advance, carried over from docs/mockups/slate/advance.html. Built from Slate tokens. */
+/* ==== Character components: identical in character.html, advance.html and character-new.html ==== */
+/* Trait row (an attribute or a path): a .row with the name and one line on the left and the value on the right:
+   pips and a number on the sheet, a stepper in the editor, the change when experience is spent. */
+.trait .row-t,.opt .row-t{font-weight:600}
+.trait .row-end{gap:10px}
+.trait .row-s,.opt .row-s{text-wrap:pretty}
+.lvl{min-width:13px;font-size:var(--fs-xl);font-weight:600;line-height:1;text-align:right;font-variant-numeric:tabular-nums;color:var(--c-text)}
+.trait.is-zero .row-t{color:var(--c-text-2)}
+.trait.is-zero .row-s,.trait.is-zero .lvl,.lvl.zero{color:var(--c-text-3)}
+.pips i.cap{background:none;box-shadow:inset 0 0 0 1px var(--c-line)}            /* above this story's cap */
+.pips i.next{background:none;box-shadow:inset 0 0 0 1.5px var(--c-accent-text)}  /* what a raise would add */
+.pips i.new{background:var(--c-gold)}                                            /* just gained */
+.chg{font-weight:400;font-variant-numeric:tabular-nums;color:var(--c-text-2);white-space:nowrap}
+.chg b{color:var(--c-text)}
+/* Ability card: name, path and tier, energy cost, what it does, and an optional foot line */
+.abil{display:grid;grid-template-rows:auto 1fr;gap:6px}
+.abil-h{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-1) var(--sp-2)}
+.abil-c{display:inline-flex;align-items:center;gap:3px;margin-left:auto;font-size:var(--fs-sm);font-weight:600;white-space:nowrap}
+.abil-c .i{color:var(--c-en)}
+.abil-d{line-height:20px;color:var(--c-text-2)}
+.abil-f{display:flex;align-items:flex-start;gap:6px;margin-top:2px;font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.abil-f .i{margin-top:1px;color:var(--c-text-3)}
+.abil-f .i.ok{color:var(--c-ok)}
+.abil-f .av,.abil-f .tag{margin:-2px 0}
+.abil.is-locked .card-n{color:var(--c-text-2)}
+/* Vital: a large hit point or energy meter */
+.vital .m-top{align-items:baseline;font-size:var(--fs-sm)}
+.vital .m-v b{font-size:var(--fs-xl);line-height:24px}
+.vital .track{height:10px;border-radius:5px}
+/* A fight number written as a sum; the die that is still to be rolled is the white die with a question mark */
+.calcs{display:grid;gap:10px}
+.calc{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:center;gap:var(--sp-2);font-size:var(--fs-sm)}
+.calc>span:first-child{color:var(--c-text-2)}
+.sum{display:flex;align-items:center;gap:6px}
+.sum .stat{min-width:66px}
+.sum .op{font-size:var(--fs-lg);color:var(--c-text-3)}
+.die-q{display:grid;grid-template:none;place-items:center;padding:0;font-size:var(--fs-lg);font-weight:700;line-height:1;color:var(--c-pip)}
+/* Option row: a .row that is ticked or not (things to buy with points or experience) */
+.opt{align-items:flex-start}
+.opt .row-t,.opt .row-s{display:block}
+.opt-box{flex:none;width:22px;height:22px;display:grid;place-items:center;border-radius:var(--r-sm);box-shadow:inset 0 0 0 1.5px var(--c-line-strong);color:transparent}
+.opt[aria-pressed="true"],.opt[aria-pressed="true"]:hover{background:var(--c-accent-tint)}
+.opt[aria-pressed="true"]+.opt[aria-pressed="true"]{border-top-color:var(--c-accent-line)}
+.opt[aria-pressed="true"] .opt-box{background:var(--c-accent-fill);box-shadow:none;color:var(--c-on-accent)}
+.opt[disabled]{pointer-events:none}
+.opt[disabled] .row-t{color:var(--c-text-2)}
+.opt[disabled] .row-s{color:var(--c-text-3)}
+.opt[disabled] .opt-box{box-shadow:none;color:var(--c-text-3)}
+.opt-why{display:flex;align-items:center;gap:var(--sp-1);margin-top:3px;font-size:var(--fs-xs);line-height:16px;color:var(--c-text-2)}
+/* The budget rides in the flow footer on a phone, so it stays in view while the page scrolls */
+.flow-foot{flex-wrap:wrap}
+.foot-budget{flex:1 0 100%;font-size:var(--fs-sm)}
+/* Who the character is */
+.id{display:flex;align-items:center;gap:var(--sp-4);min-width:0}
+.id-tags{margin-top:var(--sp-2)}
+
+/* ==== Spending experience only ==== */
+.steps-2{grid-template-columns:repeat(2,1fr) 2px repeat(4,1fr)}   /* a target of 2: the shared .steps is drawn for a target of 4 */
+.chosen{display:grid;gap:6px;line-height:20px}
+.chosen .total{margin-top:2px;padding-top:var(--sp-2);border-top:1px solid var(--c-line)}
+.done-h{display:flex;align-items:center;gap:var(--sp-3)}
+.done-i{flex:none;width:44px;height:44px;display:grid;place-items:center;border-radius:50%;background:color-mix(in srgb,var(--c-ok) 16%,var(--c-card));color:var(--c-ok)}
+.check.is-rolling~.alert-ok{visibility:hidden}   /* the result is not announced while the die is in the air */
+@media (min-width:1100px){
+  .side{position:sticky;top:var(--sp-6)}
+}

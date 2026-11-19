@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bitor Quest - all screens</title>
+<link rel="stylesheet" href="slate.css">
+<style>
+/* Viewer for the mockups: a list of every screen and its states, and the chosen screen shown
+   at phone and PC size. On a phone the list fills the screen and a screen opens full screen.
+   This page is a tool, not part of the app. */
+.v{height:100%;display:grid;grid-template-columns:minmax(0,1fr)}
+.v-side{min-height:0;overflow-y:auto;background:var(--c-pane);scrollbar-width:thin;scrollbar-color:var(--c-line) transparent}
+.v-side-in{max-width:640px;margin:0 auto;padding:var(--sp-5) var(--sp-4) var(--sp-8);display:flex;flex-direction:column;gap:var(--sp-4)}
+.v-brand{display:flex;align-items:center;gap:var(--sp-3);font-size:var(--fs-xl);font-weight:600}
+.v-brand .logo{width:32px;height:32px}
+.v-lead{color:var(--c-text-2);line-height:20px}
+.v-grp{margin:var(--sp-2) var(--sp-1) calc(-1*var(--sp-2))}
+.v-item{display:grid;gap:var(--sp-2);padding:var(--sp-3) 14px}
+.v-item.is-on{border-color:var(--c-accent-text);box-shadow:inset 0 0 0 1px var(--c-accent-text)}
+.v-open{display:flex;align-items:center;gap:var(--sp-2);width:100%;min-height:44px;text-align:left}
+.v-open b{display:block;font-size:var(--fs-lg);line-height:21px}
+.v-open small{display:block;font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.v-open .i{color:var(--c-text-3)}
+.v-open:hover b{color:var(--c-accent-text)}
+.v-states{display:flex;flex-wrap:wrap;gap:0 6px}
+.v-states .chip>span{min-height:32px;padding:0 var(--sp-3)}
+
+.v-stage{position:absolute;inset:0;z-index:5;display:none;flex-direction:column;background:var(--c-chrome)}
+body[data-open] .v-stage{display:flex}
+.v-bar{display:none}
+.v-area{flex:1;min-height:0;position:relative;overflow:hidden}
+.v-frame{position:absolute;inset:0;overflow:hidden;background:var(--c-story)}
+.v-frame iframe{display:block;width:100%;height:100%;border:0;background:var(--c-story)}
+.v-frame figcaption{display:none}
+.v-pc{display:none}
+.v-peek{position:absolute;right:0;top:42%;z-index:6;min-height:64px;padding:var(--sp-3) 5px;border:1px solid var(--c-line-strong);border-right:0;border-radius:var(--r-md) 0 0 var(--r-md);background:color-mix(in srgb,var(--c-chrome) 82%,transparent);color:var(--c-text);font-size:var(--fs-xs);font-weight:600;letter-spacing:.06em;writing-mode:vertical-rl;opacity:.85}
+
+@media (min-width:900px){
+  .v{grid-template-columns:320px minmax(0,1fr)}
+  .v-side{border-right:1px solid var(--c-line)}
+  .v-side-in{padding:var(--sp-4) var(--sp-3) var(--sp-6);gap:var(--sp-3)}
+  .v-item{padding:var(--sp-2) var(--sp-3) 10px}
+  .v-open{min-height:36px}
+  .v-states .chip{min-height:34px}
+  .v-states .chip>span{min-height:26px;padding:0 10px;font-size:var(--fs-xs)}
+  .v-stage{position:static;display:flex;min-width:0}
+  .v-peek{display:none}
+  .v-bar{display:flex;align-items:center;gap:var(--sp-4);min-height:56px;padding:var(--sp-2) var(--sp-4);border-bottom:1px solid var(--c-line);background:var(--c-chrome)}
+  .v-title{flex:1;min-width:0}
+  .v-title b{display:block;font-size:var(--fs-lg);line-height:21px}
+  .v-title span{display:block;font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+  .v-bar .seg{flex:none}
+  .v-bar .seg button{min-height:36px;padding:0 var(--sp-3)}
+  .v-area{background:
+    radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--c-line) 70%,transparent) 1px,transparent 0) 0 0/20px 20px,var(--c-chrome)}
+  .v-frame{inset:auto;transform-origin:0 0;border-radius:var(--r-lg);box-shadow:0 0 0 1px var(--c-line-strong),var(--shadow-pop)}
+  .v-phone{border-radius:26px;box-shadow:0 0 0 7px #05070a,0 0 0 8px var(--c-line-strong),var(--shadow-pop)}
+  .v-pc{display:block}
+  .v-cap{position:absolute;font-size:var(--fs-xs);font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--c-text-2)}
+  body[data-view="phone"] .v-pc,body[data-view="phone"] .v-cap-pc,body[data-view="pc"] .v-phone,body[data-view="pc"] .v-cap-phone{display:none}
+  .v-hint{position:absolute;inset:0;display:grid;place-items:center;padding:var(--sp-6);text-align:center;color:var(--c-text-2)}
+  body[data-open] .v-hint{display:none}
+  body:not([data-open]) .v-frame,body:not([data-open]) .v-cap{visibility:hidden}
+}
+@media (max-width:899.98px){
+  .v-cap,.v-hint{display:none}
+}
+</style>
+</head>
+<body data-view="both">
+
+<div class="v">
+  <aside class="v-side" aria-label="Screens">
+    <div class="v-side-in">
+      <div class="v-brand"><span class="logo" aria-hidden="true"><svg class="i i-f" width="18" height="18" aria-hidden="true"><use href="#i-spark"/></svg></span>Bitor Quest</div>
+      <p class="v-lead"><b id="count"></b> in the Slate design. Pick a screen, or one of its states. Inside a screen the buttons and links work, so you can also walk through the app from <b>Welcome</b>.</p>
+      <div id="list"></div>
+      <p class="v-lead t-xs">Sample story on every screen: <i>The Glass Road</i>, with Aren, Mira and Tobin. Nothing here calls the API.</p>
+    </div>
+  </aside>
+
+  <section class="v-stage" aria-label="Preview">
+    <div class="v-bar">
+      <div class="v-title"><b id="title"></b><span id="note"></span></div>
+      <div class="seg" role="group" aria-label="Size">
+        <button type="button" data-view-set="both" aria-pressed="true">Both</button>
+        <button type="button" data-view-set="phone" aria-pressed="false">Phone</button>
+        <button type="button" data-view-set="pc" aria-pressed="false">PC</button>
+      </div>
+      <div class="seg" role="group" aria-label="Theme">
+        <button type="button" data-theme-set="dark" aria-pressed="true">Dark</button>
+        <button type="button" data-theme-set="light" aria-pressed="false">Light</button>
+      </div>
+      <button class="btn btn-fit" id="reload" type="button"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-refresh"/></svg>Restart</button>
+    </div>
+    <div class="v-area" id="area">
+      <p class="v-hint">Choose a screen on the left.</p>
+      <span class="v-cap v-cap-phone" id="capPhone">Phone · 390 × 844</span>
+      <figure class="v-frame v-phone" id="boxPhone"><iframe id="framePhone" title="Screen at phone size"></iframe></figure>
+      <span class="v-cap v-cap-pc" id="capPc">PC · 1440 × 900</span>
+      <figure class="v-frame v-pc" id="boxPc"><iframe id="framePc" title="Screen at PC size"></iframe></figure>
+    </div>
+    <button class="v-peek" id="peek" type="button" aria-label="Back to the list of screens">Screens</button>
+  </section>
+</div>
+
+<script src="screens.js"></script>
+<script src="slate.js"></script>
+<script>
+(function () {
+  'use strict';
+  var d = document, body = d.body;
+  var SCREENS = window.SCREENS || [];
+  // In the single-file build, window.BQ_PACK holds every screen's source and the shared files.
+  var PACK = window.BQ_PACK || null;
+  var wide = window.matchMedia('(min-width: 900px)');
+  var framePhone = d.getElementById('framePhone'), framePc = d.getElementById('framePc');
+  var boxPhone = d.getElementById('boxPhone'), boxPc = d.getElementById('boxPc');
+  var capPhone = d.getElementById('capPhone'), capPc = d.getElementById('capPc');
+  var area = d.getElementById('area'), list = d.getElementById('list');
+  var cur = null;          // { file, search }
+  var theme = 'dark';
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function byFile(file) { for (var i = 0; i < SCREENS.length; i++) if (SCREENS[i].file === file) return SCREENS[i]; return null; }
+  function stateOf(search) { var m = /[?&]state=([^&#]*)/.exec(search || ''); return m ? decodeURIComponent(m[1]) : ''; }
+  function withTheme(search) {
+    var q = (search || '').replace(/^\?/, '').split('&').filter(function (p) { return p && p.indexOf('theme=') !== 0; });
+    if (theme === 'light') q.push('theme=light');
+    return q.length ? '?' + q.join('&') : '';
+  }
+
+  /* ---------- The list ---------- */
+  var states = 0, html = '', group = '';
+  SCREENS.forEach(function (s) {
+    states += s.states.length;
+    if (s.group !== group) { group = s.group; html += '<h2 class="grp v-grp"><span>' + esc(group) + '</span></h2>'; }
+    html += '<article class="card v-item" data-item="' + s.file + '">'
+      + '<button class="v-open" type="button" data-file="' + s.file + '" data-search=""><span class="grow"><b>' + esc(s.title) + '</b><small>' + esc(s.note) + '</small></span>' + Slate.icon('right', 18) + '</button>'
+      + '<div class="v-states">' + s.states.map(function (st) {
+        return '<button class="chip" type="button" aria-pressed="false" data-file="' + s.file + '" data-search="?state=' + encodeURIComponent(st[0]) + '"><span>' + esc(st[1]) + '</span></button>';
+      }).join('') + '</div></article>';
+  });
+  list.innerHTML = html;
+  list.style.display = 'grid';
+  list.style.gap = 'var(--sp-3)';
+  d.getElementById('count').textContent = SCREENS.length + ' screens, ' + states + ' states,';
+
+  /* ---------- Loading a screen into a frame ---------- */
+  // Single-file build: the screen is assembled from its source plus the shared stylesheet and script.
+  // Links between screens are sent to this page, which loads the target the same way.
+  var HOOK = 'document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a[href]");if(!a)return;'
+    + 'var m=/^([a-z0-9-]+)\\.html(\\?[^#]*)?(#.*)?$/i.exec(a.getAttribute("href")||"");if(!m)return;e.preventDefault();'
+    + 'parent.postMessage({bq:"go",file:m[1],search:m[2]||""},"*");},true);';
+  function compose(file, search) {
+    var src = PACK.sources[file];
+    if (!src) return '<!doctype html><meta charset="utf-8"><body style="font:16px sans-serif;padding:24px;background:#151920;color:#e8ecf2">This screen is not in the file.</body>';
+    return src
+      .replace(/<link rel="stylesheet" href="(slate|play)\.css">/g, function (m, n) { return '<style>' + PACK.assets[n + '.css'] + '</style>'; })
+      .replace(/<script src="slate\.js"><\/script>/, function () { return '<script>' + PACK.assets['slate.js'] + '<\/script>'; })
+      .replace(/<head>/, function () { return '<head><script>window.__SEARCH__=' + JSON.stringify(search) + ';<\/script>'; })
+      .replace(/<\/body>/, function () { return '<script>' + HOOK + '<\/script></body>'; });
+  }
+  function load(frame, file, search) {
+    if (PACK) { frame.removeAttribute('src'); frame.srcdoc = compose(file, search); }
+    else { frame.removeAttribute('srcdoc'); frame.src = file + '.html' + search; }
+  }
+  function visible(which) {
+    if (!wide.matches) return which === 'phone';
+    var v = body.getAttribute('data-view');
+    return v === 'both' || v === which;
+  }
+  function refresh() {
+    if (!cur) return;
+    var search = withTheme(cur.search);
+    if (visible('phone')) load(framePhone, cur.file, search);
+    if (visible('pc')) load(framePc, cur.file, search);
+  }
+  function show(file, search) {
+    var s = byFile(file);
+    if (!s) return;
+    cur = { file: file, search: search || '' };
+    var st = stateOf(cur.search) || s.states[0][0];
+    d.getElementById('title').textContent = s.title;
+    d.getElementById('note').textContent = s.note;
+    [].forEach.call(list.querySelectorAll('[data-item]'), function (el) { el.classList.toggle('is-on', el.getAttribute('data-item') === file); });
+    [].forEach.call(list.querySelectorAll('.chip'), function (el) {
+      el.setAttribute('aria-pressed', el.getAttribute('data-file') === file && stateOf(el.getAttribute('data-search')) === st);
+    });
+    body.setAttribute('data-open', file);
+    fit();
+    refresh();
+  }
+
+  /* ---------- Sizing the frames (wide screens) ---------- */
+  function place(box, cap, x, y, w, h, scale) {
+    box.style.left = x + 'px'; box.style.top = y + 'px';
+    box.style.width = w + 'px'; box.style.height = h + 'px';
+    box.style.transform = scale === 1 ? '' : 'scale(' + scale + ')';
+    cap.style.left = x + 'px'; cap.style.top = (y - 24) + 'px';
+  }
+  function fit() {
+    if (!wide.matches) {
+      [boxPhone, boxPc].forEach(function (b) { b.removeAttribute('style'); });
+      return;
+    }
+    var pad = 20, top = 34, W = area.clientWidth - pad * 2, H = area.clientHeight - top - pad;
+    var view = body.getAttribute('data-view');
+    var sp = Math.min(1, H / 844), pw = Math.round(390 * sp);
+    if (view === 'phone') {
+      place(boxPhone, capPhone, pad + Math.max(0, (W - pw) / 2), top, 390, 844, sp);
+    } else if (view === 'pc') {
+      // Room for a real desktop window: show it at its true size. Otherwise scale a 1440 x 900 window down.
+      if (W >= 1280) { place(boxPc, capPc, pad, top, W, H, 1); capPc.textContent = 'PC · ' + W + ' × ' + H; }
+      else { var s1 = Math.min(1, W / 1440, H / 900); place(boxPc, capPc, pad + Math.max(0, (W - 1440 * s1) / 2), top, 1440, 900, s1); capPc.textContent = 'PC · 1440 × 900'; }
+    } else {
+      var gap = 28, rest = W - pw - gap, sd = Math.min(1, rest / 1440, H / 900);
+      place(boxPhone, capPhone, pad, top, 390, 844, sp);
+      place(boxPc, capPc, pad + pw + gap, top, 1440, 900, sd);
+      capPc.textContent = 'PC · 1440 × 900';
+    }
+  }
+  window.addEventListener('resize', fit);
+  if (wide.addEventListener) wide.addEventListener('change', function () { fit(); refresh(); });
+
+  /* ---------- Controls ---------- */
+  d.addEventListener('click', function (e) {
+    var t = e.target, el;
+    if ((el = t.closest('[data-file]'))) show(el.getAttribute('data-file'), el.getAttribute('data-search'));
+    if ((el = t.closest('[data-view-set]'))) { body.setAttribute('data-view', el.getAttribute('data-view-set')); fit(); refresh(); }
+    if ((el = t.closest('[data-theme-set]'))) {
+      theme = el.getAttribute('data-theme-set');
+      d.documentElement.classList.toggle('theme-light', theme === 'light');
+      refresh();
+    }
+    if (t.closest('#reload')) refresh();
+    if (t.closest('#peek')) { body.removeAttribute('data-open'); framePhone.removeAttribute('srcdoc'); framePhone.removeAttribute('src'); }
+  });
+  // Single-file build: a link inside a screen asks for another screen.
+  window.addEventListener('message', function (e) {
+    var m = e.data;
+    if (!m || m.bq !== 'go' || !byFile(m.file)) return;
+    show(m.file, m.search || '');
+  });
+
+  // index.html?screen=people&state=all opens a screen directly.
+  var q = Slate.params;
+  if (q.get('theme') === 'light') {
+    theme = 'light';
+    [].forEach.call(d.querySelectorAll('[data-theme-set]'), function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-theme-set') === 'light'); });
+  }
+  if (q.get('view')) body.setAttribute('data-view', q.get('view'));
+  [].forEach.call(d.querySelectorAll('[data-view-set]'), function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-view-set') === body.getAttribute('data-view')); });
+  if (q.get('screen')) show(q.get('screen'), q.get('state') ? '?state=' + encodeURIComponent(q.get('state')) : '');
+  else if (wide.matches && SCREENS.length) show('play', '');
+  fit();
+})();
+</script>
+</body>
+</html>

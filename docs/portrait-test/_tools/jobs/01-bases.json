@@ -1,0 +1,62 @@
+[
+  {
+    "out": "front/base.png",
+    "route": "/create-image-pixflux",
+    "body": {
+      "description": "JRPG face portrait, bust of a completely bald adult man, hairless smooth scalp, facing the viewer straight on, symmetrical front view, neutral calm expression, head and shoulders, simple brown tunic",
+      "image_size": { "width": 128, "height": 128 },
+      "no_background": true,
+      "seed": 11
+    }
+  },
+  {
+    "out": "threequarter/base.png",
+    "route": "/create-image-pixflux",
+    "body": {
+      "description": "RPG Maker faceset portrait, bust of a completely bald adult man, hairless smooth scalp, three-quarter view, head turned slightly to the right, neutral calm expression, head and shoulders, simple brown tunic",
+      "image_size": { "width": 128, "height": 128 },
+      "no_background": true,
+      "seed": 11
+    }
+  },
+  {
+    "out": "closeup/base.png",
+    "route": "/create-image-pixflux",
+    "body": {
+      "description": "close-up face portrait of a completely bald adult man, hairless smooth scalp, the face fills the whole frame, facing the viewer straight on, symmetrical front view, neutral calm expression",
+      "image_size": { "width": 128, "height": 128 },
+      "no_background": true,
+      "seed": 11
+    }
+  },
+  {
+    "out": "front/base-pixen.png",
+    "route": "/create-image-pixen",
+    "body": {
+      "description": "JRPG face portrait, bust of a completely bald adult man, hairless smooth scalp, facing the viewer straight on, symmetrical front view, neutral calm expression, head and shoulders, simple brown tunic",
+      "image_size": { "width": 128, "height": 128 },
+      "no_background": true,
+      "seed": 11
+    }
+  },
+  {
+    "out": "threequarter/base-pixen.png",
+    "route": "/create-image-pixen",
+    "body": {
+      "description": "RPG Maker faceset portrait, bust of a completely bald adult man, hairless smooth scalp, three-quarter view, head turned slightly to the right, neutral calm expression, head and shoulders, simple brown tunic",
+      "image_size": { "width": 128, "height": 128 },
+      "no_background": true,
+      "seed": 11
+    }
+  },
+  {
+    "out": "closeup/base-pixen.png",
+    "route": "/create-image-pixen",
+    "body": {
+      "description": "close-up face portrait of a completely bald adult man, hairless smooth scalp, the face fills the whole frame, facing the viewer straight on, symmetrical front view, neutral calm expression",
+      "image_size": { "width": 128, "height": 128 },
+      "no_background": true,
+      "seed": 11
+    }
+  }
+]

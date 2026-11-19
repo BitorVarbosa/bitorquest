@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitor Quest - Worlds</title>
+<link rel="stylesheet" href="slate.css">
+<style>
+/* Worlds: one card per world. The same cards are the picker when a new story is started (state "pick"). */
+.wcard{display:flex;flex-direction:column;gap:var(--sp-3);padding:14px}
+.wcard-h{display:flex;align-items:center;gap:var(--sp-3);min-height:40px}
+.wcard-h h2{font-size:var(--fs-lg);font-weight:600;line-height:22px}
+.wcard-h .ib{margin:-2px -8px -2px auto}
+/* the world's accent as a small tile: the colour every screen of its stories takes */
+.wmark{flex:none;width:40px;height:40px;display:grid;place-items:center;border-radius:var(--r-md);background:color-mix(in srgb,var(--a) 18%,var(--c-card));box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--a) 50%,var(--c-card));color:color-mix(in srgb,var(--a) 72%,var(--c-text))}
+.pitch{font-size:var(--fs-md);line-height:21px;color:var(--c-text);text-wrap:pretty}
+.wcard .kv{--kv:88px;padding-top:var(--sp-3);border-top:1px solid var(--c-line)}
+.wcard .kv dd{display:block;color:var(--c-text)}
+.wcard .kv .t-2{color:var(--c-text-2)}
+.wcard .btn{flex:none;margin-top:auto}
+.new{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-1);min-height:112px;border-style:dashed;border-color:var(--c-line-strong);background:none;font-weight:600;text-align:center}
+.new .i{margin-bottom:var(--sp-1);color:var(--c-accent-text)}
+.new span{font-size:var(--fs-sm);font-weight:400;color:var(--c-text-2)}
+.foot-note{display:flex;gap:var(--sp-2);font-size:var(--fs-sm);line-height:19px;color:var(--c-text-2)}
+.foot-note .i{margin-top:1px}
+.empty .btn .i{color:inherit}
+@media (min-width:700px){
+  .new{grid-column:1/-1;min-height:84px}
+}
+@media (min-width:1100px){
+  .wcard{padding:var(--sp-4)}
+  .head-acts .btn-quiet{order:-1}
+}
+</style>
+</head>
+<body data-shell="library" data-page="worlds" data-title="Worlds" data-state="list">
+
+<div class="app">
+  <header class="top"><div class="bar" data-bar></div></header>
+  <nav class="nav" data-nav></nav>
+
+  <main class="page">
+    <div class="page-col">
+      <header class="page-h" data-show="list pick">
+        <div>
+          <h1 class="only-desktop" data-show="list">Worlds</h1>
+          <h1 data-show="pick">Choose a world</h1>
+          <p data-show="list">4 worlds · built for $1.50 in total</p>
+          <p data-show="pick">Where does the new story take place?</p>
+        </div>
+        <div class="inline head-acts" data-show="list">
+          <a class="btn btn-primary btn-fit" href="world-new.html"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-plus"/></svg>New world</a>
+          <button class="btn btn-quiet btn-fit"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-upload"/></svg>Import</button>
+        </div>
+        <div class="inline" data-show="pick">
+          <a class="btn btn-quiet btn-fit" href="home.html">Cancel</a>
+        </div>
+      </header>
+
+      <!-- One card per world. In "pick" the management parts are hidden and the main action starts the story. -->
+      <div class="grid grid-2" data-show="list pick">
+
+        <article class="card wcard" style="--a:#2bb3a3">
+          <div class="wcard-h">
+            <span class="wmark" aria-hidden="true"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-globe"/></svg></span>
+            <h2 class="grow">The Lantern Coast</h2>
+            <button class="ib" data-show="list" data-open="manage" data-name="The Lantern Coast" aria-label="More options for The Lantern Coast"><svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-more"/></svg></button>
+          </div>
+          <p class="pitch">Canal cities and a road of glass across the salt flats. Couriers, forged seals, and a baron who is losing his grip.</p>
+          <dl class="kv">
+            <div data-show="list"><dt>Source</dt><dd>Your description</dd></div>
+            <div><dt>Powers</dt><dd>Focus</dd></div>
+            <div><dt>Usual style</dt><dd>Adventure</dd></div>
+            <div data-show="list"><dt>Size</dt><dd>9 regions · 14 places · 23 people</dd></div>
+            <div><dt>Stories</dt><dd>1 <span class="t-2">· The Glass Road</span></dd></div>
+            <div data-show="list"><dt>Built for</dt><dd class="num">$0.31</dd></div>
+          </dl>
+          <a class="btn" href="character-new.html" data-show="list">Start a story here</a>
+          <a class="btn btn-soft" href="character-new.html" data-show="pick">Start here<svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        </article>
+
+        <article class="card wcard" style="--a:#e8894a">
+          <div class="wcard-h">
+            <span class="wmark" aria-hidden="true"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-globe"/></svg></span>
+            <h2 class="grow">The Ninth Fleet</h2>
+            <button class="ib" data-show="list" data-open="manage" data-name="The Ninth Fleet" aria-label="More options for The Ninth Fleet"><svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-more"/></svg></button>
+          </div>
+          <p class="pitch">A battered fleet running for home through hostile space.</p>
+          <dl class="kv">
+            <div data-show="list"><dt>Source</dt><dd>Your description</dd></div>
+            <div><dt>Powers</dt><dd>Off</dd></div>
+            <div><dt>Usual style</dt><dd>Brutal</dd></div>
+            <div data-show="list"><dt>Size</dt><dd>8 regions · 11 places · 19 people</dd></div>
+            <div><dt>Stories</dt><dd>1 <span class="t-2">· Ashes of the Ninth Fleet</span></dd></div>
+            <div data-show="list"><dt>Built for</dt><dd class="num">$0.27</dd></div>
+          </dl>
+          <a class="btn" href="character-new.html" data-show="list">Start a story here</a>
+          <a class="btn btn-soft" href="character-new.html" data-show="pick">Start here<svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        </article>
+
+        <article class="card wcard" style="--a:#7bbf6a">
+          <div class="wcard-h">
+            <span class="wmark" aria-hidden="true"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-globe"/></svg></span>
+            <h2 class="grow">Hollowbrook</h2>
+            <button class="ib" data-show="list" data-open="manage" data-name="Hollowbrook" aria-label="More options for Hollowbrook"><svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-more"/></svg></button>
+          </div>
+          <p class="pitch">A quiet valley town: bakery mornings, festival seasons, neighbours with long memories.</p>
+          <dl class="kv">
+            <div data-show="list"><dt>Source</dt><dd>Your description</dd></div>
+            <div><dt>Powers</dt><dd>Off</dd></div>
+            <div><dt>Usual style</dt><dd>Story</dd></div>
+            <div data-show="list"><dt>Size</dt><dd>8 regions · 12 places · 21 people</dd></div>
+            <div><dt>Stories</dt><dd>1 <span class="t-2">· Quiet Days in Hollowbrook</span></dd></div>
+            <div data-show="list"><dt>Built for</dt><dd class="num">$0.18</dd></div>
+          </dl>
+          <a class="btn" href="character-new.html" data-show="list">Start a story here</a>
+          <a class="btn btn-soft" href="character-new.html" data-show="pick">Start here<svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        </article>
+
+        <article class="card wcard" style="--a:#b7a6f8">
+          <div class="wcard-h">
+            <span class="wmark" aria-hidden="true"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-globe"/></svg></span>
+            <h2 class="grow">Aldermoor</h2>
+            <button class="ib" data-show="list" data-open="manage" data-name="Aldermoor" aria-label="More options for Aldermoor"><svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-more"/></svg></button>
+          </div>
+          <p class="pitch">Fog-bound moors, standing stones and three feuding houses, as written in your campaign notes.</p>
+          <dl class="kv">
+            <div data-show="list"><dt>Source</dt><dd>A document <span class="t-2">· Aldermoor Campaign Notes.pdf, 212 pages</span></dd></div>
+            <div><dt>Powers</dt><dd>Extreme</dd></div>
+            <div><dt>Usual style</dt><dd>Adventure</dd></div>
+            <div data-show="list"><dt>Size</dt><dd>12 regions · 17 places · 38 people</dd></div>
+            <div><dt>Stories</dt><dd class="t-2">None yet</dd></div>
+            <div data-show="list"><dt>Built for</dt><dd class="num">$0.74 <span class="t-2">· $0.38 of it reading the document</span></dd></div>
+          </dl>
+          <a class="btn" href="character-new.html" data-show="list">Start a story here</a>
+          <a class="btn btn-soft" href="character-new.html" data-show="pick">Start here<svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        </article>
+
+        <a class="card new" href="world-new.html" data-show="pick">
+          <svg class="i" width="24" height="24" aria-hidden="true"><use href="#i-plus"/></svg>
+          Create a new world
+          <span>Describe one, name a setting you know, or attach a document · about $0.30</span>
+        </a>
+      </div>
+
+      <p class="foot-note" data-show="list"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-info"/></svg><span>A world is a template you can reuse. Each story plays in its own copy, so nothing that happens in a story changes the world it started from.</span></p>
+
+      <!-- No worlds yet. The phone top bar already says "Worlds", so the header is for desktop only. -->
+      <header class="page-h only-desktop" data-show="empty">
+        <div>
+          <h1>Worlds</h1>
+          <p>Nothing here yet</p>
+        </div>
+      </header>
+      <section class="empty" data-show="empty">
+        <svg class="i" width="40" height="40" aria-hidden="true"><use href="#i-globe"/></svg>
+        <h2>No worlds yet</h2>
+        <p>A world is the setting: its places, its people and its rules. A story is one playthrough in it, and one world can hold many. Describe a world in a few lines, name a setting you already know, or attach a document.</p>
+        <a class="btn btn-primary btn-lg btn-fit" href="world-new.html"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-plus"/></svg>Create your first world</a>
+        <button class="btn btn-quiet btn-fit"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-upload"/></svg>Import a world from a file</button>
+      </section>
+    </div>
+  </main>
+
+  <!-- Options for one world -->
+  <div class="modal-scrim"></div>
+  <div class="modal" data-modal="manage" role="dialog" aria-label="The Lantern Coast">
+    <header class="modal-h"><h2 data-world-name>The Lantern Coast</h2><button class="ib" data-close aria-label="Close"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <div class="modal-b">
+      <div class="card card-flush">
+        <button class="row"><svg class="i t-2" width="20" height="20" aria-hidden="true"><use href="#i-edit"/></svg><span class="grow"><span class="row-t">Rename</span></span></button>
+        <button class="row"><svg class="i t-2" width="20" height="20" aria-hidden="true"><use href="#i-copy"/></svg><span class="grow"><span class="row-t">Duplicate</span><span class="row-s" style="display:block">A copy you can change before accepting it again</span></span></button>
+        <button class="row"><svg class="i t-2" width="20" height="20" aria-hidden="true"><use href="#i-download"/></svg><span class="grow"><span class="row-t">Export to a file</span><span class="row-s" style="display:block">To back it up, move it or share it · 0.4 MB</span></span></button>
+      </div>
+      <button class="btn btn-danger" style="flex:none"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-trash"/></svg>Delete this world</button>
+      <p class="t-sm t-2">Deleting a world does not delete its stories. Each story keeps its own copy of the world and can still be played.</p>
+    </div>
+  </div>
+</div>
+
+<script src="slate.js"></script>
+<script>
+/* The one modal serves every card: it takes the name of the world whose More button was pressed. */
+document.addEventListener('click', function (e) {
+  var b = e.target.closest('[data-open="manage"]');
+  if (!b) return;
+  var name = b.getAttribute('data-name'), m = document.querySelector('[data-modal="manage"]');
+  m.setAttribute('aria-label', name);
+  m.querySelector('[data-world-name]').textContent = name;
+});
+</script>
+</body>
+</html>

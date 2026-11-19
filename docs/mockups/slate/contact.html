@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitor Quest - contact sheet</title>
+<style>
+/* Lays out the screenshots in shots/ as a contact sheet. Parameters: device=phone|desktop, group=<group name>. */
+*{box-sizing:border-box}
+html,body{margin:0;background:#0b0d11;color:#e8ecf2;font:14px/1.4 "Segoe UI Variable Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+main{padding:28px 28px 36px}
+h1{margin:0 0 4px;font-size:22px;font-weight:600}
+.lead{margin:0 0 22px;color:#aab5c4}
+h2{margin:26px 0 12px;padding-top:14px;border-top:1px solid #272f3a;font-size:17px;font-weight:600}
+h2 small{margin-left:10px;font-size:14px;font-weight:400;color:#aab5c4}
+.row{display:flex;flex-wrap:wrap;gap:18px}
+figure{margin:0}
+figure img{display:block;border-radius:10px;box-shadow:0 0 0 1px #3a4452}
+body[data-device="phone"] figure img{width:292px;height:632px}
+body[data-device="desktop"] figure img{width:800px;height:500px}
+figcaption{margin-top:7px;font-size:13px;color:#aab5c4}
+</style>
+</head>
+<body>
+<main>
+  <h1 id="h"></h1>
+  <p class="lead" id="lead"></p>
+  <div id="out"></div>
+</main>
+<script src="screens.js"></script>
+<script>
+(function () {
+  var q = new URLSearchParams(location.search), device = q.get('device') === 'desktop' ? 'desktop' : 'phone', group = q.get('group');
+  var screens = (window.SCREENS || []).filter(function (s) { return !group || s.group === group; });
+  document.body.setAttribute('data-device', device);
+  document.getElementById('h').textContent = 'Bitor Quest · ' + (group || 'All screens') + ' · ' + (device === 'phone' ? 'phone' : 'PC');
+  document.getElementById('lead').textContent = 'Slate design, ' + (device === 'phone' ? '390 × 844' : '1440 × 900') + '. Every state of every screen.';
+  var out = document.getElementById('out');
+  screens.forEach(function (s) {
+    var h = document.createElement('h2');
+    h.textContent = s.title;
+    var sm = document.createElement('small'); sm.textContent = s.note; h.appendChild(sm);
+    var row = document.createElement('div'); row.className = 'row';
+    s.states.forEach(function (st) {
+      var f = document.createElement('figure'), img = document.createElement('img'), c = document.createElement('figcaption');
+      img.src = 'shots/' + s.file + '-' + device + '-' + st[0] + '.png'; img.alt = s.title + ', ' + st[1];
+      c.textContent = st[1];
+      f.appendChild(img); f.appendChild(c); row.appendChild(f);
+    });
+    out.appendChild(h); out.appendChild(row);
+  });
+})();
+</script>
+</body>
+</html>

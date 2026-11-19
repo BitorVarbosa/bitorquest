@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitor Quest - Character</title>
+<link rel="stylesheet" href="slate.css">
+<style>
+/* ==== Character components: identical in character.html, advance.html and character-new.html ==== */
+/* Trait row (an attribute or a path): a .row with the name and one line on the left and the value on the right:
+   pips and a number on the sheet, a stepper in the editor, the change when experience is spent. */
+.trait .row-t,.opt .row-t{font-weight:600}
+.trait .row-end{gap:10px}
+.trait .row-s,.opt .row-s{text-wrap:pretty}
+.lvl{min-width:13px;font-size:var(--fs-xl);font-weight:600;line-height:1;text-align:right;font-variant-numeric:tabular-nums;color:var(--c-text)}
+.trait.is-zero .row-t{color:var(--c-text-2)}
+.trait.is-zero .row-s,.trait.is-zero .lvl,.lvl.zero{color:var(--c-text-3)}
+.pips i.cap{background:none;box-shadow:inset 0 0 0 1px var(--c-line)}            /* above this story's cap */
+.pips i.next{background:none;box-shadow:inset 0 0 0 1.5px var(--c-accent-text)}  /* what a raise would add */
+.pips i.new{background:var(--c-gold)}                                            /* just gained */
+.chg{font-weight:400;font-variant-numeric:tabular-nums;color:var(--c-text-2);white-space:nowrap}
+.chg b{color:var(--c-text)}
+/* Ability card: name, path and tier, energy cost, what it does, and an optional foot line */
+.abil{display:grid;grid-template-rows:auto 1fr;gap:6px}
+.abil-h{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-1) var(--sp-2)}
+.abil-c{display:inline-flex;align-items:center;gap:3px;margin-left:auto;font-size:var(--fs-sm);font-weight:600;white-space:nowrap}
+.abil-c .i{color:var(--c-en)}
+.abil-d{line-height:20px;color:var(--c-text-2)}
+.abil-f{display:flex;align-items:flex-start;gap:6px;margin-top:2px;font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.abil-f .i{margin-top:1px;color:var(--c-text-3)}
+.abil-f .i.ok{color:var(--c-ok)}
+.abil-f .av,.abil-f .tag{margin:-2px 0}
+.abil.is-locked .card-n{color:var(--c-text-2)}
+/* Vital: a large hit point or energy meter */
+.vital .m-top{align-items:baseline;font-size:var(--fs-sm)}
+.vital .m-v b{font-size:var(--fs-xl);line-height:24px}
+.vital .track{height:10px;border-radius:5px}
+/* A fight number written as a sum; the die that is still to be rolled is the white die with a question mark */
+.calcs{display:grid;gap:10px}
+.calc{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:center;gap:var(--sp-2);font-size:var(--fs-sm)}
+.calc>span:first-child{color:var(--c-text-2)}
+.sum{display:flex;align-items:center;gap:6px}
+.sum .stat{min-width:66px}
+.sum .op{font-size:var(--fs-lg);color:var(--c-text-3)}
+.die-q{display:grid;grid-template:none;place-items:center;padding:0;font-size:var(--fs-lg);font-weight:700;line-height:1;color:var(--c-pip)}
+/* Option row: a .row that is ticked or not (things to buy with points or experience) */
+.opt{align-items:flex-start}
+.opt .row-t,.opt .row-s{display:block}
+.opt-box{flex:none;width:22px;height:22px;display:grid;place-items:center;border-radius:var(--r-sm);box-shadow:inset 0 0 0 1.5px var(--c-line-strong);color:transparent}
+.opt[aria-pressed="true"],.opt[aria-pressed="true"]:hover{background:var(--c-accent-tint)}
+.opt[aria-pressed="true"]+.opt[aria-pressed="true"]{border-top-color:var(--c-accent-line)}
+.opt[aria-pressed="true"] .opt-box{background:var(--c-accent-fill);box-shadow:none;color:var(--c-on-accent)}
+.opt[disabled]{pointer-events:none}
+.opt[disabled] .row-t{color:var(--c-text-2)}
+.opt[disabled] .row-s{color:var(--c-text-3)}
+.opt[disabled] .opt-box{box-shadow:none;color:var(--c-text-3)}
+.opt-why{display:flex;align-items:center;gap:var(--sp-1);margin-top:3px;font-size:var(--fs-xs);line-height:16px;color:var(--c-text-2)}
+/* The budget rides in the flow footer on a phone, so it stays in view while the page scrolls */
+.flow-foot{flex-wrap:wrap}
+.foot-budget{flex:1 0 100%;font-size:var(--fs-sm)}
+/* Who the character is */
+.id{display:flex;align-items:center;gap:var(--sp-4);min-width:0}
+.id-tags{margin-top:var(--sp-2)}
+
+/* ==== Character sheet only ==== */
+.vit{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px var(--sp-4);padding:14px}
+.vit>.btn{grid-column:1/-1}
+.vit-k{font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.vit-v{display:flex;align-items:center;gap:6px;min-height:24px;font-size:var(--fs-sm);color:var(--c-text-2);white-space:nowrap}
+.vit-v b{font-size:var(--fs-xl);line-height:24px;color:var(--c-text)}
+.vit .gems{margin-top:0}
+.vit .gems .spent{color:var(--c-text-3)}
+.inv{gap:var(--sp-5);align-items:start}
+.inv-h{display:inline-flex;align-items:center;gap:6px}
+.lvl.purse{color:var(--c-gold)}
+.after{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-2)}
+@media (min-width:1100px){
+  .vit{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto auto auto;align-items:center;gap:var(--sp-6);padding:var(--sp-4) var(--sp-5)}
+  .vit>.btn{grid-column:auto}
+}
+</style>
+</head>
+<body data-shell="story" data-page="character" data-title="Character" data-state="sheet">
+
+<div class="app">
+  <header class="top"><div class="bar" data-bar></div></header>
+  <nav class="nav" data-nav></nav>
+
+  <main class="page">
+    <div class="page-col">
+
+      <header class="page-h">
+        <div class="id">
+          <span class="av av-xl av-you" aria-hidden="true">A</span>
+          <div>
+            <h1>Aren</h1>
+            <p>Courier · Couriers’ Guild of Port Varn</p>
+            <div class="inline id-tags"><span class="tag">Human</span><span class="tag">Champion</span></div>
+          </div>
+        </div>
+      </header>
+
+      <!-- How he is right now: shown on every tab -->
+      <section class="card vit" aria-label="Condition">
+        <div class="vital hp" style="--v:80%">
+          <div class="m-top"><span class="m-k"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-heart"/></svg>Hit points</span><span class="m-v"><b>12</b>/15</span></div>
+          <div class="track"><i></i></div>
+        </div>
+        <div class="vital en" style="--v:60%">
+          <div class="m-top"><span class="m-k"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-bolt"/></svg>Energy</span><span class="m-v"><b>9</b>/15</span></div>
+          <div class="track"><i></i></div>
+        </div>
+        <div>
+          <div class="vit-k">Destiny · this chapter</div>
+          <div class="vit-v"><span class="gems" role="img" aria-label="2 of 3 destiny points left"><svg class="i i-f" width="16" height="16" aria-hidden="true"><use href="#i-gem"/></svg><svg class="i i-f" width="16" height="16" aria-hidden="true"><use href="#i-gem"/></svg><svg class="i spent" width="16" height="16" aria-hidden="true"><use href="#i-gem"/></svg></span><span><b>2</b> of 3 left</span></div>
+        </div>
+        <div>
+          <div class="vit-k">Experience</div>
+          <div class="vit-v"><span><b>14</b> to spend</span></div>
+        </div>
+        <a class="btn btn-soft btn-fit" href="advance.html">Spend experience<svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+      </section>
+
+      <div class="tabs" role="tablist" aria-label="Character">
+        <button role="tab" data-go="sheet">Sheet</button>
+        <button role="tab" data-go="abilities">Abilities</button>
+        <button role="tab" data-go="inventory">Inventory</button>
+      </div>
+
+      <!-- ===== Sheet ===== -->
+      <div class="split stack-l" data-show="sheet">
+        <div class="stack-l">
+          <section class="sec">
+            <div class="sec-h"><h2>Attributes</h2><span class="t-xs t-2">Each from 0 to 5</span></div>
+            <div class="card card-flush">
+              <div class="row trait">
+                <div class="grow"><div class="row-t">Strength</div><div class="row-s">Close combat. Added to your attack.</div></div>
+                <div class="row-end"><span class="pips" role="img" aria-label="1 of 5"><i class="on"></i><i></i><i></i><i></i><i></i></span><b class="lvl">1</b></div>
+              </div>
+              <div class="row trait">
+                <div class="grow"><div class="row-t">Skill</div><div class="row-s">Agility and wits. In attack, defence and most tests.</div></div>
+                <div class="row-end"><span class="pips" role="img" aria-label="3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span><b class="lvl">3</b></div>
+              </div>
+              <div class="row trait">
+                <div class="grow"><div class="row-t">Resistance</div><div class="row-s">Stamina and will. Sets hit points and energy.</div></div>
+                <div class="row-end"><span class="pips" role="img" aria-label="3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span><b class="lvl">3</b></div>
+              </div>
+              <div class="row trait">
+                <div class="grow"><div class="row-t">Armor</div><div class="row-s">Turns blows aside. Added to your defence.</div></div>
+                <div class="row-end"><span class="pips" role="img" aria-label="1 of 5"><i class="on"></i><i></i><i></i><i></i><i></i></span><b class="lvl">1</b></div>
+              </div>
+              <div class="row trait">
+                <div class="grow"><div class="row-t">Firepower</div><div class="row-s">Ranged attacks, in place of Strength.</div></div>
+                <div class="row-end"><span class="pips" role="img" aria-label="0 of 5"><i></i><i></i><i></i><i></i><i></i></span><b class="lvl zero">0</b></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="sec">
+            <div class="sec-h"><h2>Paths</h2><span class="t-xs t-2">Focus · no higher than 3 in this story</span></div>
+            <div class="card card-flush">
+              <div class="row trait">
+                <div class="grow"><div class="row-t">Air</div><div class="row-s">Wind, sound and movement.</div></div>
+                <div class="row-end"><span class="pips" role="img" aria-label="2, the cap is 3"><i class="on"></i><i class="on"></i><i></i><i class="cap"></i><i class="cap"></i></span><b class="lvl">2</b></div>
+              </div>
+              <div class="row trait">
+                <div class="grow"><div class="row-t">Light</div><div class="row-s">Light, sight and illusion.</div></div>
+                <div class="row-end"><span class="pips" role="img" aria-label="1, the cap is 3"><i class="on"></i><i></i><i></i><i class="cap"></i><i class="cap"></i></span><b class="lvl">1</b></div>
+              </div>
+              <div class="row trait is-zero">
+                <div class="grow"><div class="row-t">Fire</div><div class="row-s">Flame, heat and fury.</div></div>
+                <div class="row-end"><span class="pips" role="img" aria-label="0, the cap is 3"><i></i><i></i><i></i><i class="cap"></i><i class="cap"></i></span><b class="lvl">0</b></div>
+              </div>
+              <div class="row trait is-zero">
+                <div class="grow"><div class="row-t">Water</div><div class="row-s">Water, mist and mending.</div></div>
+                <div class="row-end"><span class="pips" role="img" aria-label="0, the cap is 3"><i></i><i></i><i></i><i class="cap"></i><i class="cap"></i></span><b class="lvl">0</b></div>
+              </div>
+              <div class="row trait is-zero">
+                <div class="grow"><div class="row-t">Earth</div><div class="row-s">Stone, root and endurance.</div></div>
+                <div class="row-end"><span class="pips" role="img" aria-label="0, the cap is 3"><i></i><i></i><i></i><i class="cap"></i><i class="cap"></i></span><b class="lvl">0</b></div>
+              </div>
+              <div class="row trait is-zero">
+                <div class="grow"><div class="row-t">Dark</div><div class="row-s">Shadow, silence and fear.</div></div>
+                <div class="row-end"><span class="pips" role="img" aria-label="0, the cap is 3"><i></i><i></i><i></i><i class="cap"></i><i class="cap"></i></span><b class="lvl">0</b></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="sec">
+            <div class="sec-h"><h2>Skills</h2><span class="t-xs t-2">2 of 11</span></div>
+            <div class="card card-flush">
+              <div class="row">
+                <div class="grow"><div class="row-t"><b>Manipulation</b></div><div class="row-s">Bluff, persuade, bargain, read people.</div></div>
+              </div>
+              <div class="row">
+                <div class="grow"><div class="row-t"><b>Survival</b></div><div class="row-s">Find the way, water and shelter. Read weather and tracks.</div></div>
+              </div>
+            </div>
+            <p class="help">With the right skill an easy test succeeds without a roll, a medium test is rolled at the attribute&nbsp;+&nbsp;1 and a hard one at the attribute&nbsp;−&nbsp;2.</p>
+          </section>
+        </div>
+
+        <div class="stack-l">
+          <section class="sec">
+            <div class="sec-h"><h2>In a fight</h2></div>
+            <div class="card stack">
+              <div class="calcs">
+                <div class="calc">
+                  <span>Attack</span>
+                  <div class="sum"><span class="stat"><span>Strength</span><b>1</b></span><span class="op">+</span><span class="stat"><span>Skill</span><b>3</b></span><span class="op">+</span><span class="die die-s die-q" role="img" aria-label="one die">?</span></div>
+                </div>
+                <div class="calc">
+                  <span>Defence</span>
+                  <div class="sum"><span class="stat"><span>Armor</span><b>1</b></span><span class="op">+</span><span class="stat"><span>Skill</span><b>3</b></span><span class="op">+</span><span class="die die-s die-q" role="img" aria-label="one die">?</span></div>
+                </div>
+                <div class="calc">
+                  <span>Initiative</span>
+                  <div class="sum"><span class="stat"><span>Skill</span><b>3</b></span><span class="op">+</span><span class="stat" title="Quick Reflexes"><span>Reflexes</span><b>1</b></span><span class="op">+</span><span class="die die-s die-q" role="img" aria-label="one die">?</span></div>
+                </div>
+              </div>
+              <p class="help">Attack is with your short blade. Damage is the attack total minus the defence total. A 6 on the die doubles Strength when you attack and Armor when you defend.</p>
+            </div>
+          </section>
+
+          <section class="sec">
+            <div class="sec-h"><h2>Advantages</h2></div>
+            <div class="card card-flush">
+              <div class="row">
+                <div class="grow"><div class="row-t"><b>Quick Reflexes</b></div><div class="row-s">+1 to initiative and to dodging.</div></div>
+                <div class="row-end"><span class="tag">1 point</span></div>
+              </div>
+              <div class="row">
+                <div class="grow"><div class="row-t"><b>Patron: Couriers’ Guild</b></div><div class="row-s">Work, lodging and occasional help in any town with a Guild house.</div></div>
+                <div class="row-end"><span class="tag">1 point</span></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="sec">
+            <div class="sec-h"><h2>Disadvantages</h2><span class="t-xs t-2">−5 in total · the limit for a Champion</span></div>
+            <div class="card card-flush">
+              <div class="row">
+                <div class="grow"><div class="row-t"><b>Code: the letter always arrives</b></div><div class="row-s">You do not abandon a delivery or open it.</div></div>
+                <div class="row-end"><span class="tag">−1</span></div>
+              </div>
+              <div class="row">
+                <div class="grow"><div class="row-t"><b>Dependent: Lise, your sister</b></div><div class="row-s">What threatens her in Port Varn threatens you.</div></div>
+                <div class="row-end"><span class="tag">−1</span></div>
+              </div>
+              <div class="row">
+                <div class="grow"><div class="row-t"><b>Hunted: the baron’s agents</b></div><div class="row-s">Warden Kessa and her men are looking for you.</div></div>
+                <div class="row-end"><span class="tag">−2</span></div>
+              </div>
+              <div class="row">
+                <div class="grow"><div class="row-t"><b>Curious to a fault</b></div><div class="row-s">A sealed thing or a half-heard secret is hard to leave alone.</div></div>
+                <div class="row-end"><span class="tag">−1</span></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="sec">
+            <div class="sec-h"><h2>Conditions</h2></div>
+            <div class="alert">
+              <svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-ok-circle"/></svg>
+              <div><b>None</b><p>Wounds, poison and exhaustion are listed here while they last, with what they change.</p></div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- ===== Abilities ===== -->
+      <div class="stack-l" data-show="abilities">
+        <section class="sec">
+          <div class="sec-h"><h2>Known · 3</h2><span class="t-xs t-2">Each use costs energy</span></div>
+          <div class="grid grid-3">
+            <article class="card abil">
+              <div class="abil-h"><h3 class="card-n">Featherstep</h3><span class="tag">Air <b>1</b></span><span class="abil-c"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-bolt"/></svg>1 energy</span></div>
+              <p class="abil-d">Move without sound or weight for a moment.</p>
+              <p class="abil-f">Known from the start</p>
+            </article>
+            <article class="card abil">
+              <div class="abil-h"><h3 class="card-n">Gale Push</h3><span class="tag">Air <b>2</b></span><span class="abil-c"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-bolt"/></svg>2 energy</span></div>
+              <p class="abil-d">A blast of wind that shoves one opponent back or clears smoke, sand or arrows from the air.</p>
+              <p class="abil-f">Learned on Day 10 from a windcaller on the flats</p>
+            </article>
+            <article class="card abil">
+              <div class="abil-h"><h3 class="card-n">Glimmer</h3><span class="tag">Light <b>1</b></span><span class="abil-c"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-bolt"/></svg>1 energy</span></div>
+              <p class="abil-d">A small light, or a flash that dazzles someone looking at it.</p>
+              <p class="abil-f">Known from the start</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="sec">
+          <div class="sec-h"><h2>Found, not learned yet · 2</h2><span class="t-xs t-2">1 experience and a test each</span></div>
+          <div class="grid grid-2">
+            <article class="card abil who-mira">
+              <div class="abil-h"><h3 class="card-n">Windcaller’s Ear</h3><span class="tag">Air <b>2</b></span><span class="abil-c"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-bolt"/></svg>2 energy</span></div>
+              <p class="abil-d">Hear a conversation carried on the wind.</p>
+              <p class="abil-f"><span class="av av-s" aria-hidden="true">M</span><span>Mira can teach it</span></p>
+              <p class="abil-f"><svg class="i ok" width="16" height="16" aria-hidden="true"><use href="#i-ok-circle"/></svg><span>Needs Air 2 · you have it</span></p>
+              <div class="acts"><a class="btn btn-primary" href="advance.html?state=learn">Learn it · 1 experience</a></div>
+            </article>
+            <article class="card abil is-locked">
+              <div class="abil-h"><h3 class="card-n">Lantern Veil</h3><span class="tag">Light <b>2</b></span><span class="abil-c"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-bolt"/></svg>2 energy</span></div>
+              <p class="abil-d">Fold the light around something small, so that a passing glance slides over it.</p>
+              <p class="abil-f"><span>Found in a prayer book in Brinehold</span></p>
+              <p class="abil-f"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-lock"/></svg><span>Needs Light 2 · you have Light 1</span></p>
+              <div class="acts"><a class="btn" href="advance.html">Raise Light first · 10 experience</a></div>
+            </article>
+          </div>
+        </section>
+
+        <div class="alert">
+          <svg class="i" width="20" height="20" aria-hidden="true"><use href="#i-spark"/></svg>
+          <div><b>Or describe an effect of your own</b><p>Say what you want the wind or the light to do, in your own words. The rules decide which tier it is and what it costs in energy, and tell you before anything is spent.</p></div>
+        </div>
+      </div>
+
+      <!-- ===== Inventory ===== -->
+      <div class="grid grid-2 inv" data-show="inventory">
+        <div class="stack-l">
+          <section class="sec">
+            <div class="sec-h"><h2 class="inv-h"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-flag"/></svg>Quest</h2></div>
+            <div class="card card-flush">
+              <div class="row">
+                <div class="grow"><div class="row-t"><b>The sealed letter</b></div><div class="row-s">Closed with the baron’s seal, or a copy of it. For the Glass Road waystation.</div></div>
+                <div class="row-end"><span class="tag tag-gold">Quest item</span></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="sec">
+            <div class="sec-h"><h2 class="inv-h"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-bag"/></svg>Gear</h2><span class="t-xs t-2">4 things</span></div>
+            <div class="card card-flush">
+              <div class="row">
+                <div class="grow"><div class="row-t"><b>Short blade</b></div><div class="row-s">Your weapon in a fight.</div></div>
+                <div class="row-end"><span class="tag">Weapon</span></div>
+              </div>
+              <div class="row">
+                <div class="grow"><div class="row-t"><b>Courier’s satchel</b></div><div class="row-s">Holds the letter. Kept under the cloak.</div></div>
+              </div>
+              <div class="row">
+                <div class="grow"><div class="row-t"><b>Travelling cloak</b></div><div class="row-s">Plain and weatherproof, with a deep hood.</div></div>
+              </div>
+              <div class="row">
+                <div class="grow"><div class="row-t"><b>Guild token</b></div><div class="row-s">Opens any Guild house.</div></div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="stack-l">
+          <section class="sec">
+            <div class="sec-h"><h2 class="inv-h"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-flask"/></svg>Consumables</h2></div>
+            <div class="card card-flush">
+              <div class="row">
+                <div class="grow"><div class="row-t"><b>Healing draught</b> <span class="t-2 num">× 2</span></div><div class="row-s">Restores 5 hit points each.</div></div>
+                <div class="row-end"><button class="btn btn-fit" data-open="use">Use</button></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="sec">
+            <div class="sec-h"><h2 class="inv-h"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-heart"/></svg>Keepsakes</h2></div>
+            <div class="card card-flush">
+              <div class="row who-tobin">
+                <div class="grow"><div class="row-t"><b>Tobin’s cracked lens</b></div><div class="row-s">You paid for it on Day 11. Nobody has said what it was for.</div></div>
+                <div class="row-end"><span class="av av-s" aria-hidden="true">T</span></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="sec">
+            <div class="sec-h"><h2 class="inv-h"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-coins"/></svg>Purse</h2></div>
+            <div class="card card-flush">
+              <div class="row">
+                <div class="grow"><div class="row-t"><b>Silver</b></div><div class="row-s">The coin of Port Varn.</div></div>
+                <div class="row-end"><b class="lvl purse">34</b></div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Using a healing draught -->
+  <div class="modal-scrim"></div>
+  <div class="modal" data-modal="use" role="dialog" aria-label="Use a healing draught">
+    <header class="modal-h"><h2>Use a healing draught</h2><button class="ib" data-close aria-label="Close"><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <div class="modal-b">
+      <p class="t-2">Restores 5 hit points, up to your maximum. You are at 12 of 15, so this one brings you to full.</p>
+      <div class="vital hp" style="--v:100%">
+        <div class="m-top"><span class="m-k"><svg class="i i-f" width="14" height="14" aria-hidden="true"><use href="#i-heart"/></svg>Hit points afterwards</span><span class="m-v"><span class="chg">12 → </span><b>15</b>/15</span></div>
+        <div class="track"><i></i></div>
+      </div>
+      <p class="after"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-flask"/></svg>1 healing draught left afterwards</p>
+    </div>
+    <div class="modal-f"><button class="btn" data-close>Not now</button><button class="btn btn-primary" data-close>Drink it</button></div>
+  </div>
+</div>
+
+<script src="slate.js"></script>
+</body>
+</html>

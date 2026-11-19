@@ -1,0 +1,139 @@
+/* ==========================================================================
+   Motion across the app, and the backdrop behind it.
+
+   One switch. Every animation and transition in the app sits under :root[data-motion="on"], which
+   applyTheme (app.ts) sets from Settings, Look, Animations. Its "Auto" already follows the device, so
+   never gate motion with a prefers-reduced-motion media query: the attribute is the only switch.
+   Media queries here only pick between the phone and the desktop form of a movement.
+
+   The story log and its dock move in story.css. Load after story.css.
+   Timing: 120 to 280ms, ease-out. Nothing here delays reading or moves the layout.
+   ========================================================================== */
+
+/* ---------- Backdrop (components/Backdrop.tsx) ----------
+   Behind everything: large soft glows, and with "Embers" small sparks rising. It never takes a tap and
+   is hidden from screen readers. --fx-1 and --fx-2 are its two colours, alpha included, written by
+   applyTheme: the accent and, on a gradient theme, a brighter cousin of the second colour. themes.ts
+   checks text against the page with a glow at full strength over it.
+   The glows stay apart: each centre keeps at least 85% of a radius from the next, drift included, so two
+   glows only ever meet at their faint edges (GLOW_OVERLAP in themes.ts counts on it). */
+.fx{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;contain:strict}
+.fx-g{--z:min(64vmax,120vmin);position:absolute;left:var(--x);top:var(--y);width:var(--z);height:var(--z);margin:calc(var(--z)/-2) 0 0 calc(var(--z)/-2);border-radius:50%;background:radial-gradient(closest-side,var(--fx-1),transparent)}
+.fx-g1{--x:30%;--y:0%}
+.fx-g2{--x:100%;--y:30%;background-image:radial-gradient(closest-side,var(--fx-2),transparent)}
+.fx-g3{--x:0%;--y:75%;background-image:radial-gradient(closest-side,var(--fx-2),transparent)}
+.fx-g4{--x:70%;--y:100%}
+/* sparks: each has its own place (--x), size (--s), time to cross (--d), head start (--w), sideways drift (--dx) and strength (--o) */
+.fx-m{display:none;position:absolute;left:var(--x);bottom:-12px;width:var(--s);height:var(--s);border-radius:50%;background:var(--accent);box-shadow:0 0 6px 1px var(--fx-1);opacity:0}
+.theme-light .fx-m{box-shadow:none;--o-k:.75}                          /* on a light page a spark is a darker fleck: a little fainter */
+
+:root[data-motion="on"] .fx{animation:fx-in .9s ease-out}
+:root[data-motion="on"] .fx-g{will-change:transform}
+:root[data-motion="on"] .fx-g1{animation:fx-drift-a 62s ease-in-out infinite alternate}
+:root[data-motion="on"] .fx-g2{animation:fx-drift-b 74s ease-in-out infinite alternate}
+:root[data-motion="on"] .fx-g3{animation:fx-drift-c 56s ease-in-out infinite alternate}
+:root[data-motion="on"] .fx-g4{animation:fx-drift-d 68s ease-in-out infinite alternate}
+:root[data-motion="on"] .fx-m{display:block;animation:fx-rise var(--d) linear var(--w) infinite}
+@keyframes fx-in{from{opacity:0}}
+@keyframes fx-drift-a{from{transform:translate3d(-7%,-3%,0) scale(1)}50%{transform:translate3d(6%,5%,0) scale(1.08)}to{transform:translate3d(9%,-4%,0) scale(.96)}}
+@keyframes fx-drift-b{from{transform:translate3d(4%,-8%,0) scale(1.06)}50%{transform:translate3d(-7%,2%,0) scale(.96)}to{transform:translate3d(-2%,9%,0) scale(1.04)}}
+@keyframes fx-drift-c{from{transform:translate3d(-4%,6%,0) scale(.96)}50%{transform:translate3d(8%,-3%,0) scale(1.06)}to{transform:translate3d(3%,-9%,0) scale(1)}}
+@keyframes fx-drift-d{from{transform:translate3d(8%,3%,0) scale(1.04)}50%{transform:translate3d(-5%,-6%,0) scale(1)}to{transform:translate3d(-9%,2%,0) scale(1.08)}}
+@keyframes fx-rise{
+  from{transform:translate3d(0,0,0) scale(.6);opacity:0}
+  12%{opacity:calc(var(--o)*var(--o-k,1))}
+  70%{opacity:calc(var(--o)*var(--o-k,1)*.6)}
+  to{transform:translate3d(var(--dx),-112vh,0) scale(1);opacity:0}
+}
+
+/* ---------- Press and hover ----------
+   Things that can be pressed give a little under the finger, and their colours ease instead of snapping. */
+:root[data-motion="on"] :is(.btn,.ib,.choice,.chip>span,.sg>span,.input,.input-row,.stepper button,.link){transition:transform .12s ease-out,background-color .16s ease-out,border-color .16s ease-out,color .16s ease-out,box-shadow .16s ease-out,filter .16s ease-out}
+:root[data-motion="on"] :is(a.row,button.row,.tab,.tabs button,.tabs a,.seg button){transition:transform .12s ease-out,background-color .16s ease-out,border-color .16s ease-out,color .16s ease-out}
+:root[data-motion="on"] .tab-i{transition:transform .14s ease-out,background-color .2s ease-out}
+:root[data-motion="on"] .btn:active{transform:scale(.97)}
+:root[data-motion="on"] .ib:active{transform:scale(.9)}
+:root[data-motion="on"] .choice:active{transform:scale(.985)}
+:root[data-motion="on"] :is(a.row,button.row):active{transform:scale(.985)}
+:root[data-motion="on"] .chip:active>span,:root[data-motion="on"] .sg:active>span{transform:scale(.96)}
+:root[data-motion="on"] .tab:active .tab-i{transform:scale(.88)}
+:root[data-motion="on"] .stepper button:active{transform:scale(.88)}
+:root[data-motion="on"] .seg button:active:not([aria-pressed="true"]){background-color:var(--c-raised)}
+
+/* ---------- Segmented control: the chosen colour slides to the new choice ----------
+   The control counts its buttons (--seg-n) and finds the chosen one (--seg-i); a slider one button wide
+   moves under the labels. Without :has() none of this applies and the chosen button keeps its own fill. */
+:root[data-motion="on"] .seg{position:relative;--seg-n:1;--seg-i:0}
+:root[data-motion="on"] .seg:has(>:nth-child(2):last-child){--seg-n:2}
+:root[data-motion="on"] .seg:has(>:nth-child(3):last-child){--seg-n:3}
+:root[data-motion="on"] .seg:has(>:nth-child(4):last-child){--seg-n:4}
+:root[data-motion="on"] .seg:has(>:nth-child(5):last-child){--seg-n:5}
+:root[data-motion="on"] .seg:has(>:nth-child(2)[aria-pressed="true"]){--seg-i:1}
+:root[data-motion="on"] .seg:has(>:nth-child(3)[aria-pressed="true"]){--seg-i:2}
+:root[data-motion="on"] .seg:has(>:nth-child(4)[aria-pressed="true"]){--seg-i:3}
+:root[data-motion="on"] .seg:has(>:nth-child(5)[aria-pressed="true"]){--seg-i:4}
+:root[data-motion="on"] .seg:has(>[aria-pressed="true"]):not(:has(>:nth-child(6)))::before{content:"";position:absolute;top:0;bottom:0;left:0;width:calc(100%/var(--seg-n));background:var(--c-accent-tint);box-shadow:inset 0 0 0 1px var(--c-accent-line);transform:translateX(calc(var(--seg-i)*100%));transition:transform .22s cubic-bezier(.2,.8,.2,1)}
+:root[data-motion="on"] .seg:has(>[aria-pressed="true"]):not(:has(>:nth-child(6)))>[aria-pressed="true"]{background:none;box-shadow:none}
+:root[data-motion="on"] .seg>button{position:relative}
+
+/* ---------- Switch: the knob slides ---------- */
+:root[data-motion="on"] .switch::before{transition:background-color .18s ease-out,box-shadow .18s ease-out}
+:root[data-motion="on"] .switch::after{transition:transform .18s cubic-bezier(.2,.8,.2,1),background-color .18s ease-out}
+:root[data-motion="on"] .switch[aria-checked="true"]::after{left:7px;transform:translateX(18px)}
+
+/* ---------- A page arriving ----------
+   The parts of a page rise in one after another. Only the first eight take turns; the rest arrive with
+   the eighth, so a long list never crawls. A screen with one wrapper inside .page-col staggers the
+   wrapper's children instead. Dialogs are left alone: they have their own entrance and are centred with a transform. */
+:root[data-motion="on"] :is(.page-col>:not(:only-child),.page-col>:only-child>*):not(.modal,.modal-scrim){animation:page-in .24s ease-out backwards;animation-delay:calc(var(--pg,0)*26ms)}
+:root[data-motion="on"] :is(.page-col,.page-col>:only-child)>:nth-child(2){--pg:1}
+:root[data-motion="on"] :is(.page-col,.page-col>:only-child)>:nth-child(3){--pg:2}
+:root[data-motion="on"] :is(.page-col,.page-col>:only-child)>:nth-child(4){--pg:3}
+:root[data-motion="on"] :is(.page-col,.page-col>:only-child)>:nth-child(5){--pg:4}
+:root[data-motion="on"] :is(.page-col,.page-col>:only-child)>:nth-child(6){--pg:5}
+:root[data-motion="on"] :is(.page-col,.page-col>:only-child)>:nth-child(7){--pg:6}
+:root[data-motion="on"] :is(.page-col,.page-col>:only-child)>:nth-child(n+8){--pg:7}
+@keyframes page-in{from{opacity:0;transform:translateY(10px)}}
+
+/* ---------- Dialogs: a sheet rises on a phone, a dialog settles on a PC; the scrim fades in ---------- */
+:root[data-motion="on"] .modal-scrim.is-open{animation:fade-in .2s ease-out}
+:root[data-motion="on"] .modal.is-open{animation:sheet-up .26s cubic-bezier(.2,.8,.2,1)}
+@keyframes fade-in{from{opacity:0}}
+@keyframes sheet-up{from{opacity:.5;transform:translateY(32px)}}
+@keyframes dialog-in{from{opacity:0;transform:translate(-50%,calc(-50% + 14px)) scale(.97)}}
+
+/* ---------- Navigation: the pill of the current item ---------- */
+@media (max-width:1099.98px){
+  :root[data-motion="on"] .tab[aria-current="page"] .tab-i{animation:pill-in .28s cubic-bezier(.2,.8,.2,1)}
+}
+@keyframes pill-in{from{clip-path:inset(0 26% round 999px);background-color:transparent}to{clip-path:inset(0 0 round 999px)}}
+@keyframes tab-on{from{background-color:transparent}}
+
+/* ---------- Meters, bars and dots ---------- */
+/* a meter eases to its new value */
+:root[data-motion="on"] .track i{transition:width .28s ease-out,background-color .2s ease-out}
+:root[data-motion="on"] :is(.pips i,.clock i,.flow-steps i){transition:background-color .2s ease-out}
+/* a bond bar fills, segment by segment, when it appears */
+:root[data-motion="on"] .bb i::after{transform-origin:0 50%;animation:bb-fill .42s cubic-bezier(.2,.8,.2,1) backwards}
+:root[data-motion="on"] .bb i:nth-child(2)::after{animation-delay:50ms}
+:root[data-motion="on"] .bb i:nth-child(3)::after{animation-delay:.1s}
+:root[data-motion="on"] .bb i:nth-child(4)::after{animation-delay:.15s}
+:root[data-motion="on"] .bb i:nth-child(5)::after{animation-delay:.2s}
+@keyframes bb-fill{from{transform:scaleX(0)}}
+/* the columns of a chart grow from the base line */
+:root[data-motion="on"] .vbars i{transform-origin:50% 100%;animation:bar-up .4s cubic-bezier(.2,.8,.2,1) backwards}
+@keyframes bar-up{from{transform:scaleY(0)}}
+/* something changed with someone: the dot breathes */
+:root[data-motion="on"] .tab-dot{animation:dot-pulse 2.4s ease-in-out infinite}
+@keyframes dot-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+
+/* ---------- PC: a dialog settles, the current rail item fades in, cards that open something lift under the pointer ---------- */
+@media (min-width:1100px){
+  :root[data-motion="on"] .modal.is-open{animation:dialog-in .22s cubic-bezier(.2,.8,.2,1)}
+  :root[data-motion="on"] .tab[aria-current="page"]{animation:tab-on .28s ease-out}
+}
+@media (min-width:1100px) and (hover:hover){
+  :root[data-motion="on"] :is(a.card,button.card,.card.is-link,.ppl .person){transition:transform .16s ease-out,box-shadow .16s ease-out,border-color .16s ease-out}
+  :root[data-motion="on"] :is(a.card,button.card,.card.is-link):hover,:root[data-motion="on"] .ppl .person:has(>a.ppl-link:hover){transform:translateY(-2px);box-shadow:0 12px 22px -14px var(--scrim)}
+  :root[data-motion="on"] :is(a.card,button.card,.card.is-link):active{transform:none}
+}

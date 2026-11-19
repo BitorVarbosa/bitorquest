@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitor Quest - Map</title>
+<link rel="stylesheet" href="slate.css">
+<style>
+/* Map: a schematic drawing of what has been discovered, and the same places as a list that is easier to tap. */
+.mp>*{min-width:0}
+@media (max-width:1099.98px){
+  .mp{display:grid;gap:var(--sp-4)}   /* map, then list, on a phone */
+  .lg .lg-n{display:none}
+  /* On a phone the journey is planned on a strip of the map (drawing units 90 to 190 of 268), so the card and its buttons stay in view */
+  body[data-state="travel"] .crop{aspect-ratio:328/100;overflow:hidden}
+  body[data-state="travel"] .crop .map{transform:translateY(-33.582%)}
+}
+.lvl{flex:1 1 100%}
+
+/* The drawing. Labels are 12px in drawing units, so the drawing is never shown smaller than it was drawn:
+   the phone drawing is 328 units wide, the desktop one 500. */
+.map{width:100%}
+figure.only-phone{max-width:520px;margin-inline:auto}
+.map-area{fill:color-mix(in srgb,var(--c-text-3) 9%,transparent)}                 /* the town, the salt flats */
+.map-water{fill:none;stroke:var(--c-track);stroke-width:8;stroke-linecap:round}   /* the canal, the river */
+.map .t-q{fill:var(--c-text-3)}
+.map-go path{fill:none;stroke:var(--c-accent-text);stroke-width:3;stroke-linecap:round}
+.map-n .sel{fill:none;stroke:var(--c-accent-text);stroke-width:2}
+.map-c path{fill:none;stroke:var(--c-text-3);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}   /* north mark */
+.map .hit{fill:transparent;cursor:pointer}
+body:not([data-state="travel"]) .on-travel{display:none}
+body[data-state="travel"] .map .dest{font-weight:600;fill:var(--c-text)}
+
+/* Legend and the node marks it shares with the list */
+.lg{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-1) var(--sp-4);padding:10px 14px 11px;border-top:1px solid var(--c-line);font-size:var(--fs-xs);line-height:18px;color:var(--c-text-2)}
+.lg li{display:inline-flex;align-items:center;gap:6px}
+.lg .lg-n{margin-left:auto;color:var(--c-text-3)}
+.nd{flex:none;width:11px;height:11px;border-radius:50%;box-shadow:inset 0 0 0 1.6px var(--c-text-2)}
+.nd-seen{background:var(--c-text-2)}
+.nd-unk{box-shadow:none;border:1.5px dashed var(--c-text-3)}
+.nd-here{background:var(--c-accent-text);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 26%,transparent)}
+
+/* Places as rows */
+.pl .nd{margin:0 var(--sp-1)}
+.pl .row-t,.pl .row-s{display:block}
+.pl .row-s{margin-top:1px}
+.pl .row-s.t-gold{color:var(--c-gold)}
+.pl .row-end{font-variant-numeric:tabular-nums;white-space:nowrap}
+.pl .row-end .i{color:var(--c-text-3)}
+.pl-unk .row-t{color:var(--c-text-2)}
+
+/* Travel card */
+.trav{display:grid;gap:var(--sp-3)}
+.trav .card-t{margin-bottom:var(--sp-1)}
+.trav-t{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-md);line-height:20px}
+.trav-t .i{color:var(--c-accent-text)}
+.route{gap:10px;padding-top:2px}
+.route li>b{font-size:var(--fs-md);line-height:20px}
+.route .tl-k{margin-left:6px;font-variant-numeric:tabular-nums}
+.way{display:flex;align-items:flex-start;gap:6px;margin-top:2px;font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.way .i{margin-top:2px}
+.due .due-n{font-size:var(--fs-sm);line-height:18px;color:var(--c-text-2)}
+.trav .acts{margin-top:0}
+.trav .acts .btn-primary{flex:2 1 auto}
+
+@media (min-width:1100px){
+  .lvl{flex:none;width:320px}
+}
+</style>
+</head>
+<body data-shell="story" data-page="map" data-title="Map" data-state="local">
+
+<div class="app">
+  <header class="top"><div class="bar" data-bar></div></header>
+  <nav class="nav" data-nav></nav>
+
+  <main class="page">
+    <div class="page-col">
+      <header class="page-h">
+        <div>
+          <h1 class="only-desktop">Map</h1>
+          <p data-show="local travel">Port Varn · 7 places known</p>
+          <p data-show="region">The Lantern Coast · 5 of 9 regions known</p>
+        </div>
+        <div class="seg lvl" role="group" aria-label="Map level">
+          <button data-go="local" aria-pressed="true">Port Varn</button>
+          <button data-go="region" aria-pressed="false">The Lantern Coast</button>
+        </div>
+      </header>
+
+      <div class="split mp">
+
+        <!-- ===== The drawing ===== -->
+        <section class="card card-flush" aria-label="Map">
+
+          <!-- Port Varn -->
+          <div data-show="local travel">
+            <figure class="only-phone crop">
+              <svg class="map" viewBox="0 0 328 268" width="328" height="268" role="img" aria-label="Schematic map of Port Varn. You are at the Lantern Market. The Old Mill lies to the west. The Canal Bridge lies to the east, with the Glass Road Waystation just beyond it and one undiscovered place further on. The North Gate lies to the north and leads out to the Salt Flats. The Guild House and the Harbour district lie to the south.">
+                <rect class="map-area" x="10" y="58" width="180" height="200" rx="18"/>
+                <path class="map-water" d="M190 12V258"/>
+                <g class="map-l">
+                  <path d="M36 142H254M116 58V196L160 240"/>
+                  <path class="dash" d="M260 142H297M116 52V26"/>
+                  <path d="M111 31l5-6 5 6"/>
+                </g>
+                <g class="map-go on-travel"><path d="M116 142H254"/></g>
+                <g class="map-n">
+                  <circle cx="36" cy="142" r="5.5"/>
+                  <circle class="seen" cx="116" cy="58" r="5.5"/>
+                  <circle cx="190" cy="142" r="5.5"/>
+                  <circle cx="254" cy="142" r="5.5"/>
+                  <circle class="seen" cx="116" cy="196" r="5.5"/>
+                  <circle cx="160" cy="240" r="5.5"/>
+                  <circle class="unk" cx="306" cy="142" r="9"/>
+                  <circle class="sel on-travel" cx="254" cy="142" r="10.5"/>
+                  <circle class="halo" cx="116" cy="142" r="11"/><circle class="here" cx="116" cy="142" r="6"/>
+                </g>
+                <g aria-hidden="true">
+                  <text class="t-q" x="103" y="30" text-anchor="end">to the Salt Flats</text>
+                  <text x="103" y="62" text-anchor="end">North Gate</text>
+                  <text class="t-b" x="103" y="112" text-anchor="end">Lantern Market</text>
+                  <text class="t-a" x="103" y="128" text-anchor="end">You are here</text>
+                  <text x="36" y="165" text-anchor="middle">Old Mill</text>
+                  <text x="200" y="124">Canal Bridge</text>
+                  <text class="dest" x="254" y="166" text-anchor="middle">Glass Road</text>
+                  <text class="dest" x="254" y="182" text-anchor="middle">Waystation</text>
+                  <text x="306" y="146" text-anchor="middle">?</text>
+                  <text x="103" y="200" text-anchor="end">Guild House</text>
+                  <text x="147" y="244" text-anchor="end">Harbour district</text>
+                </g>
+                <g class="map-c" aria-hidden="true"><path d="M306 34V16M301 21l5-6 5 6"/><text class="t-q" x="306" y="48" text-anchor="middle">N</text></g>
+                <circle class="hit" data-go="travel" cx="254" cy="152" r="26"/>
+              </svg>
+            </figure>
+            <figure class="only-desktop">
+              <svg class="map" viewBox="0 0 500 468" width="500" height="468" role="img" aria-label="Schematic map of Port Varn. You are at the Lantern Market. The Old Mill lies to the west. The Canal Bridge lies to the east, with the Glass Road Waystation just beyond it and one undiscovered place further on. The North Gate lies to the north and leads out to the Salt Flats. The Guild House and the Harbour district lie to the south.">
+                <rect class="map-area" x="28" y="112" width="272" height="326" rx="22"/>
+                <path class="map-water" d="M300 16V452"/>
+                <g class="map-l">
+                  <path d="M56 250H404M180 112V336L256 412"/>
+                  <path class="dash" d="M410 250H459M180 105V68"/>
+                  <path d="M174 74l6-7 6 7"/>
+                </g>
+                <g class="map-go on-travel"><path d="M180 250H404"/></g>
+                <g class="map-n">
+                  <circle cx="56" cy="250" r="6"/>
+                  <circle class="seen" cx="180" cy="112" r="6"/>
+                  <circle cx="300" cy="250" r="6"/>
+                  <circle cx="404" cy="250" r="6"/>
+                  <circle class="seen" cx="180" cy="336" r="6"/>
+                  <circle cx="256" cy="412" r="6"/>
+                  <circle class="unk" cx="470" cy="250" r="10"/>
+                  <circle class="sel on-travel" cx="404" cy="250" r="11.5"/>
+                  <circle class="halo" cx="180" cy="250" r="12"/><circle class="here" cx="180" cy="250" r="6.5"/>
+                </g>
+                <g aria-hidden="true">
+                  <text class="t-q" x="194" y="76">to the Salt Flats</text>
+                  <text x="194" y="116">North Gate</text>
+                  <text class="t-b" x="166" y="220" text-anchor="end">Lantern Market</text>
+                  <text class="t-a" x="166" y="236" text-anchor="end">You are here</text>
+                  <text x="56" y="275" text-anchor="middle">Old Mill</text>
+                  <text x="289" y="232" text-anchor="end">Canal Bridge</text>
+                  <text class="dest" x="404" y="275" text-anchor="middle">Glass Road</text>
+                  <text class="dest" x="404" y="291" text-anchor="middle">Waystation</text>
+                  <text x="470" y="254" text-anchor="middle">?</text>
+                  <text x="166" y="340" text-anchor="end">Guild House</text>
+                  <text x="242" y="416" text-anchor="end">Harbour district</text>
+                  <text class="t-a on-travel" x="240" y="268" text-anchor="middle">10 min</text>
+                  <text class="t-a on-travel" x="352" y="241" text-anchor="middle">30 min</text>
+                </g>
+                <g class="map-c" aria-hidden="true"><path d="M466 52V32M460 38l6-7 6 7"/><text class="t-q" x="466" y="68" text-anchor="middle">N</text></g>
+                <circle class="hit" data-go="travel" cx="404" cy="260" r="30"/>
+              </svg>
+            </figure>
+          </div>
+
+          <!-- The Lantern Coast -->
+          <div data-show="region">
+            <figure class="only-phone">
+              <svg class="map" viewBox="0 0 328 262" width="328" height="262" role="img" aria-label="Schematic map of the Lantern Coast. You are in Port Varn. The Salt Flats lie one day to the north-east, and Brinehold two days beyond them. The Glass Road begins 40 minutes east of Port Varn and runs east across the flats to somewhere undiscovered. Tessaly lies upriver to the north-west.">
+                <path class="map-area" d="M112 156Q104 104 152 92L236 74Q264 66 290 76Q318 88 318 122V224Q318 242 300 242H136Q116 242 114 222Z"/>
+                <path class="map-water" d="M36 72L80 208"/>
+                <g class="map-l">
+                  <path d="M80 208L146 124L244 52M80 208H214"/>
+                  <path class="dash" d="M220 208H295M36 72L80 208"/>
+                </g>
+                <g class="map-n">
+                  <circle cx="36" cy="72" r="5.5"/>
+                  <circle class="seen" cx="146" cy="124" r="5.5"/>
+                  <circle class="seen" cx="244" cy="52" r="5.5"/>
+                  <circle cx="214" cy="208" r="5.5"/>
+                  <circle class="unk" cx="304" cy="208" r="9"/>
+                  <circle class="halo" cx="80" cy="208" r="11"/><circle class="here" cx="80" cy="208" r="6"/>
+                </g>
+                <g aria-hidden="true">
+                  <text x="48" y="76">Tessaly</text>
+                  <text class="t-q" x="70" y="144">upriver</text>
+                  <text x="158" y="138">The Salt Flats</text>
+                  <text x="256" y="56">Brinehold</text>
+                  <text class="t-q" x="124" y="172">1 day</text>
+                  <text class="t-q" x="186" y="78" text-anchor="end">2 days</text>
+                  <text class="t-q" x="147" y="200" text-anchor="middle">40 min</text>
+                  <text x="214" y="232" text-anchor="middle">The Glass Road</text>
+                  <text x="304" y="212" text-anchor="middle">?</text>
+                  <text class="t-b" x="80" y="234" text-anchor="middle">Port Varn</text>
+                  <text class="t-a" x="80" y="250" text-anchor="middle">You are here</text>
+                </g>
+                <g class="map-c" aria-hidden="true"><path d="M22 34V16M17 21l5-6 5 6"/><text class="t-q" x="22" y="48" text-anchor="middle">N</text></g>
+                <circle class="hit" data-go="local" cx="80" cy="218" r="28"/>
+              </svg>
+            </figure>
+            <figure class="only-desktop">
+              <svg class="map" viewBox="0 0 500 468" width="500" height="468" role="img" aria-label="Schematic map of the Lantern Coast. You are in Port Varn. The Salt Flats lie one day to the north-east, and Brinehold two days beyond them. The Glass Road begins 40 minutes east of Port Varn and runs east across the flats to somewhere undiscovered. Tessaly lies upriver to the north-west.">
+                <path class="map-area" d="M168 286Q156 196 228 172L356 126Q404 110 444 128Q480 146 480 200V386Q480 412 454 412H198Q170 412 168 380Z"/>
+                <path class="map-water" d="M58 128L124 372"/>
+                <g class="map-l">
+                  <path d="M124 372L222 226L372 96M124 372H326"/>
+                  <path class="dash" d="M332 372H451M58 128L124 372"/>
+                </g>
+                <g class="map-n">
+                  <circle cx="58" cy="128" r="6"/>
+                  <circle class="seen" cx="222" cy="226" r="6"/>
+                  <circle class="seen" cx="372" cy="96" r="6"/>
+                  <circle cx="326" cy="372" r="6"/>
+                  <circle class="unk" cx="462" cy="372" r="10"/>
+                  <circle class="halo" cx="124" cy="372" r="12"/><circle class="here" cx="124" cy="372" r="6.5"/>
+                </g>
+                <g aria-hidden="true">
+                  <text x="72" y="132">Tessaly</text>
+                  <text class="t-q" x="106" y="254">upriver</text>
+                  <text x="237" y="242">The Salt Flats</text>
+                  <text x="386" y="100">Brinehold</text>
+                  <text class="t-q" x="188" y="306">1 day</text>
+                  <text class="t-q" x="290" y="156" text-anchor="end">2 days</text>
+                  <text class="t-q" x="225" y="363" text-anchor="middle">40 min</text>
+                  <text x="326" y="397" text-anchor="middle">The Glass Road</text>
+                  <text x="462" y="376" text-anchor="middle">?</text>
+                  <text class="t-b" x="124" y="400" text-anchor="middle">Port Varn</text>
+                  <text class="t-a" x="124" y="416" text-anchor="middle">You are here</text>
+                </g>
+                <g class="map-c" aria-hidden="true"><path d="M34 52V32M28 38l6-7 6 7"/><text class="t-q" x="34" y="68" text-anchor="middle">N</text></g>
+                <circle class="hit" data-go="local" cx="124" cy="382" r="32"/>
+              </svg>
+            </figure>
+          </div>
+
+          <ul class="lg" aria-label="Legend">
+            <li><i class="nd nd-seen" aria-hidden="true"></i>Visited</li>
+            <li><i class="nd" aria-hidden="true"></i>Not visited yet</li>
+            <li><i class="nd nd-unk" aria-hidden="true"></i>Undiscovered</li>
+            <li class="lg-n only-desktop">Not to scale</li>
+          </ul>
+        </section>
+
+        <!-- ===== Beside the map: the places, or the journey ===== -->
+        <div>
+
+          <!-- Places in Port Varn, nearest first -->
+          <section class="sec" data-show="local">
+            <div class="sec-h"><h2>Places</h2><span class="t-xs t-2">On foot from here</span></div>
+            <div class="card card-flush pl">
+              <div class="row">
+                <i class="nd nd-here" aria-hidden="true"></i>
+                <span class="grow"><span class="row-t">Lantern Market</span><span class="row-s">Night market beside the canal</span></span>
+                <span class="tag tag-accent">You are here</span>
+              </div>
+              <button class="row">
+                <i class="nd" aria-hidden="true"></i>
+                <span class="grow"><span class="row-t">Canal Bridge</span><span class="row-s">Watch checkpoint</span><span class="row-s t-gold">Gates close at nightfall</span></span>
+                <span class="row-end">10 min<svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span>
+              </button>
+              <button class="row">
+                <i class="nd nd-seen" aria-hidden="true"></i>
+                <span class="grow"><span class="row-t">Guild House</span><span class="row-s">Couriers’ Guild · lodging and work</span></span>
+                <span class="row-end">15 min<svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span>
+              </button>
+              <button class="row">
+                <i class="nd nd-seen" aria-hidden="true"></i>
+                <span class="grow"><span class="row-t">North Gate</span><span class="row-s">The way out to the Salt Flats</span></span>
+                <span class="row-end">25 min<svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span>
+              </button>
+              <button class="row">
+                <i class="nd" aria-hidden="true"></i>
+                <span class="grow"><span class="row-t">Old Mill</span><span class="row-s"><span class="t-gold">Due tonight</span> · at the edge of town</span></span>
+                <span class="row-end">30 min<svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span>
+              </button>
+              <button class="row">
+                <i class="nd" aria-hidden="true"></i>
+                <span class="grow"><span class="row-t">Harbour district</span><span class="row-s">Heard of · Lise lives there</span></span>
+                <span class="row-end">35 min<svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span>
+              </button>
+              <button class="row" data-go="travel">
+                <i class="nd" aria-hidden="true"></i>
+                <span class="grow"><span class="row-t">Glass Road Waystation</span><span class="row-s"><span class="t-accent">Main thread</span> · beyond the bridge</span></span>
+                <span class="row-end">40 min<svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span>
+              </button>
+              <div class="row pl-unk">
+                <i class="nd nd-unk" aria-hidden="true"></i>
+                <span class="grow"><span class="row-t">Undiscovered</span><span class="row-s">Somewhere beyond the waystation</span></span>
+              </div>
+            </div>
+          </section>
+
+          <!-- The journey to the Glass Road Waystation -->
+          <section class="card trav" data-show="travel" aria-label="Travel to the Glass Road Waystation">
+            <div>
+              <p class="card-t"><svg class="i" width="16" height="16" aria-hidden="true"><use href="#i-compass"/></svg>Travel to</p>
+              <h2 class="card-n">Glass Road Waystation</h2>
+              <p class="t-sm t-2">Not visited yet · just beyond the Canal Bridge</p>
+            </div>
+            <p class="trav-t"><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-clock"/></svg><span><b>About 40 minutes</b> on foot</span></p>
+            <ol class="tl route">
+              <li class="big"><b>Lantern Market</b><span class="tl-k">You are here</span></li>
+              <li><b>Canal Bridge</b><span class="tl-k">10 min</span>
+                <p class="way"><svg class="i" width="14" height="14" aria-hidden="true"><use href="#i-shield"/></svg>Watch checkpoint</p>
+                <p class="way"><svg class="i" width="14" height="14" aria-hidden="true"><use href="#i-dusk"/></svg>The gates close at nightfall. It is dusk now.</p>
+              </li>
+              <li><b>Glass Road Waystation</b><span class="tl-k">30 min more</span>
+                <p class="way"><svg class="i" width="14" height="14" aria-hidden="true"><use href="#i-target"/></svg>Where the sealed letter is bound</p>
+              </li>
+            </ol>
+            <div class="due">
+              <div class="due-k"><svg class="i i-s" width="14" height="14" aria-hidden="true"><use href="#i-clock"/></svg>Leaving means</div>
+              <p>The Old Mill is the other way.</p>
+              <p class="due-n">You are due there tonight to meet Tobin’s master. Going now may break that promise.</p>
+            </div>
+            <div class="acts">
+              <a class="btn btn-primary" href="play.html">Travel there<svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+              <button class="btn" data-go="local">Not now</button>
+            </div>
+          </section>
+
+          <!-- Regions of the Lantern Coast -->
+          <section class="sec" data-show="region">
+            <div class="sec-h"><h2>Regions</h2><span class="t-xs t-2">Travel from Port Varn</span></div>
+            <div class="card card-flush pl">
+              <button class="row" data-go="local">
+                <i class="nd nd-here" aria-hidden="true"></i>
+                <span class="grow"><span class="row-t">Port Varn</span><span class="row-s">Canal city · 7 places known</span></span>
+                <span class="row-end"><span class="tag tag-accent">You are here</span><svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span>
+              </button>
+              <button class="row">
+                <i class="nd" aria-hidden="true"></i>
+                <span class="grow"><span class="row-t">The Glass Road</span><span class="row-s">Heard of · fused sand, running east</span></span>
+                <span class="row-end">40 min<svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span>
+              </button>
+              <button class="row">
+                <i class="nd nd-seen" aria-hidden="true"></i>
+                <span class="grow"><span class="row-t">The Salt Flats</span><span class="row-s">Crossed · out by the North Gate</span></span>
+                <span class="row-end">1 day<svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span>
+              </button>
+              <button class="row">
+                <i class="nd nd-seen" aria-hidden="true"></i>
+                <span class="grow"><span class="row-t">Brinehold</span><span class="row-s">Visited · across the Salt Flats</span></span>
+                <span class="row-end">3 days<svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span>
+              </button>
+              <button class="row">
+                <i class="nd" aria-hidden="true"></i>
+                <span class="grow"><span class="row-t">Tessaly</span><span class="row-s">Heard of · the baron’s seat</span></span>
+                <span class="row-end">Unknown<svg class="i" width="18" height="18" aria-hidden="true"><use href="#i-right"/></svg></span>
+              </button>
+              <div class="row pl-unk">
+                <i class="nd nd-unk" aria-hidden="true"></i>
+                <span class="grow"><span class="row-t">Undiscovered</span><span class="row-s">4 more regions</span></span>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="slate.js"></script>
+<script>
+/* The level switch follows the state: the travel state belongs to the Port Varn level. */
+(function () {
+  var buttons = document.querySelectorAll('.lvl button');
+  function sync() {
+    var region = Slate.state() === 'region';
+    [].forEach.call(buttons, function (b) { b.setAttribute('aria-pressed', (b.getAttribute('data-go') === 'region') === region); });
+  }
+  window.addEventListener('slate:state', sync);
+  sync();
+})();
+</script>
+</body>
+</html>

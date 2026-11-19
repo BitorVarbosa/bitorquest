@@ -1,0 +1,71 @@
+/* Screen styles for welcome, carried over from docs/mockups/slate/welcome.html. Built from Slate tokens. */
+/* Welcome: what the app is on one side, the key and first choices on the other. */
+.hello{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-5)}
+.mark{display:flex;align-items:center;gap:var(--sp-3);font-size:var(--fs-xl);font-weight:600}
+.mark .logo{width:36px;height:36px;border-radius:10px}
+.hello h1{font-size:var(--fs-2xl);font-weight:600;line-height:1.2;letter-spacing:-.01em;text-wrap:balance}
+.points{display:grid;gap:var(--sp-3)}
+.points li{display:flex;gap:var(--sp-3);line-height:20px;color:var(--c-text-2)}
+.points .i{margin-top:1px;color:var(--c-accent-text)}
+.points b{display:block;color:var(--c-text)}
+.setup{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-5);padding:var(--sp-4)}
+.how summary{min-height:44px;display:flex;align-items:center;gap:6px;font-size:var(--fs-sm);font-weight:600;color:var(--c-accent-text);cursor:pointer;list-style:none}
+.how summary::-webkit-details-marker{display:none}
+.how ol{display:grid;gap:6px;padding:0 0 var(--sp-2) var(--sp-5);list-style:decimal;font-size:var(--fs-sm);line-height:19px;color:var(--c-text-2)}
+.how[open] .chev{transform:rotate(180deg)}
+/* Where the key is kept, and the limit. Side by side only where the first has room for its words on one
+   line and the second still has 150px: decided by the width of the card, not of the window, since on a
+   wide window the card is one of two columns and narrower than on a tablet. */
+.pair{display:flex;flex-wrap:wrap;gap:var(--sp-5)}
+.pair>.f{flex:1 1 auto;min-width:0}
+.pair>.f:last-child{flex-basis:150px}
+body[data-state="error"] .key{border-color:var(--c-err)}
+body[data-state="valid"] .key{border-color:var(--c-ok)}
+.small{font-size:var(--fs-sm);line-height:19px;color:var(--c-text-2)}
+@media (min-width:1100px){
+  .hello{grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:var(--sp-8);align-items:start;padding-top:var(--sp-6)}
+  .intro{position:sticky;top:var(--sp-6);display:grid;gap:var(--sp-5)}
+  .hello h1{font-size:34px}
+  .setup{padding:var(--sp-6)}
+}
+
+/* The key was accepted. The button that asked for the check is gone, and what stands in its place must
+   not pass for it: a panel in the colour of a success holds the result and the way in. Colour alone would
+   not do, since a theme's accent can itself be a green. */
+.key-done{display:grid;gap:var(--sp-3);padding:var(--sp-3);border:1px solid color-mix(in srgb,var(--c-ok) 55%,var(--c-card));border-radius:calc(var(--r-lg) + 4px);background:color-mix(in srgb,var(--c-ok) 12%,var(--c-card))}
+.key-done-t{display:flex;align-items:flex-start;gap:10px;font-size:var(--fs-md);font-weight:600;line-height:20px}
+.key-done-i{flex:none;width:20px;height:20px;display:grid;place-items:center;border-radius:50%;background:var(--c-ok);color:var(--c-on-ok)}
+.key-done .btn{position:relative;width:100%;font-weight:700;box-shadow:0 6px 18px color-mix(in srgb,var(--c-ok) 34%,transparent)}
+.key-done .btn .i{transition:transform .15s ease-out}
+.key-done .btn:hover .i{transform:translateX(3px)}
+/* accepted, but the narrator chosen is out of its reach: the panel warns, and the way in stops calling */
+.key-done.is-warn{border-color:color-mix(in srgb,var(--c-gold) 55%,var(--c-card));background:color-mix(in srgb,var(--c-gold) 12%,var(--c-card))}
+.key-done.is-warn .key-done-i{background:var(--c-gold);color:#241a02}
+.key-done.is-warn .btn{border-color:var(--c-line-strong);background:var(--c-card);color:var(--c-text);box-shadow:none}
+/* it arrives: the panel rises into place, the mark is stamped, the button springs out past its size and
+   settles, and from then on a ring leaves it every few seconds */
+:root[data-motion="on"] .key-done{animation:done-in .34s cubic-bezier(.2,.8,.3,1) both}
+:root[data-motion="on"] .key-done-i{animation:done-mark .42s cubic-bezier(.3,1.5,.5,1) .12s both}
+:root[data-motion="on"] .key-done .btn{animation:done-spring .62s cubic-bezier(.3,1.35,.5,1) .1s both,done-ring 2.4s ease-out .9s infinite}
+:root[data-motion="on"] .key-done .btn .i{animation:done-nudge 1.3s ease-in-out .9s infinite}
+:root[data-motion="on"] .key-done.is-warn .btn{animation:done-spring .62s cubic-bezier(.3,1.35,.5,1) .1s both}
+:root[data-motion="on"] .key-done.is-warn .btn .i{animation:none}
+@keyframes done-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes done-mark{from{opacity:0;transform:scale(.2) rotate(-40deg)}to{opacity:1;transform:none}}
+@keyframes done-spring{0%{opacity:0;transform:scale(.82)}55%{opacity:1;transform:scale(1.05)}78%{transform:scale(.985)}100%{opacity:1;transform:none}}
+@keyframes done-nudge{0%,100%{transform:none}50%{transform:translateX(5px)}}
+@keyframes done-ring{
+  0%{box-shadow:0 6px 18px color-mix(in srgb,var(--c-ok) 34%,transparent),0 0 0 0 color-mix(in srgb,var(--c-ok) 65%,transparent)}
+  70%,100%{box-shadow:0 6px 18px color-mix(in srgb,var(--c-ok) 34%,transparent),0 0 0 11px transparent}
+}
+
+/* The language switch, beside the name */
+.hello .mark{flex-wrap:wrap}
+.hello-lang{flex:none;margin-left:auto;font-size:var(--fs-sm);font-weight:500}
+.hello-lang button{flex:none;min-height:44px;padding:0 14px}
+/* A longer price line (Portuguese) goes under the choice on a narrow screen instead of pushing the card wider. */
+@media (max-width:560px){
+  .setup .choice{flex-wrap:wrap}
+  .setup .choice .grow{flex:1 1 0;min-width:0}
+  .setup .choice-m{flex:1 1 100%;margin-left:calc(20px + var(--sp-3));white-space:normal}
+}

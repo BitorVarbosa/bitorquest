@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitor Quest - Play screen contact sheet</title>
+<!--
+  Builds a contact sheet from the PNG files in ./shots (made by ../_tools/shoot.mjs).
+  URL parameters: device=phone|desktop (default phone), state=continue|input|people (default continue),
+  cols=<number> to force the column count.
+-->
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #15171b; color: #e9ebef; font: 20px/1.4 "Segoe UI Variable Text", "Segoe UI", Roboto, Arial, sans-serif; }
+  body { padding: 36px 40px 40px; }
+  h1 { font-size: 26px; font-weight: 600; margin: 0 0 6px; }
+  h1 span { color: #a3aab6; font-weight: 400; }
+  p.sub { margin: 0 0 28px; color: #a3aab6; font-size: 18px; }
+  .sheet { display: grid; gap: 36px 40px; }
+  figure { margin: 0; }
+  figcaption { margin: 0 0 12px; }
+  figcaption b { font-weight: 600; font-size: 22px; display: block; }
+  figcaption span { color: #a3aab6; font-size: 17px; }
+  img { display: block; width: 100%; height: auto; background: #000; }
+  .phone img { border-radius: 26px; box-shadow: 0 0 0 7px #0b0c0e, 0 0 0 8px #3a404b; }
+  .desktop img { border-radius: 8px; box-shadow: 0 0 0 1px #3a404b; }
+</style>
+</head>
+<body>
+<h1>Bitor Quest <span id="what"></span></h1>
+<p class="sub" id="sub"></p>
+<div class="sheet" id="sheet"></div>
+<script src="directions.js"></script>
+<script>
+(function () {
+  var p = new URLSearchParams(location.search);
+  var device = p.get('device') === 'desktop' ? 'desktop' : 'phone';
+  var state = p.get('state') || 'continue';
+  var names = { continue: 'reading, Continue waiting', input: 'your turn, input shown', people: 'People panel open' };
+  var D = window.DIRECTIONS || [];
+  var cols = Number(p.get('cols')) || (device === 'phone' ? D.length : 3);
+  document.getElementById('what').textContent = '· play screen on ' + (device === 'phone' ? 'a phone' : 'a PC') + ' · ' + (names[state] || state);
+  document.getElementById('sub').textContent = 'Same scene, same data, six design directions.';
+  var sheet = document.getElementById('sheet');
+  sheet.style.gridTemplateColumns = 'repeat(' + cols + ', minmax(0, 1fr))';
+  D.forEach(function (d, i) {
+    var f = document.createElement('figure');
+    f.className = device;
+    var c = document.createElement('figcaption');
+    var b = document.createElement('b'); b.textContent = (i + 1) + '. ' + d.name;
+    var s = document.createElement('span'); s.textContent = d.tagline;
+    c.appendChild(b); c.appendChild(s);
+    var img = document.createElement('img');
+    img.alt = d.name + ' on ' + device + ', ' + state;
+    img.src = 'shots/' + d.slug + '-' + device + '-' + state + '.png';
+    f.appendChild(c); f.appendChild(img);
+    sheet.appendChild(f);
+  });
+})();
+</script>
+</body>
+</html>
