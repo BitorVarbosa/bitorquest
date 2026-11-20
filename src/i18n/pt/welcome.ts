@@ -45,4 +45,18 @@ export default {
   'Go to your stories': 'Ir para as suas histórias',
   'Checking the key asks Anthropic which models it can use. That costs nothing.': 'Conferir a chave pergunta à Anthropic quais modelos ela pode usar. Isso não custa nada.',
   'Try it without a key (demo narrator)': 'Experimentar sem chave (narrador de demonstração)',
+  // Three services: Claude, Venice and NanoGPT. The service's own texts are in services.ts.
+  'A role-playing game narrated by AI, played on your own key.': 'Um RPG narrado por IA, jogado com a sua própria chave.',
+  'You use your own key: Claude, Venice or NanoGPT.': 'Você usa a sua própria chave: Claude, Venice ou NanoGPT.',
+  'You pay that service for what you play and nothing else. The app is free and open source.': 'Você paga a esse serviço pelo que jogar e nada mais. O aplicativo é gratuito e de código aberto.',
+  'Your keys and your stories are stored here. Anything sent goes only to the services you choose.': 'As suas chaves e as suas histórias ficam guardadas aqui. O que é enviado vai só para os serviços que você escolher.',
+  '{service} is asking us to slow down. Try again in a moment.': '{service} está pedindo para irmos mais devagar. Tente de novo daqui a pouco.',
+  'The {service} account has no balance left. Add some, then try again.': 'A conta de {service} está sem saldo. Adicione saldo e tente de novo.',
+  'Key accepted. {model} will tell the story.': 'Chave aceita. {model} vai contar a história.',
+  'The key was accepted and is saved.': 'A chave foi aceita e está salva.',
+  'Send the story only to providers that promise to keep nothing of it. Fewer models qualify.': 'Envia a história só a provedores que prometem não guardar nada dela. Menos modelos atendem a isso.',
+  'The game chooses a model for each part of the game from {service}’s list. You can change any of them in Settings.': 'O jogo escolhe na lista de {service} um modelo para cada parte do jogo. Você pode trocar qualquer um deles em Configurações.',
+
+  // A returning player who keeps their own models
+  'Your own choice of models stays as it is. Pick a preset here to replace it.': 'A sua própria escolha de modelos continua como está. Escolha uma predefinição aqui para trocá-la.',
 } satisfies Record<string, string>;

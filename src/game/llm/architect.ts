@@ -75,7 +75,7 @@ export interface Question {
 
 // ---------- The shape of each answer ----------
 
-const id = z.string().describe('A short id: lower-case letters, digits and underscores, for example "north_gate".');
+const id = () => z.string().describe('A short id: lower-case letters, digits and underscores, for example "north_gate".');
 const xy = z.number().describe('From 0 to 100.');
 /** A power of a person's own, where powers are personal. The words are the model's; how much it does in a fight is the engine's. */
 const power = z.object({
@@ -85,11 +85,11 @@ const power = z.object({
   keeps: z.enum(['held', 'erased']).nullable().describe('Only for steal: held when the power taken is kept by the thief and comes back if they are beaten or die; erased when it is destroyed for good. Null for any other power.'),
 }).nullable().describe('Only in a world where powers are personal: this person’s own power, if they have one. Null for everyone without one, and always null in any other world.');
 /** A discipline of the world that a person practises, where powers are personal and some are taught. */
-const discipline = id.nullable().describe('Only in a world with disciplines (see the rules): the id of the one this person practises, and could teach if it is taught. Null for most people, and always null in any other world.');
+const discipline = id().nullable().describe('Only in a world with disciplines (see the rules): the id of the one this person practises, and could teach if it is taught. Null for most people, and always null in any other world.');
 
 export const QuestionsOut = z.object({
   questions: z.array(z.object({
-    id,
+    id: id(),
     question: z.string().describe('One short question about the world, answerable in a few words.'),
     options: z.array(z.string()).describe('Two to four suggested answers, a few words each.'),
   })).describe('At most five questions, only about things that would change what is built. An empty list when the description leaves nothing important open.'),
@@ -102,30 +102,30 @@ export const SkeletonOut = z.object({
   pitch: z.string().describe('One sentence: what this world is and what kind of stories it is for.'),
   colour: z.enum(Object.keys(ACCENTS) as [AccentName, ...AccentName[]]).describe('The colour that suits its mood.'),
   regions: z.array(z.object({
-    id,
+    id: id(),
     name: z.string(),
     kind: z.enum(['region', 'settlement']).describe('settlement: a city, town or village. region: land, sea or road between them.'),
     brief: z.string().describe('One line: what it is and what it is like.'),
     x: xy, y: xy,
   })).describe('Eight to twelve places that make up the whole map, spread out over it.'),
   routes: z.array(z.object({
-    a: id, b: id,
+    a: id(), b: id(),
     hours: z.number().describe('Travel time in hours by the usual means.'),
     note: z.string().nullable().describe('Something on the way worth a line, or null.'),
   })).describe('The ways between them. Every place must be reachable.'),
-  start: id.describe('The id of the settlement or region where the story begins.'),
+  start: id().describe('The id of the settlement or region where the story begins.'),
 });
 
 export const FrontsOut = z.object({
   fronts: z.array(z.object({
-    id,
+    id: id(),
     name: z.string(),
     goal: z.string().describe('What it is driving toward, one sentence.'),
     stages: z.array(z.object({
       what: z.string().describe('What happens, one sentence, for the narrator alone.'),
       news: z.string().nullable().describe('What people would see or hear of it once it has happened: one sentence that can be read on its own, naming who and where. Null when it happens out of sight.'),
     })).describe('Three to five things that happen, in order, if nobody stops it.'),
-    touches: z.array(id).describe('Ids of the places where its effects show.'),
+    touches: z.array(id()).describe('Ids of the places where its effects show.'),
   })).describe('Three or four things in motion in the world: a conflict, a plot, a change. At least one touches the starting place.'),
 });
 
@@ -134,14 +134,14 @@ export const RulesOut = z.object({
   path_cap: z.number().describe('When the world has powers: the highest level a path may start at, from 1 to 5. Otherwise 0.'),
   common_folk: z.string().describe('What the ordinary people of this world are called, one or two words: "Human", "Townsfolk".'),
   ancestries: z.array(z.object({
-    id,
+    id: id(),
     name: z.string(),
     text: z.string().describe('One or two lines: who they are and what marks them.'),
     advantages: z.array(z.string()).describe('Names of advantages from the list given, exactly as written; add particulars after a colon where the list says so.'),
     disadvantages: z.array(z.string()).describe('Names of drawbacks from the list given.'),
   })).describe('Up to three other peoples a character could belong to, each with one to three traits. An empty list when the world has only ordinary people.'),
   disciplines: z.array(z.object({
-    id,
+    id: id(),
     name: z.string(),
     text: z.string().describe('What it is and what it lets someone do, in one or two short sentences: at most 160 characters.'),
     limit: z.string().describe('Its weakness or its price, in one sentence, or an empty string.'),
@@ -154,19 +154,19 @@ export const RulesOut = z.object({
     taught: z.boolean().describe('False when it cannot be taught: someone has it in them or not, and it awakens, if ever.'),
   })).describe('Only in a world where powers are personal: up to four powers that many people share and learn rather than are born with (a trained sense, a fighting art, an energy many practise). An empty list when the setting has none, and always empty in any other world.'),
   money: z.array(z.object({
-    id,
+    id: id(),
     name: z.string().describe('How an amount of it is written, in the plural: "silver marks", "credits".'),
     one: z.string().describe('One of it: "silver mark", "credit".'),
     text: z.string().describe('One line: what it is and who takes it.'),
     worth: z.enum(WORTHS).describe(`How much one is worth: ${WORTH_WORDS}.`),
-    of: id.nullable().describe('Only for a coin of the same money as another listed here (a knut of the galleon, a copper of the silver mark): that one’s id. Null for a money of its own.'),
+    of: id().nullable().describe('Only for a coin of the same money as another listed here (a knut of the galleon, a copper of the silver mark): that one’s id. Null for a money of its own.'),
   })).describe('The money of this world, the one ordinary people use first: one, or two or three where the setting has several that matter (an empire’s coin and a guild’s scrip, or coins of three metals). An empty list only when the setting has no money at all.'),
 });
 
 export const GlossaryOut = z.object({
   core: z.string().describe('What the narrator must always know about this world, in at most 170 words: tone, how the world works, who holds power, the law. How names are made is said already: not here. Plain prose, no lists.'),
   factions: z.array(z.object({
-    id,
+    id: id(),
     name: z.string(),
     standing: z.string().describe('How the protagonist stands with them at the start, in one or two words: "in good standing", "unknown", "wary".'),
   })).describe('Three to five powers of the world that the protagonist will deal with.'),
@@ -174,30 +174,30 @@ export const GlossaryOut = z.object({
 
 export const StartOut = z.object({
   places: z.array(z.object({
-    id,
+    id: id(),
     name: z.string(),
     kind: z.enum(['settlement', 'district', 'building', 'site', 'room']),
-    parent: id.describe('The id of the place it is inside: the starting place from the map, or another place in this list.'),
+    parent: id().describe('The id of the place it is inside: the starting place from the map, or another place in this list.'),
     brief: z.string().describe('One line for a map.'),
     card: z.string().describe('Two or three lines for the narrator: what it is, what it is like right now, what can be done here.'),
     x: xy, y: xy,
   })).describe('Eight to twelve places inside the starting place, where the first sessions will be played: where the protagonist lives or works, where trouble is, ways in and out.'),
   routes: z.array(z.object({
-    a: id, b: id,
+    a: id(), b: id(),
     minutes: z.number().describe('Walking time in minutes.'),
     note: z.string().nullable(),
   })).describe('The ways between these places. Every one must be reachable from the starting place.'),
-  start_place: id.describe('The id of the place in this list where the first scene opens.'),
+  start_place: id().describe('The id of the place in this list where the first scene opens.'),
 });
 
 export const PeopleOut = z.object({
   people: z.array(z.object({
-    id,
+    id: id(),
     name: z.string(),
     short: z.string().describe('What they are called in passing: a first name or a surname.'),
     role: z.string().describe('What they are, in a few words: "Guildmaster, Couriers’ Guild".'),
     tier: z.enum(['recurring', 'major']).describe('major: has goals and a secret and will matter for a long time. recurring: someone met again and again.'),
-    place: id.describe('The id of the place where they are usually found.'),
+    place: id().describe('The id of the place where they are usually found.'),
     card: z.string().describe('Two or three lines for the narrator: who they are, how they talk, what they want (their personality, not their looks).'),
     look: z.string().describe('How they look at a glance, at most twelve words: "grey fedora, charcoal suit, gold watch".'),
     appearance: z.string().nullable().describe('Only for someone who starts at the protagonist’s side, or whose looks the player described: how they look, at most 50 words. Null for the rest.'),
@@ -218,9 +218,9 @@ export const PeopleOut = z.object({
     travels_with_you: z.boolean().describe('True only for someone who starts the story at the protagonist’s side.'),
   })).describe('Twelve to sixteen named people around the starting place and the protagonist’s life: allies, rivals, authorities, family, people with trouble of their own.'),
   crowds: z.array(z.object({
-    id,
+    id: id(),
     name: z.string().describe('A plural: "Dock workers", "City guards".'),
-    place: id,
+    place: id(),
     count: z.number(),
     card: z.string().describe('One line.'),
     attitude: z.string(),
@@ -235,31 +235,31 @@ export const SeedsOut = z.object({
   opening: z.string().describe('How the first scene opens, for the narrator, in three short sentences: what brought the protagonist to this place today (and why anyone at their side is with them); where they are and what they are doing; and what is just happening that they must answer.'),
   opening_hour: z.number().describe('The hour of the day at which it opens, from 0 to 23.'),
   seeds: z.array(z.object({
-    id,
+    id: id(),
     title: z.string().describe('A few words.'),
-    place: id.describe('Where it can be stumbled on.'),
+    place: id().describe('Where it can be stumbled on.'),
     wants: z.string().describe('Who wants what, one sentence.'),
     obstacle: z.string().describe('What stands in the way.'),
     if_ignored: z.string().describe('What happens if nobody steps in.'),
     secret: z.string().describe('One thing about it that is not what it seems.'),
     news: z.string().nullable().describe('What people there would say once that has happened, one sentence as town talk. Null if nobody would hear of it.'),
     becomes: z.object({
-      who: id.describe('The id of one of the named people.'),
+      who: id().describe('The id of one of the named people.'),
       then: z.enum(['moves', 'leaves', 'dies']).describe('moves: they go to stay at another place on the map. leaves: they are gone from the map. dies: they are dead.'),
-      to: id.nullable().describe('Only for moves: the id of the place. Otherwise null.'),
+      to: id().nullable().describe('Only for moves: the id of the place. Otherwise null.'),
       why: z.string().describe('A few words, as it would be said of them afterwards: "left on the morning barge".'),
     }).nullable().describe('What becomes of one named person if nobody steps in, when the situation ends with someone moving away, leaving or dying. Null otherwise.'),
   })).describe('Five to seven situations waiting near the starting place. Not quests: situations.'),
   fates: z.array(z.object({
-    front: id.describe('The id of one of the things in motion from step 2.'),
+    front: id().describe('The id of one of the things in motion from step 2.'),
     stage: z.number().describe('Which of its stages, counting from 1.'),
-    who: id.describe('The id of one of the named people.'),
+    who: id().describe('The id of one of the named people.'),
     then: z.enum(['moves', 'leaves', 'dies']),
-    to: id.nullable().describe('Only for moves: the id of the place. Otherwise null.'),
+    to: id().nullable().describe('Only for moves: the id of the place. Otherwise null.'),
     why: z.string().describe('A few words, as it would be said of them afterwards.'),
   })).describe('Up to four. Where a stage of something in motion says what becomes of a named person (sent away, arrested, killed, posted elsewhere), say so here, so that the person is no longer found where they were once that stage has come to pass. Empty if no stage does.'),
   relics: z.array(z.object({
-    id,
+    id: id(),
     name: z.string(),
     text: z.string().describe('What it looks like, and what it is said to be: one line.'),
     use: z.enum(['eaten', 'carried']).describe('eaten: whoever eats it gains its power for good. carried: its power is its holder’s while they hold it.'),
@@ -275,9 +275,9 @@ export const SeedsOut = z.object({
       }),
     }),
     major: z.boolean().describe('Only for a carried item: true for a great one, false for a lesser one.'),
-    place: id.nullable().describe('Where it lies, when nobody carries it: the place of the situation it belongs to.'),
-    holder: id.nullable().describe('The id of the named person who carries it, or null.'),
-    seed: id.nullable().describe('The id of the situation above that it belongs to, when it lies somewhere: it can be had once that situation is dealt with. Null when someone carries it.'),
+    place: id().nullable().describe('Where it lies, when nobody carries it: the place of the situation it belongs to.'),
+    holder: id().nullable().describe('The id of the named person who carries it, or null.'),
+    seed: id().nullable().describe('The id of the situation above that it belongs to, when it lies somewhere: it can be had once that situation is dealt with. Null when someone carries it.'),
   })).describe('Only in a world where powers are personal: up to two items that hold a power (a fruit that gives its power to whoever eats it, a blade or a device whose power is its holder’s while they hold it), where the story can find them: each bound up with one of the situations above, or carried by a named person. Empty in any other world.'),
 });
 
@@ -286,7 +286,7 @@ export const CharacterOut = z.object({
   line: z.string().describe('How the narrator would introduce them to a stranger: "a young courier of the Couriers’ Guild in Port Varn".'),
   look: z.string().describe('How they look at a glance, at most twelve words.'),
   appearance: z.string().describe('How they look, at most 50 words: build, face, hair, clothes, anything that marks them. From the premise, where it says; otherwise in keeping with it.'),
-  ancestry: id.describe('The id of one of this world’s ancestries.'),
+  ancestry: id().describe('The id of one of this world’s ancestries.'),
   strength: z.number(), skill: z.number(), resistance: z.number(), armor: z.number(), firepower: z.number(),
   paths: z.array(z.object({ path: z.enum(['fire', 'water', 'air', 'earth', 'light', 'dark']), level: z.number() })).describe('Only paths above 0. Empty when the world has no powers.'),
   skills: z.array(z.enum(SKILLS)),
@@ -328,26 +328,26 @@ export type StepOut = {
 export const ExpandOut = z.object({
   card: z.string().describe('Two or three lines for the narrator: what it is like to arrive here, right now.'),
   places: z.array(z.object({
-    id,
+    id: id(),
     name: z.string(),
     kind: z.enum(['settlement', 'district', 'building', 'site', 'room']),
-    parent: id.describe('The id of the place being filled in, or of another place in this list.'),
+    parent: id().describe('The id of the place being filled in, or of another place in this list.'),
     brief: z.string().describe('One line for a map.'),
     card: z.string().describe('Two or three lines for the narrator: what it is, what it is like right now, what can be done here.'),
     x: xy, y: xy,
   })).describe('Four to six places inside it.'),
   routes: z.array(z.object({
-    a: id, b: id,
+    a: id(), b: id(),
     minutes: z.number().describe('Walking time in minutes.'),
     note: z.string().nullable(),
   })).describe('The ways between these places.'),
   people: z.array(z.object({
-    id,
+    id: id(),
     name: z.string(),
     short: z.string(),
     role: z.string(),
     tier: z.enum(['recurring', 'major']),
-    place: id.describe('The id of one of these places, or of the place being filled in when they are met on arrival.'),
+    place: id().describe('The id of one of these places, or of the place being filled in when they are met on arrival.'),
     card: z.string().describe('Two or three lines for the narrator: who they are, how they talk, what they want (their personality, not their looks).'),
     look: z.string().describe('How they look at a glance, at most twelve words.'),
     secret: z.string().nullable(),
@@ -364,18 +364,18 @@ export const ExpandOut = z.object({
     discipline,
   })).describe('Three to five named people who live or work here, each wanting something.'),
   crowds: z.array(z.object({
-    id,
+    id: id(),
     name: z.string().describe('A plural.'),
-    place: id,
+    place: id(),
     count: z.number(),
     card: z.string().describe('One line.'),
     attitude: z.string(),
     fighter: z.enum(['no', 'weak', 'able', 'dangerous']),
   })).describe('Up to two groups of unnamed people.'),
   seeds: z.array(z.object({
-    id,
+    id: id(),
     title: z.string(),
-    place: id,
+    place: id(),
     wants: z.string(),
     obstacle: z.string(),
     if_ignored: z.string(),

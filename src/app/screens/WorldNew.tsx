@@ -1,7 +1,7 @@
 // A new world, in six steps: where it comes from, who you play, how the table runs, the builder's
 // questions, the building itself, and the overview. From docs/mockups/slate/world-new.html.
 //
-// Nothing is asked of Claude before the player has seen what it costs: the questions say their price
+// Nothing is asked of a model before the player has seen what it costs: the questions say their price
 // on their button, and the build says its price on its own. The build runs in the app, not in this
 // screen, so leaving the screen does not stop it, and a draft is saved after every step.
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
@@ -165,7 +165,7 @@ export function WorldNew({ id, step }: { id: string | null; step: string | null 
     </dl>
   );
   const priceNote = demo
-    ? <T text="With the demo builder <b>nothing is charged</b>, and the world is the same canned one whatever you describe. With your own key, Claude builds the world you asked for." />
+    ? <T text="With the demo builder <b>nothing is charged</b>, and the world is the same canned one whatever you describe. With your own key, the world builder makes the world you asked for." />
     : null;
 
   // ---------- The foot: the buttons that move the flow on ----------
@@ -216,7 +216,7 @@ export function WorldNew({ id, step }: { id: string | null; step: string | null 
             <div className="stack-l">
               <div className="stack-s" role="group" aria-label={t('Where the world comes from')}>
                 <Choice on={input.source.kind === 'description'} onClick={() => set({ source: { kind: 'description', text: input.source.kind === 'description' ? input.source.text : '' } })} title={t('Describe it')} text={t('In your own words, as much as you like.')} />
-                <Choice on={input.source.kind === 'setting'} onClick={() => set({ source: { kind: 'setting', text: input.source.kind === 'setting' ? input.source.text : '' } })} title={t('A setting you already know')} text={t('A book, game, film or show Claude knows.')} />
+                <Choice on={input.source.kind === 'setting'} onClick={() => set({ source: { kind: 'setting', text: input.source.kind === 'setting' ? input.source.text : '' } })} title={t('A setting you already know')} text={t('A book, game, film or show the world builder knows.')} />
                 <Choice on={input.source.kind === 'document'} onClick={() => set({ source: { kind: 'document', text: '', ...(doc ? { name: doc.name } : {}) } })} title={t('A document')} text={t('Your own notes or a setting book: a text, Markdown or PDF file.')} />
               </div>
               <input ref={file} type="file" accept={DOC_ACCEPT} hidden onChange={(e) => { void choose(e.target.files?.[0]); e.target.value = ''; }} />
@@ -265,9 +265,9 @@ export function WorldNew({ id, step }: { id: string | null; step: string | null 
                 </div>
               ) : (
                 <div className="f">
-                  <label className="label" htmlFor="wn-known">{t('Name a book series, game, film or show Claude would know')}</label>
+                  <label className="label" htmlFor="wn-known">{t('Name a book series, game, film or show the world builder would know')}</label>
                   <input className="input" id="wn-known" type="text" maxLength={200} placeholder={t('The name of the setting')} autoComplete="off" value={input.source.text} onChange={(e) => set({ source: { kind: 'setting', text: e.target.value } })} />
-                  <p className="help">{t('Claude builds from what it already knows of the setting. Say which era or version you mean if it matters; the world builder can also ask.')}</p>
+                  <p className="help">{t('The world builder works from what its model already knows of the setting. Say which era or version you mean if it matters; it can also ask.')}</p>
                 </div>
               )}
             </div>
@@ -513,7 +513,8 @@ export function WorldNew({ id, step }: { id: string | null; step: string | null 
                       <div className="inline">
                         <button className="btn btn-fit" onClick={() => void builder.build()}><Icon name="refresh" size={18} />{t('Try this step again')}</button>
                         {failed.kind === 'budget' && <a className="btn btn-quiet btn-fit" href={href('settings')}>{t('Change the limit')}</a>}
-                        {failed.kind === 'auth' && <a className="btn btn-quiet btn-fit" href={href('welcome')}>{t('Check the key')}</a>}
+                        {/* Every service's key is in Settings; the message above says whose was refused. */}
+                        {failed.kind === 'auth' && <a className="btn btn-quiet btn-fit" href={href('settings')}>{t('Check the key')}</a>}
                       </div>
                     </div>
                   </div>

@@ -603,7 +603,7 @@ export class WorldBuilder {
     const { budget } = this.deps;
     if (budget.spentToday() >= budget.cap()) throw new BudgetReached();
     const res = await this.deps.transport.send(req);
-    const entry: UsageEntry = { at: this.deps.now(), role: 'architect', model: res.model, ...res.usage, cost: costOf(res.model, res.usage), simulated: res.simulated };
+    const entry: UsageEntry = { at: this.deps.now(), role: 'architect', model: res.model, ...res.usage, cost: res.cost ?? costOf(res.model, res.usage), simulated: res.simulated };
     this.draft.usage.push(entry);
     this.draft.costs[step] = (this.draft.costs[step] ?? 0) + entry.cost;
     budget.record(entry, `world:${this.draft.id}`);

@@ -265,4 +265,13 @@ export default {
   '{name} took {power} from you. Beat them, or outlive them, and it comes back.': '{name} tomou {power} de você. Vença essa pessoa, ou sobreviva a ela, e ele volta.',
   '{name} destroyed your power, {power}.': '{name} destruiu o seu poder, {power}.',
   '{name} took your power, {power}.': '{name} tomou o seu poder, {power}.',
+  // The narrator on NanoGPT
+  'No provider of this NanoGPT model promises to keep nothing. Choose another model, or turn off “Private providers only”.': 'Nenhum provedor deste modelo da NanoGPT promete não guardar nada. Escolha outro modelo, ou desligue “Só provedores privados”.',
+  'NanoGPT did not accept the key.': 'A NanoGPT não aceitou a chave.',
+  'The NanoGPT account has no balance left.': 'A conta da NanoGPT está sem saldo.',
+  'This NanoGPT key is not allowed to do that.': 'Esta chave da NanoGPT não tem permissão para isso.',
+  'NanoGPT’s service is busy or failed.': 'O serviço da NanoGPT está ocupado ou falhou.',
+  'NanoGPT rejected the request.': 'A NanoGPT recusou o pedido.',
+  'The request did not reach NanoGPT.': 'O pedido não chegou à NanoGPT.',
+  'NanoGPT sent an empty answer.': 'A NanoGPT enviou uma resposta vazia.',
 } satisfies Record<string, string>;

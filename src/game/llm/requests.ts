@@ -35,6 +35,8 @@ export interface ModelChoice {
   scribe: string;
   /** The model that builds worlds and proposes characters. The narrator's model when not set: building is writing. */
   architect?: string;
+  /** The model that reads a picture. The scribe's when not set: every Claude model reads pictures. */
+  vision?: string;
   /** low: the narrator answers without thinking first where the model allows it. */
   effort: 'low' | 'medium' | 'high';
 }
@@ -327,9 +329,10 @@ export function pictureRequest(
   who: string, note: string, language: 'en' | 'pt', models: ModelChoice, hints: MockHints,
 ): LlmRequest {
   const text = `This picture shows ${who.trim().slice(0, 120)}.${note.trim() ? ` The player adds: ${JSON.stringify(note.trim().slice(0, 200))}` : ''}\nWrite both lines in ${language === 'pt' ? 'Brazilian Portuguese' : 'English'}.`;
-  const info = modelInfo(models.scribe);
+  const model = models.vision ?? models.scribe;
+  const info = modelInfo(model);
   const params: MessageParams = {
-    model: models.scribe,
+    model,
     max_tokens: 300,
     system: PICTURE_SYSTEM,
     messages: [{ role: 'user', content: [{ type: 'image', source: { type: 'base64', media_type: picture.mediaType, data: picture.data } }, { type: 'text', text }] }],

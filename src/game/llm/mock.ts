@@ -13,7 +13,7 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import { approxTokens } from '../cards';
 import { mockArchitect } from './mockArchitect';
-import type { TokenUsage } from './models';
+import { serviceOf, type TokenUsage } from './models';
 import type { EpilogueOut, RefereeOut, ScribeOut } from './schemas';
 import { LlmError, type LlmRequest, type LlmResponse, type MockHints, type SendOptions, type Transport } from './transport';
 
@@ -106,6 +106,8 @@ export function makeCacheSim(now: () => number): CacheSim {
         const ttl = segs[readAt]!.mark ?? '5m';
         entries.set(key, Math.max(entries.get(key) ?? 0, t + TTL[ttl]));
       }
+      // Venice and NanoGPT cache by themselves and charge nothing extra for it: what Claude would write to the cache is plain reading there.
+      if (serviceOf(params.model) !== 'anthropic') return { input: Math.max(0, total - read), cacheRead: read, cacheWrite5m: 0, cacheWrite1h: 0, output: outputTokens };
       return { input: Math.max(0, total - covered), cacheRead: read, cacheWrite5m: write5m, cacheWrite1h: write1h, output: outputTokens };
     },
   };

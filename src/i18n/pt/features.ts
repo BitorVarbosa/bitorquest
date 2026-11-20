@@ -59,6 +59,7 @@ const words: Record<string, string> = {
   'Say what it shows': 'Diga o que ela mostra',
   'Where the picture and your words disagree, your words win.': 'Onde a imagem e suas palavras discordarem, valem as suas palavras.',
   'The picture is sent once to be described, then forgotten: it is not kept on this device or anywhere else. Only the words are kept, and you can change them. A real person is never named from a picture.': 'A imagem é enviada uma vez para ser descrita e depois esquecida: não fica guardada neste aparelho nem em lugar nenhum. Só as palavras ficam, e você pode mudá-las. Uma pessoa real nunca é identificada por uma imagem.',
+  'The model chosen for pictures cannot see them. Choose one that can in Settings.': 'O modelo escolhido para imagens não consegue vê-las. Escolha um que consiga em Configurações.',
 
   // ---------- Another take ----------
   'This telling': 'Esta narração',
@@ -181,6 +182,14 @@ const words: Record<string, string> = {
   'Played with Bitor Quest': 'Jogado com Bitor Quest',
   'The whole story as one page to read or print, saved as a file.': 'A história inteira numa página para ler ou imprimir, salva como arquivo.',
   'The whole story as one page to read or print, saved as a file: chapters, scenes and every line, without the game around it.': 'A história inteira numa página para ler ou imprimir, salva como arquivo: capítulos, cenas e cada linha, sem o jogo em volta.',
+
+  // ---------- Usage, with three services (app/screens/Usage.tsx) ----------
+  'Demo estimates: what the chosen models would have cost. Nothing was charged': 'Estimativas da demonstração: o que os modelos escolhidos teriam custado. Nada foi cobrado',
+  'This view shows only the turns played with the demo narrator. Nothing was sent to any service and nothing was charged for them: the figures estimate what the same turns would have cost with the models chosen.': 'Esta visão mostra só os turnos jogados com o narrador de demonstração. Nada foi enviado a nenhum serviço e nada foi cobrado por eles: os valores estimam quanto os mesmos turnos teriam custado com os modelos escolhidos.',
+  'Every turn so far was played with the demo narrator. Nothing was sent to any service and nothing was charged: the figures estimate what the same turns would have cost with the models chosen.': 'Todos os turnos até agora foram jogados com o narrador de demonstração. Nada foi enviado a nenhum serviço e nada foi cobrado: os valores estimam quanto os mesmos turnos teriam custado com os modelos escolhidos.',
+  '{service}’s own account page has the authoritative bill.': 'A página da sua conta de {service} tem a cobrança oficial.',
+  'Each service’s own account page has the authoritative bill: {services}.': 'A página da sua conta em cada serviço tem a cobrança oficial: {services}.',
+  'These figures are this app’s own count, made with the prices each service lists, or with what the service said a call cost. Small differences are possible.': 'Estes valores são a contagem do próprio aplicativo, feita com os preços que cada serviço divulga, ou com o que o serviço informou que uma chamada custou. Pequenas diferenças são possíveis.',
 
   // ---------- A start for an empty page ----------
   'Start from': 'Começar de',

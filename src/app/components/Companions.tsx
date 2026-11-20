@@ -7,7 +7,8 @@ import { startingCompanions, type Described } from '../../game/creation';
 import type { Person, WorldTemplate } from '../../game/types';
 import { t, tn } from '../../i18n';
 import { Avatar, Icon, who } from '../ui';
-import { PictureButton } from './Picture';
+import { useApp } from '../app';
+import { PictureButton, seesPictures } from './Picture';
 
 /** What is said of someone now: the words a player starts from when describing them. */
 export const describedOf = (p: Person): Described => ({ look: p.look ?? '', appearance: p.appearance ?? '', card: p.card });
@@ -15,6 +16,9 @@ export const describedOf = (p: Person): Described => ({ look: p.look ?? '', appe
 /** The three parts of a description, with a picture for the looks. */
 export function DescribeFields({ p, value, onChange, language, ledger }: { p: Person; value: Described; onChange: (d: Described) => void; language: 'en' | 'pt'; ledger?: string }) {
   const id = `ds-${p.id}`;
+  // The model chosen for pictures may not see them: then the button says so, and this line would promise what it cannot do.
+  const models = useApp().models();
+  const sees = seesPictures(models.vision ?? models.scribe);
   return (
     <div className="stack describe">
       <div className="f">
@@ -29,7 +33,7 @@ export function DescribeFields({ p, value, onChange, language, ledger }: { p: Pe
           <PictureButton who={`${p.name}, ${p.role}`} language={language} ledger={ledger}
             onWords={(look, appearance) => onChange({ ...value, look: look || value.look, appearance: appearance || value.appearance })} />
         </div>
-        <p className="help">{t('A screenshot or any picture of how they should look is put into words here, once, and then forgotten: only the words are kept, and you can change them.')}</p>
+        {sees && <p className="help">{t('A screenshot or any picture of how they should look is put into words here, once, and then forgotten: only the words are kept, and you can change them.')}</p>}
       </div>
       <div className="f">
         <label className="label" htmlFor={`${id}-card`}>{t('Who they are')}</label>

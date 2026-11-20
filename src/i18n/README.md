@@ -96,6 +96,7 @@ long as it says the same thing in both.
 | `worlds.ts` | `app/screens/Worlds.tsx`, `app/screens/WorldNew.tsx` |
 | `character.ts` | `app/screens/CharacterNew.tsx`, `app/screens/Character.tsx` |
 | `settings.ts` | `app/screens/Settings.tsx`, `app/screens/LookSettings.tsx`, `app/screens/Usage.tsx`, `app/themes.ts` |
+| `services.ts` | `app/services.ts`, `app/components/Services.tsx`, and the services' connections in `game/llm/` (Venice, NanoGPT, the router): the services, their keys, the model of each role |
 | `journal.ts` | `app/screens/MapScreen.tsx`, `app/screens/Journal.tsx`, `app/screens/Recap.tsx`, `app/screens/Codex.tsx` |
 | `people.ts` | `app/screens/People.tsx`, `app/screens/Person.tsx` |
 | `game.ts` | `game/**` (what the game writes for the player) |

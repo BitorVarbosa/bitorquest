@@ -1,7 +1,8 @@
 # Hosting Bitor Quest
 
-Bitor Quest is static files. There is no server of ours: the page talks to the Claude API from the
-player's browser, with the player's key. Anything that serves files over HTTPS can host it.
+Bitor Quest is static files. There is no server of ours: the page talks to the services that play the
+game (Claude, Venice, NanoGPT) from the player's browser, with the player's own keys. Anything that
+serves files over HTTPS can host it.
 
 ## Building
 
@@ -48,8 +49,10 @@ rewrites `THIRD-PARTY-NOTICES.md` from what the build really contains. Run it wh
 ## What the page is allowed to do
 
 The built page carries a content security policy that allows it to load its own files and to talk to
-`https://api.anthropic.com`, and nothing else: no third-party scripts, fonts, images or analytics. If
-you host a changed build that needs another address, the policy is in `vite.config.ts`.
+three addresses: `https://api.anthropic.com` (Claude), `https://api.venice.ai` (Venice) and
+`https://nano-gpt.com` (NanoGPT), each only for a player who gave that service's key. Nothing else: no
+third-party scripts, fonts, images or analytics. If you host a changed build that needs another
+address, the policy is in `vite.config.ts`.
 
 ## GitHub Pages
 
@@ -67,7 +70,7 @@ the site should be found.
 
 A player who has the app open or installed keeps the version they have until the browser has fetched
 the new one in the background. Then Settings, "About", shows **A new version is ready** with a button
-to reload. Stories, worlds, settings and the key are in the browser's storage and are not touched by
+to reload. Stories, worlds, settings and the keys are in the browser's storage and are not touched by
 an update.
 
 Stories and worlds belong to the address they were made at. A player who moves from one address to

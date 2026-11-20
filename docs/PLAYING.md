@@ -1,25 +1,55 @@
 # Playing Bitor Quest
 
-Bitor Quest is a role-playing game for one player. You play the protagonist; Claude narrates the
-world and speaks for everyone in it; a small set of tabletop rules, called Penta, decides what
-succeeds. Em português: [JOGAR.md](JOGAR.md).
+Bitor Quest is a role-playing game for one player. You play the protagonist; an AI model narrates the
+world and speaks for everyone in it (Claude, or a model at Venice or NanoGPT: you choose); a small set
+of tabletop rules, called Penta, decides what succeeds. Em português: [JOGAR.md](JOGAR.md).
 
 ## What you need
 
 - A browser on a PC or a phone.
-- A Claude API key of your own, from the Claude Console at platform.claude.com. This is separate from
-  a claude.ai subscription: you add credit there and pay Anthropic for what you play. Set a monthly
-  limit on the key in the Console as well as the daily limit in the app.
+- An API key of your own from one of the three services that can play the game: Claude, Venice or
+  NanoGPT (see below). You add credit at the service and pay it for what you play. Set a spending
+  limit on the key there as well as the daily limit in the app.
 - Or nothing at all, to look around: **Try it without a key** uses a demo narrator that answers with
   canned text, sends nothing and costs nothing.
 
-Your key and your stories stay on your device. The only place the app sends anything is the Claude
-API, with your key.
+Your keys and your stories stay on your device. The app sends what you play only to the services you
+chose, each with its own key, and nowhere else.
+
+## Who plays the game
+
+Three services can play it, each with a key of your own. Give the app one, two or all three, in
+Settings, "Services and keys".
+
+- **Claude**, by Anthropic: the richest storytelling, and long stories stay cheap because what was
+  already read is cached. Key: the Claude Console at platform.claude.com (separate from a claude.ai
+  subscription). Add credit, create a key just for this app and set a monthly limit on it.
+- **Venice**: private. Its own models keep nothing of what you send, and many of them are uncensored.
+  Key: venice.ai/settings/api. Add credit and create a key just for this app; if Venice offers a
+  privacy setting for the key, choose **Private models only**, so that the key itself refuses any
+  model that is not private. In the app, **Venice's own models only** (on from the start) keeps the
+  other Venice models out of the game.
+- **NanoGPT**: hundreds of models from many companies, uncensored ones among them. Most pass what you
+  send on to the company that runs them. Key: the API page of your account at nano-gpt.com, after
+  adding balance. In the app, **Private providers only** sends the story only to providers that
+  promise to keep nothing of it (some models then do not answer). NanoGPT can also blank out names
+  and other personal details before a model sees them; the game asks it not to, so that the story
+  arrives whole.
+
+In Settings, "Models", **Who plays the game** puts every role on one service: Claude with one of its
+presets, or Venice or NanoGPT with a model for each role chosen from that service's current list. Or
+mix them: the narrator, the referee, the scribe, the world builder and the model that reads pictures
+each take a model of their own, from any service you have a key for, and each request goes only to
+the service of its model. To keep a story wholly private, put every role on Venice's own models.
+
+Mixing has one catch. When another service writes the story but Claude still judges your actions or
+keeps the records, Claude reads every scene, so Anthropic's usage policy applies to all of it.
 
 ## What it costs
 
-With the recommended models a turn costs well under a cent: a few hundred turns to the dollar. Every
-turn shows what it cost, the Usage screen adds it up by day and by story, and play pauses when a day's
+With Claude's recommended models a turn costs well under a cent: a few hundred turns to the dollar. At
+Venice and NanoGPT it depends on the models you choose; the list shows each one's price. Every turn
+shows what it cost, the Usage screen adds it up by day and by story, and play pauses when a day's
 spending reaches the limit you set. Building a world of your own costs a few cents, once.
 
 ## Starting
@@ -29,7 +59,7 @@ spending reaches the limit you set. Building a world of your own costs a few cen
    the quickest way to see how the game plays.
 2. **A character of your own on the Lantern Coast.** The same coast, on your first day there, as a
    stranger. Nobody knows you yet.
-3. **A world of your own.** Describe it in your own words (a few lines are enough, and it can be as long as you like), name a setting Claude already knows, or give
+3. **A world of your own.** Describe it in your own words (a few lines are enough, and it can be as long as you like), name a setting the world builder already knows, or give
    the app a document of yours (a text, Markdown or PDF file: your campaign notes, a setting book).
    Say who you want to play and how the table should run (how deadly, with which powers, with
    romance or without). An empty page? Begin from one of the worlds offered, or roll one. The world builder asks a few questions, builds the world in seven steps with
@@ -153,13 +183,14 @@ list of stories.
 Except in the Brutal style, you can rewind the story to the start of an earlier scene (Journal,
 "Rewind to here"). The story goes on from there as if the later turns had not happened: what was
 done, what was spent in the story, what people know. The story as it was is kept as a separate copy,
-so nothing is lost. The money already paid to Anthropic is not given back.
+so nothing is lost. The money already paid for the later turns is not given back.
 
 ## Your data
 
 - Stories and worlds are kept in the browser's storage on this device. **Export** the ones you care
   about (Settings, "Your data"): a browser may clear its storage when the device runs short of space.
-- An exported story is one file. Import it on another device to continue there. The key is never in it.
+- An exported story is one file. Import it on another device to continue there. Your keys are never
+  in it.
 - A world can be exported and shared too. Starting a story copies the world, so two stories in one
   world do not affect each other.
 
@@ -167,8 +198,8 @@ so nothing is lost. The money already paid to Anthropic is not given back.
 
 Bitor Quest is a web page that can be installed like an app: Settings, "About", **Install**; or your
 browser's menu ("Install", "Add to Home screen"). On an iPhone or iPad: Safari, Share, "Add to Home
-Screen". Installed, it opens in a window of its own and without a network connection. Talking to
-Claude still needs one.
+Screen". Installed, it opens in a window of its own and without a network connection. Playing still
+needs one.
 
 ## Two languages
 

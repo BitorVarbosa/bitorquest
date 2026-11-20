@@ -22,6 +22,12 @@
 body[data-state="error"] .key{border-color:var(--c-err)}
 body[data-state="valid"] .key{border-color:var(--c-ok)}
 .small{font-size:var(--fs-sm);line-height:19px;color:var(--c-text-2)}
+/* Venice's or NanoGPT's privacy switch, in place of Claude's narrators: its name and help, the switch beside them. */
+.hello-sw{display:flex;align-items:center;gap:var(--sp-3)}
+.hello-sw>.grow{display:grid;gap:2px}
+.hello-sw .help{text-wrap:pretty}
+/* While a key is being checked the service and its switch stay as they are: the answer belongs to them. */
+.setup .choice:disabled,.setup .switch[disabled]{pointer-events:none}
 @media (min-width:1100px){
   .hello{grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:var(--sp-8);align-items:start;padding-top:var(--sp-6)}
   .intro{position:sticky;top:var(--sp-6);display:grid;gap:var(--sp-5)}
@@ -34,6 +40,8 @@ body[data-state="valid"] .key{border-color:var(--c-ok)}
    not do, since a theme's accent can itself be a green. */
 .key-done{display:grid;gap:var(--sp-3);padding:var(--sp-3);border:1px solid color-mix(in srgb,var(--c-ok) 55%,var(--c-card));border-radius:calc(var(--r-lg) + 4px);background:color-mix(in srgb,var(--c-ok) 12%,var(--c-card))}
 .key-done-t{display:flex;align-items:flex-start;gap:10px;font-size:var(--fs-md);font-weight:600;line-height:20px}
+/* A model of Venice or NanoGPT may be named by its id, one long word: it breaks rather than widen the panel on a phone. */
+.key-done-t>span:last-child{min-width:0;overflow-wrap:anywhere}
 .key-done-i{flex:none;width:20px;height:20px;display:grid;place-items:center;border-radius:50%;background:var(--c-ok);color:var(--c-on-ok)}
 .key-done .btn{position:relative;width:100%;font-weight:700;box-shadow:0 6px 18px color-mix(in srgb,var(--c-ok) 34%,transparent)}
 .key-done .btn .i{transition:transform .15s ease-out}

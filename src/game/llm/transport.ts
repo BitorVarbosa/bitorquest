@@ -4,7 +4,7 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import type { z } from 'zod';
 import type { ArchitectHints } from './architect';
-import type { TokenUsage } from './models';
+import type { Service, TokenUsage } from './models';
 
 export type Role = 'referee' | 'narrator' | 'scribe' | 'architect';
 export type MessageParams = Anthropic.MessageCreateParamsNonStreaming;
@@ -78,6 +78,8 @@ export interface LlmResponse {
   refusal: { category: string | null; explanation: string | null } | null;
   /** True when the demo client answered: nothing was sent and nothing was charged. */
   simulated: boolean;
+  /** Dollars charged, when the service reports it exactly (NanoGPT does). Otherwise the cost is worked out from the usage. */
+  cost?: number;
 }
 
 export interface SendOptions {
@@ -101,16 +103,28 @@ export type LlmErrorKind =
   | 'aborted' // the player pressed Stop
   | 'other';
 
+/**
+ * What the player must know beyond the kind. 'limit': the key reached the spending limit set for it
+ * (the account may well have money). 'not-sent': the game itself did not send the request (a model
+ * outside "Venice's own models only"); the message says why.
+ */
+export type LlmErrorDetail = 'limit' | 'not-sent';
+
 export class LlmError extends Error {
   kind: LlmErrorKind;
   status: number | null;
   /** Seconds the service asked us to wait, when it said. */
   retryAfter: number | null;
-  constructor(kind: LlmErrorKind, message: string, status: number | null = null, retryAfter: number | null = null) {
+  /** The service that failed: the player is told which one, and which key to look at. */
+  service: Service;
+  detail: LlmErrorDetail | null;
+  constructor(kind: LlmErrorKind, message: string, status: number | null = null, retryAfter: number | null = null, service: Service = 'anthropic', detail: LlmErrorDetail | null = null) {
     super(message);
     this.name = 'LlmError';
     this.kind = kind;
     this.status = status;
     this.retryAfter = retryAfter;
+    this.service = service;
+    this.detail = detail;
   }
 }

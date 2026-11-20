@@ -4,9 +4,10 @@
 // and change them.
 import { useRef, useState } from 'react';
 import { BudgetReached } from '../../game/builder';
-import { modelInfo } from '../../game/llm/models';
+import { modelInfo, serviceOf } from '../../game/llm/models';
 import { t } from '../../i18n';
 import { useApp } from '../app';
+import { href } from '../router';
 import { Icon, Modal } from '../ui';
 import { usePrice } from './Tools';
 
@@ -30,10 +31,15 @@ async function shrink(file: File): Promise<{ data: string; preview: string }> {
   return { data: preview.slice(preview.indexOf(',') + 1), preview };
 }
 
-/** What putting a picture into words is expected to cost: about 1,000 tokens read and 100 written, on the cheapest model. */
+/** What putting a picture into words is expected to cost: about 1,000 tokens read and 100 written, on the model that reads pictures. */
 function pictureCost(model: string): number {
   const m = modelInfo(model);
   return (1050 * m.input + 110 * m.output) / 1_000_000;
+}
+
+/** Whether a model can be shown a picture: every Claude model can; another service's only when its own list says so. */
+export function seesPictures(model: string): boolean {
+  return serviceOf(model) === 'anthropic' || modelInfo(model).vision === true;
 }
 
 /**
@@ -74,6 +80,18 @@ export function PictureButton({ who, language, onWords, ledger }: { who: string;
     }
   };
   const name = who.split(',')[0]!.trim();
+  // The model that reads pictures: the one chosen for them, else the scribe's, as the request is made.
+  const models = a.models();
+  const eyes = models.vision ?? models.scribe;
+  // A model that cannot see is never sent a picture: it would fail, or describe what it did not see. Settings has the choice.
+  if (!seesPictures(eyes)) {
+    return (
+      <>
+        <p className="help">{t('The model chosen for pictures cannot see them. Choose one that can in Settings.')}</p>
+        <a className="link link-tap" href={href('settings')}>{t('Open settings')}<Icon name="right" size={14} strong /></a>
+      </>
+    );
+  }
   return (
     <>
       <input ref={input} type="file" accept="image/*" hidden onChange={(e) => { void choose(e.target.files?.[0]); e.target.value = ''; }} />
@@ -82,7 +100,7 @@ export function PictureButton({ who, language, onWords, ledger }: { who: string;
       {shot && (
         <Modal title={t('How {name} looks', { name })} onClose={close} foot={
           <button type="button" className="btn btn-primary" disabled={busy} onClick={() => void read()}>
-            {busy ? t('Reading the picture…') : <>{t('Put it into words')}<span className="take-p">· {price(pictureCost(a.models().scribe))}</span></>}
+            {busy ? t('Reading the picture…') : <>{t('Put it into words')}<span className="take-p">· {price(pictureCost(eyes))}</span></>}
           </button>
         }>
           <img className="pic-shot" src={shot.preview} alt={t('The picture you chose')} />

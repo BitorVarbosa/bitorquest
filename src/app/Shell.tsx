@@ -4,10 +4,10 @@
 // menu behind the top bar's menu button (StoryMenu), on every screen of the story, so the page has the room.
 import { useEffect, useState, type ReactNode } from 'react';
 import { clockLabel, slotOf } from '../engine';
-import { modelInfo } from '../game/llm/models';
+import { SERVICE_NAME, modelInfo } from '../game/llm/models';
 import { currentScene } from '../game/story';
 import type { Story } from '../game/types';
-import { m, t } from '../i18n';
+import { listOf, m, t } from '../i18n';
 import { app, useApp } from './app';
 import type { IconName } from './icons';
 import { href } from './router';
@@ -222,13 +222,25 @@ export function FlowPage({ title, sub, back, foot, children, className }: { titl
 export function DemoBanner() {
   const a = useApp();
   if (!a.usingDemo) return null;
+  // With no key at all, playing for real starts with one. With a key, what keeps the demo on is in
+  // Settings: a role set to a service there is no key for, or the demo chosen there.
+  const missing = a.missingKeys;
   return (
     <div className="alert alert-warn">
       <Icon name="info" />
       <div>
         <b>{t('Demo narrator')}</b>
-        <p>{t('The story text is canned and nothing is sent or charged. Costs shown are estimates of what Claude would have cost.')}</p>
-        <a className="link link-tap" href={href('welcome')}>{t('Add your API key to play for real')}<Icon name="right" size={14} strong /></a>
+        <p>{t('The story text is canned and nothing is sent or charged. Costs shown are estimates of what the chosen models would have cost.')}</p>
+        {a.keyed.length === 0
+          ? <a className="link link-tap" href={href('welcome')}>{t('Add your API key to play for real')}<Icon name="right" size={14} strong /></a>
+          : (
+            <a className="link link-tap" href={href('settings')}>
+              {missing.length > 0
+                ? t('Add a key for {services} in Settings, or choose other models', { services: listOf(missing.map((s) => SERVICE_NAME[s])) })
+                : t('Turn the demo narrator off in Settings to play for real')}
+              <Icon name="right" size={14} strong />
+            </a>
+          )}
       </div>
     </div>
   );

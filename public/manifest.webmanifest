@@ -1,7 +1,7 @@
 {
   "name": "Bitor Quest",
   "short_name": "Bitor Quest",
-  "description": "A solo role-playing game narrated by Claude, played on your own API key.",
+  "description": "A solo role-playing game narrated by AI, played on your own API key.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

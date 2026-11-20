@@ -10,11 +10,12 @@ import journal from './journal';
 import people from './people';
 import play from './play';
 import rules from './rules';
+import services from './services';
 import settings from './settings';
 import shell from './shell';
 import welcome from './welcome';
 import worlds from './worlds';
 
-export const PARTS: Record<string, Record<string, string>> = { character, engine, features, game, home, journal, people, play, rules, settings, shell, welcome, worlds };
+export const PARTS: Record<string, Record<string, string>> = { character, engine, features, game, home, journal, people, play, rules, services, settings, shell, welcome, worlds };
 
 for (const words of Object.values(PARTS)) addWords(words);

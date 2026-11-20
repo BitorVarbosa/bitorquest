@@ -87,7 +87,7 @@ export async function proposeCharacter(
   if (budget.spentToday() >= budget.cap()) throw new BudgetReached();
   const rules = creationRules(world);
   const res = await deps.transport.send(characterRequest(world, who, rules.level, deps.models()));
-  const usage: UsageEntry = { at: deps.now(), role: 'architect', model: res.model, ...res.usage, cost: costOf(res.model, res.usage), simulated: res.simulated };
+  const usage: UsageEntry = { at: deps.now(), role: 'architect', model: res.model, ...res.usage, cost: res.cost ?? costOf(res.model, res.usage), simulated: res.simulated };
   budget.record(usage, ledger);
   // No usable answer is not an error: the player gets an empty sheet with their name on it.
   const proposal = res.parsed

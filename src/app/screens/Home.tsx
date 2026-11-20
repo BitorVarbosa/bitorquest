@@ -213,7 +213,7 @@ export function Home() {
             </button>
             <button className="row" onClick={() => void exportIt(manage)}>
               <Icon name="download" className="t-2" />
-              <span className="grow"><span className="row-t">{t('Export to a file')}</span><span className="row-s">{t('To back it up or move it to another device{size}. Your API key is never in the file.', { size: bytes !== null ? ` · ${fileSize(bytes)}` : '' })}</span></span>
+              <span className="grow"><span className="row-t">{t('Export to a file')}</span><span className="row-s">{t('To back it up or move it to another device{size}. Your API keys are never in the file.', { size: bytes !== null ? ` · ${fileSize(bytes)}` : '' })}</span></span>
             </button>
           </div>
           {!confirm

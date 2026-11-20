@@ -6,6 +6,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { ATTRIBUTES, PATHS, SCHOOLS, abilityById, conditionLabel, isUp, maxEnergy, maxHp, schoolsOf, stageName, traitInfo, type Combat, type Combatant } from '../../engine';
 import { castOf, exitsFrom } from '../../game/cards';
+import { SERVICE_NAME } from '../../game/llm/models';
 import { fightersForDisplay, type Blocker, type Session } from '../../game/session';
 import { currentScene, sceneTitle } from '../../game/story';
 import type { GameEvent, Person, Story, Turn } from '../../game/types';
@@ -364,24 +365,52 @@ function BlockerCard({ blocker, session }: { blocker: Blocker; session: Session 
       </div>
     );
   }
+  // Told about the service that failed and its key: the roles of a turn may be played on different
+  // services, and the player must know whose key, account or outage it is.
+  const where = blocker.service ?? 'anthropic';
+  const service = SERVICE_NAME[where];
   const text: Record<typeof blocker.kind, { title: string; body: string; icon: 'offline' | 'warn' | 'clock' | 'key' }> = {
-    offline: { title: t('No connection'), body: t('The request did not reach Anthropic. Your story is saved on this device; the journal, people and character can still be read.'), icon: 'offline' },
+    offline: { title: t('No connection'), body: t('The request did not reach {service}. Your story is saved on this device; the journal, people and character can still be read.', { service }), icon: 'offline' },
     overloaded: {
-      title: t('The narrator did not answer'),
-      body: blocker.status ? t('Anthropic’s service is busy right now (error {status}). It usually clears within a minute.', { status: blocker.status }) : t('Anthropic’s service is busy right now. It usually clears within a minute.'),
+      // Any part of a turn may be the one that did not answer, on any service: the service is named, not the narrator.
+      title: where === 'anthropic' ? t('The narrator did not answer') : t('{service} did not answer', { service }),
+      body: blocker.status ? t('{service}’s service is busy right now (error {status}). It usually clears within a minute.', { service, status: blocker.status }) : t('{service}’s service is busy right now. It usually clears within a minute.', { service }),
       icon: 'warn',
     },
     rate: {
       title: t('Too many requests for now'),
-      body: blocker.retryAfter ? t('Anthropic is asking us to slow down; try again in about {n} seconds. This passes by itself.', { n: Math.ceil(blocker.retryAfter) }) : t('Anthropic is asking us to slow down. This passes by itself.'),
+      body: blocker.retryAfter ? t('{service} is asking us to slow down; try again in about {n} seconds. This passes by itself.', { service, n: Math.ceil(blocker.retryAfter) }) : t('{service} is asking us to slow down. This passes by itself.', { service }),
       icon: 'clock',
     },
-    key: { title: t('The API key stopped working'), body: t('Anthropic did not accept the key. It may have been revoked or replaced. Your story is safe.'), icon: 'key' },
-    credit: { title: t('The account behind the key cannot be charged'), body: t('Add credit in the Claude Console, then try again. Your story is safe.'), icon: 'key' },
-    error: { title: t('Something went wrong'), body: t('The request was not accepted. This is likely a fault in the app, not something you did.'), icon: 'warn' },
+    key: { title: t('The {service} key stopped working', { service }), body: t('{service} did not accept the key. It may have been revoked or replaced. Your story is safe.', { service }), icon: 'key' },
+    // A key that reached the spending limit set for it is not an empty account: the limit is raised at
+    // the service, or resets by itself.
+    credit: blocker.detail === 'limit'
+      ? {
+        title: t('The {service} key reached its spending limit', { service }),
+        body: t('The limit you set for this key at {service} was reached. Raise it there, or wait for it to reset. Your story is safe.', { service }),
+        icon: 'key',
+      }
+      : {
+        title: t('The {service} account cannot be charged', { service }),
+        body: where === 'anthropic' ? t('Add credit in the Claude Console, then try again. Your story is safe.') : t('Add balance at {service}, then try again. Your story is safe.', { service }),
+        icon: 'key',
+      },
+    // A request Claude turns down is most likely the app's fault. Another service's model may simply not
+    // take what it was asked (a shape, a size): its own reason is in the details, and another model may do.
+    // A request the game itself did not send says why, in its own words.
+    error: blocker.detail === 'not-sent'
+      ? { title: t('Not sent'), body: blocker.message, icon: 'warn' }
+      : {
+        title: t('Something went wrong'),
+        body: where === 'anthropic' ? t('The request was not accepted. This is likely a fault in the app, not something you did.') : t('{service} did not accept the request. Show the details to see why; another model may work.', { service }),
+        icon: 'warn',
+      },
   };
   const info = text[blocker.kind];
   const needsKey = blocker.kind === 'key' || blocker.kind === 'credit';
+  // Settings is where a key is replaced, and where another model is chosen.
+  const toSettings = needsKey || (blocker.kind === 'error' && where !== 'anthropic');
   return (
     <div className={`alert sys ${needsKey || blocker.kind === 'error' ? 'alert-err sys-err' : 'alert-warn sys-warn'}`} role="alert">
       <Icon name={info.icon} />
@@ -391,7 +420,7 @@ function BlockerCard({ blocker, session }: { blocker: Blocker; session: Session 
         <ul className="sys-facts"><li><Icon name="check" size={14} strong />{t('Nothing lost')}</li><li><Icon name="check" size={14} strong />{t('Dice already rolled are kept')}</li></ul>
         <div className="sys-acts">
           <button className="btn btn-primary" onClick={() => void session.retry()}><Icon name="refresh" size={18} />{t('Try again')}</button>
-          {needsKey && <a className="btn" href={href('settings')}>{t('Open settings')}</a>}
+          {toSettings && <a className="btn" href={href('settings')}>{t('Open settings')}</a>}
           <button className="btn" onClick={() => session.dismiss()}>{t('Take the action back')}</button>
           {blocker.message && <button className="btn btn-quiet" onClick={() => setDetails(!details)}>{details ? t('Hide details') : t('Show details')}</button>}
         </div>

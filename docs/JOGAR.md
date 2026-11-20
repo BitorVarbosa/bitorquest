@@ -1,27 +1,61 @@
 # Como jogar Bitor Quest
 
-Bitor Quest é um RPG para uma pessoa só. Você joga com o protagonista; o Claude narra o mundo e dá
-voz a todos que vivem nele; um conjunto pequeno de regras de mesa, chamado Penta, decide o que dá
-certo. In English: [PLAYING.md](PLAYING.md).
+Bitor Quest é um RPG para uma pessoa só. Você joga com o protagonista; um modelo de IA narra o mundo
+e dá voz a todos que vivem nele (o Claude, ou um modelo da Venice ou da NanoGPT: você escolhe); um
+conjunto pequeno de regras de mesa, chamado Penta, decide o que dá certo. In English:
+[PLAYING.md](PLAYING.md).
 
 ## Do que você precisa
 
 - Um navegador, no computador ou no celular.
-- Uma chave de API do Claude que seja sua, criada no Claude Console, em platform.claude.com. Ela é
-  separada de uma assinatura do claude.ai: você coloca crédito lá e paga à Anthropic pelo que jogar.
-  Defina um limite mensal para a chave no Console, além do limite diário no aplicativo.
+- Uma chave de API sua de um dos três serviços que podem conduzir o jogo: Claude, Venice ou NanoGPT
+  (veja abaixo). Você coloca crédito no serviço e paga a ele pelo que jogar. Defina lá um limite de
+  gastos para a chave, além do limite diário no aplicativo.
 - Ou nada, só para conhecer: **Experimentar sem chave** usa um narrador de demonstração que responde
   com textos prontos, não envia nada e não custa nada.
 
-A sua chave e as suas histórias ficam no seu aparelho. O único lugar para onde o aplicativo envia
-alguma coisa é a API do Claude, com a sua chave.
+As suas chaves e as suas histórias ficam no seu aparelho. O aplicativo envia o que você joga só para
+os serviços que você escolheu, cada um com a própria chave, e para mais nenhum lugar.
+
+## Quem conduz o jogo
+
+Três serviços podem conduzir o jogo, cada um com uma chave sua. Dê ao aplicativo uma, duas ou as
+três, em Configurações, "Serviços e chaves".
+
+- **Claude**, da Anthropic: a narrativa mais rica, e histórias longas continuam baratas porque o que
+  já foi lido fica no cache. Chave: o Claude Console, em platform.claude.com (separado de uma
+  assinatura do claude.ai). Coloque crédito, crie uma chave só para este aplicativo e defina um
+  limite mensal para ela.
+- **Venice**: privada. Os modelos próprios dela não guardam nada do que você envia, e muitos são sem
+  censura. Chave: venice.ai/settings/api. Coloque crédito e crie uma chave só para este aplicativo;
+  se a Venice oferecer uma opção de privacidade para a chave, escolha **Private models only**, para
+  que a própria chave recuse qualquer modelo que não seja privado. No aplicativo, **Só os modelos
+  próprios da Venice** (ligado desde o início) deixa os outros modelos da Venice fora do jogo.
+- **NanoGPT**: centenas de modelos de muitas empresas, alguns deles sem censura. A maioria repassa o
+  que você envia para a empresa que os roda. Chave: na página de API da sua conta em nano-gpt.com,
+  depois de colocar saldo. No aplicativo, **Só provedores privados** envia a história só a
+  provedores que prometem não guardar nada dela (alguns modelos então não respondem). A NanoGPT
+  também pode apagar nomes e outros dados pessoais antes de um modelo vê-los; o jogo pede que ela
+  não faça isso, para que a história chegue inteira.
+
+Em Configurações, "Modelos", **Quem conduz o jogo** coloca todos os papéis num só serviço: o Claude,
+com uma das suas predefinições, ou a Venice ou a NanoGPT, com um modelo para cada papel escolhido na
+lista atual do serviço. Ou misture: o narrador, o árbitro, o escriba, o construtor de mundos e o
+modelo que lê imagens têm cada um o seu modelo, de qualquer serviço para o qual você tenha chave, e
+cada pedido vai só para o serviço do seu modelo. Para manter uma história totalmente privada, coloque
+todos os papéis nos modelos próprios da Venice.
+
+Misturar tem um porém. Quando outro serviço escreve a história, mas o Claude ainda julga as suas ações
+ou mantém os registros, o Claude lê cada cena, e por isso a política de uso da Anthropic vale para
+tudo.
 
 ## Quanto custa
 
-Com os modelos recomendados, um turno custa bem menos de um centavo de dólar: algumas centenas de
-turnos por dólar. Cada turno mostra quanto custou, a tela Uso soma os gastos por dia e por história,
-e o jogo pausa quando os gastos do dia chegam ao limite que você definiu. Construir um mundo seu
-custa alguns centavos, uma vez só.
+Com os modelos recomendados do Claude, um turno custa bem menos de um centavo de dólar: algumas
+centenas de turnos por dólar. Na Venice e na NanoGPT, depende dos modelos que você escolher; a lista
+mostra o preço de cada um. Cada turno mostra quanto custou, a tela Uso soma os gastos por dia e por
+história, e o jogo pausa quando os gastos do dia chegam ao limite que você definiu. Construir um mundo
+seu custa alguns centavos, uma vez só.
 
 ## Para começar
 
@@ -31,7 +65,7 @@ custa alguns centavos, uma vez só.
    em inglês.)
 2. **Um personagem seu na Costa das Lanternas.** A mesma costa, no seu primeiro dia lá, como um
    estranho. Ninguém conhece você ainda.
-3. **Um mundo seu.** Descreva-o com as suas palavras (algumas linhas bastam, e pode ser tão longo quanto quiser), cite um cenário que o Claude já conheça, ou
+3. **Um mundo seu.** Descreva-o com as suas palavras (algumas linhas bastam, e pode ser tão longo quanto quiser), cite um cenário que o construtor de mundos já conheça, ou
    entregue ao aplicativo um documento seu (um arquivo de texto, Markdown ou PDF: as anotações da
    sua campanha, um livro de cenário). Diga com quem você quer jogar e como a mesa deve funcionar
    (quão mortal, com quais poderes, com ou sem romance), e escolha o português como língua da
@@ -164,15 +198,16 @@ uma página para ler ou imprimir, no diário ou na lista de histórias.
 Exceto no estilo Brutal, você pode voltar a história ao início de uma cena anterior (Diário,
 "Voltar até aqui"). A história segue dali como se os turnos seguintes não tivessem acontecido: o que
 foi feito, o que foi gasto dentro da história, o que as pessoas sabem. A história como estava fica
-guardada em uma cópia separada, então nada se perde. O dinheiro já pago à Anthropic não volta.
+guardada em uma cópia separada, então nada se perde. O dinheiro já pago pelos turnos seguintes não
+volta.
 
 ## Os seus dados
 
 - Histórias e mundos ficam guardados no armazenamento do navegador, neste aparelho. **Exporte** os
   que importam para você (Configurações, "Seus dados"): um navegador pode limpar o armazenamento
   quando o aparelho fica sem espaço.
-- Uma história exportada é um arquivo só. Importe-o em outro aparelho para continuar por lá. A chave
-  nunca vai no arquivo.
+- Uma história exportada é um arquivo só. Importe-o em outro aparelho para continuar por lá. As suas
+  chaves nunca vão no arquivo.
 - Um mundo também pode ser exportado e compartilhado. Começar uma história copia o mundo, de modo
   que duas histórias no mesmo mundo não interferem uma na outra.
 
@@ -181,7 +216,7 @@ guardada em uma cópia separada, então nada se perde. O dinheiro já pago à An
 Bitor Quest é uma página que pode ser instalada como um aplicativo: Configurações, "Sobre",
 **Instalar**; ou o menu do navegador ("Instalar", "Adicionar à tela inicial"). No iPhone ou iPad:
 Safari, Compartilhar, "Adicionar à Tela de Início". Instalado, ele abre em uma janela própria e sem
-conexão com a internet. Falar com o Claude continua precisando de conexão.
+conexão com a internet. Jogar continua precisando de conexão.
 
 ## Duas línguas
 

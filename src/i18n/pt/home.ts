@@ -47,7 +47,7 @@ export default {
   '{n} turn played. Choose the scene in the journal; the turns after it are kept as a copy.': '{n} turno jogado. Escolha a cena no diário; os turnos depois dela ficam guardados em uma cópia.',
   '{n} turns played. Choose the scene in the journal; the turns after it are kept as a copy.': '{n} turnos jogados. Escolha a cena no diário; os turnos depois dela ficam guardados em uma cópia.',
   'Export to a file': 'Exportar para um arquivo',
-  'To back it up or move it to another device{size}. Your API key is never in the file.': 'Para fazer uma cópia de segurança ou levá-la a outro aparelho{size}. A sua chave de API nunca vai no arquivo.',
+  'To back it up or move it to another device{size}. Your API keys are never in the file.': 'Para fazer uma cópia de segurança ou levá-la a outro aparelho{size}. As suas chaves de API nunca vão no arquivo.',
   'Delete this story': 'Apagar esta história',
   'Delete “{title}”?': 'Apagar “{title}”?',
   'This cannot be undone. Export it first if you may want it back.': 'Isto não pode ser desfeito. Exporte antes, se houver chance de querer de volta.',

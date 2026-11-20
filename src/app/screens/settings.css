@@ -71,3 +71,34 @@
   .stg .toc{position:sticky;top:var(--sp-6);display:grid;gap:2px;padding:var(--sp-2);border:1px solid var(--c-line);border-radius:var(--r-lg);background:var(--c-card)}
   .stg .money{width:140px}
 }
+
+/* The services and their keys, the model of each role, and the list a model is chosen from (components/Services.tsx). */
+.stg .svc .set-key{gap:var(--sp-2)}
+.stg .svc-n{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-md)}
+.stg .svc-key{display:flex;gap:var(--sp-2);align-items:center;width:100%}
+.stg .svc-key .input{flex:1;min-width:0;min-height:44px;border:1px solid var(--c-line-strong);border-radius:var(--r-md);background:var(--c-card)}
+.stg .svc-key .btn{flex:none;padding:0 var(--sp-4)}
+.stg .svc .set{padding-bottom:0}
+.stg .svc-acts{display:flex;flex-wrap:wrap;gap:var(--sp-2)}
+.stg .help.t-warn,.pick .help.t-warn{color:var(--c-gold)}
+.stg .role .set-l{flex:1 1 220px}
+.stg .role-pick{flex:0 1 auto;max-width:100%;min-width:0;justify-content:space-between;gap:var(--sp-2);text-align:left}
+.stg .role-m{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stg .role-s{flex:none;font-size:var(--fs-xs);color:var(--c-text-2)}
+.pick{display:flex;flex-direction:column;gap:var(--sp-3)}
+.pick .pick-find-i{display:flex;padding:0 var(--sp-2) 0 var(--sp-3);color:var(--c-text-2)}
+.pick-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--sp-2)}
+.pick-item{display:flex;flex-direction:column;gap:2px;width:100%;text-align:left;padding:var(--sp-2) var(--sp-3);min-height:48px;border:1px solid var(--c-line);border-radius:var(--r-md);background:var(--c-card);color:var(--c-text);cursor:pointer}
+.pick-item:hover{border-color:var(--c-line-strong)}
+.pick-item[aria-current="true"]{border-color:var(--c-accent-text);background:var(--c-accent-tint)}
+.pick-n{display:flex;align-items:center;gap:var(--sp-1);font-weight:600;overflow-wrap:anywhere}
+.pick-d{font-size:var(--fs-sm);color:var(--c-text-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pick-t{font-size:var(--fs-xs);color:var(--c-accent-text)}
+.pick-p{font-size:var(--fs-xs);color:var(--c-text-2)}
+.pick-fail{display:flex;flex-direction:column;align-items:flex-start;gap:var(--sp-2)}
+/* How to get a key: the same look as on the welcome screen. */
+.stg .how summary{min-height:44px;display:flex;align-items:center;gap:6px;font-size:var(--fs-sm);font-weight:600;color:var(--c-accent-text);cursor:pointer;list-style:none}
+.stg .how summary::-webkit-details-marker{display:none}
+.stg .how ol{display:grid;gap:6px;padding:0 0 var(--sp-2) var(--sp-5);list-style:decimal;font-size:var(--fs-sm);line-height:19px;color:var(--c-text-2)}
+.stg .how[open] .chev{transform:rotate(180deg)}
+@media (max-width:560px){.stg .svc-key{flex-wrap:wrap}.stg .svc-key .btn{width:100%}.stg .role-pick{width:100%}}

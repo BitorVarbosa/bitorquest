@@ -1,7 +1,7 @@
 // Settings: for the whole app (the key, models, spending, look, prices, data) and for the story that is open.
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { estimateExpand } from '../../game/llm/architect';
-import { CACHE_WRITE_1H, CACHE_WRITE_5M, MODELS, PRESETS, PRICES_AS_OF, modelInfo, type Preset, type RoleModels } from '../../game/llm/models';
+import { CACHE_WRITE_1H, CACHE_WRITE_5M, MODELS, PRICES_AS_OF, SERVICE_NAME, modelInfo, roleModels, serviceOf } from '../../game/llm/models';
 import { NARRATION_WORDS, PROSE } from '../../game/llm/prompts';
 import { GIFT_RANK_MAX } from '../../engine';
 import type { StorySettings, World } from '../../game/types';
@@ -14,13 +14,14 @@ import { href } from '../router';
 import { LibraryPage } from '../Shell';
 import { Icon, Modal, money } from '../ui';
 import { LookSettings } from './LookSettings';
+import { ModelsSection, ServiceKeys } from '../components/Services';
 import './settings.css';
 
 type Tab = 'app' | 'story';
 interface SectionInfo { id: string; label: string; icon: IconName }
 
 const APP_SECTIONS: SectionInfo[] = [
-  { id: 'key', label: m('API key'), icon: 'key' },
+  { id: 'key', label: m('Services and keys'), icon: 'key' },
   { id: 'models', label: m('Models'), icon: 'spark' },
   { id: 'narration', label: m('Narration'), icon: 'story' },
   { id: 'spending', label: m('Spending'), icon: 'coins' },
@@ -36,30 +37,9 @@ const STORY_SECTIONS: SectionInfo[] = [
   { id: 'world', label: m('Set by the world'), icon: 'lock' },
 ];
 
-const ROLES: { id: keyof RoleModels; label: string; does: string }[] = [
-  { id: 'narrator', label: m('Narrator'), does: m('Writes the story.') },
-  { id: 'referee', label: m('Referee'), does: m('Reads what you do and decides which rule applies.') },
-  { id: 'scribe', label: m('Scribe'), does: m('Writes up each scene when it ends.') },
-];
-const PRESET_NAMES: { id: Preset; label: string }[] = [{ id: 'budget', label: m('Budget') }, { id: 'balanced', label: m('Balanced') }, { id: 'premium', label: m('Premium') }];
-
 const cap = (s: string) => (s ? s[0]!.toUpperCase() + s.slice(1) : s);
 const longDate = (iso: string) => new Date(`${iso}T12:00:00`).toLocaleDateString(locale(), { day: 'numeric', month: 'long', year: 'numeric' });
 const price = (n: number) => `$${n.toFixed(2)}`;
-
-/** The key as it may be shown: its first ten characters, dots, its last four. A key too short for that is all dots. */
-function maskKey(key: string): string {
-  return key.length >= 24 ? `${key.slice(0, 10)}${'•'.repeat(12)}${key.slice(-4)}` : '•'.repeat(16);
-}
-
-function presetLine(preset: Preset | 'custom'): string {
-  if (preset === 'custom') return t('A mix of your own.');
-  const set = PRESETS[preset];
-  const narrator = modelInfo(set.narrator).label;
-  const rest = [...new Set([set.referee, set.scribe])].map((id) => modelInfo(id).label);
-  const line = rest.length === 1 && rest[0] === narrator ? t('{model} for every role.', { model: narrator }) : t('{narrator} writes the story; {rest} does the rest.', { narrator, rest: listOf(rest) });
-  return preset === 'balanced' ? t('Recommended. {line}', { line }) : line;
-}
 
 // ---------- Small controls ----------
 
@@ -76,7 +56,7 @@ export function Switch({ on, labelledBy, disabled = false, onChange }: { on: boo
 }
 
 /** A value that is shown and cannot be changed here. */
-function Fixed({ children }: { children: ReactNode }) {
+export function Fixed({ children }: { children: ReactNode }) {
   return <span className="fixed"><Icon name="lock" size={14} />{children}</span>;
 }
 
@@ -184,9 +164,8 @@ export function Settings({ tab }: { tab: string }) {
 function AppSettingsTab() {
   const a = useApp();
   const st = a.settings;
-  const key = a.apiKey;
   const { current, jump, anchor } = useSections(APP_SECTIONS);
-  const [ask, setAsk] = useState<'key' | 'erase' | null>(null);
+  const [ask, setAsk] = useState<'erase' | null>(null);
   const [note, setNote] = useState('');
   // How much room the app's data takes on this device, where the browser will say.
   const [room, setRoom] = useState<{ used: number; allowed: number; kept: boolean } | null>(null);
@@ -198,10 +177,6 @@ function AppSettingsTab() {
   const [capText, setCapText] = useState<string | null>(null); // the limit while it is being typed
   const file = useRef<HTMLInputElement>(null);
   const sec = (id: string) => APP_SECTIONS.find((s) => s.id === id)!;
-
-  // The key
-  const usable = Object.values(MODELS).filter((x) => a.available.includes(x.id)).map((x) => x.label);
-  const missing = a.available.length > 0 ? [...new Set(Object.values(st.models))].filter((id) => !a.available.includes(id)).map((id) => modelInfo(id).label) : [];
 
   // Spending: real charges only. Demo turns are estimates and never count against the limit.
   const spent = a.spentToday();
@@ -225,7 +200,9 @@ function AppSettingsTab() {
     const got = await a.importStory(await f.text());
     setNote('id' in got ? t('Story imported. It is in your stories.') : got.problem);
   };
-  const kept = [tn(a.stories.length, '{n} story', '{n} stories'), t('these settings'), ...(key && st.keep === 'device' ? [t('your API key')] : [])];
+  // The other services' models in use, priced from their lists.
+  const others = [...new Set(Object.values(roleModels(st.models)))].filter((id) => serviceOf(id) !== 'anthropic').map(modelInfo);
+  const kept = [tn(a.stories.length, '{n} story', '{n} stories'), t('these settings'), ...(a.keyed.length && st.keep === 'device' ? [tn(a.keyed.length, 'your API key', 'your API keys')] : [])];
 
   return (
     <div className="split-l" ref={anchor}>
@@ -234,57 +211,14 @@ function AppSettingsTab() {
       <div className="set-col">
         <Jumps sections={APP_SECTIONS} jump={jump} />
 
-        {/* API key */}
+        {/* The services and their keys */}
         <Section info={sec('key')}>
-          <div className="sets">
-            <div className="set">
-              <div className="set-l set-key">
-                <div className="keybox" role="img" aria-label={key ? t('Your key, hidden. It ends in {end}.', { end: key.slice(-4) }) : t('No key is saved.')}>
-                  <Icon name="lock" size={18} />
-                  <span className="mono" aria-hidden="true">{key ? maskKey(key) : t('No key saved')}</span>
-                </div>
-                {key ? (
-                  <p className="state">
-                    {a.available.length > 0
-                      ? <><b><Icon name="check" size={14} strong />{t('Accepted by Anthropic')}</b><span>{usable.length ? t('It can use {models}.', { models: listOf(usable) }) : t('It can use none of the models in the price table.')}</span></>
-                      : <span>{t('Saved. It has not been checked from this device.')}</span>}
-                  </p>
-                ) : <p className="state"><span>{t('The demo narrator answers until you add a key.')}</span></p>}
-                {missing.length > 0 && <p className="help t-err">{t('This key cannot use {models}. Choose another preset.', { models: listOf(missing) })}</p>}
-              </div>
-            </div>
-            {key && (
-              <Row label={t('Where the key is kept')} help={st.keep === 'device' ? t('On this device only. It is sent to Anthropic and nowhere else. To change this, replace the key.') : t('For this session only: it is forgotten when you close the app. To change this, replace the key.')}>
-                <Fixed>{st.keep === 'device' ? t('This device') : t('This session')}</Fixed>
-              </Row>
-            )}
-            <Row label={t('Demo narrator')} labelId="set-sw-demo" help={key ? t('Canned story text instead of Claude. Nothing is sent and nothing is charged.') : t('Canned story text instead of Claude. Nothing is sent and nothing is charged. It stays on while there is no key.')}>
-              <Switch on={a.usingDemo} labelledBy="set-sw-demo" disabled={!key} onChange={(on) => a.setSettings({ demo: on })} />
-            </Row>
-            <div className="set btns">
-              {key ? (
-                <>
-                  <a className="btn" href={href('welcome')}><Icon name="refresh" size={18} />{t('Replace')}</a>
-                  <button className="btn btn-danger" type="button" onClick={() => setAsk('key')}><Icon name="trash" size={18} />{t('Remove')}</button>
-                </>
-              ) : <a className="btn btn-primary" href={href('welcome')}><Icon name="key" size={18} />{t('Add your API key')}</a>}
-            </div>
-          </div>
+          <ServiceKeys />
         </Section>
 
-        {/* Models */}
+        {/* The model of each role, at one service or several */}
         <Section info={sec('models')}>
-          <div className="sets">
-            <Row label={t('Preset')} help={presetLine(st.preset)} wrap>
-              <Seg label={t('Preset')} value={st.preset === 'custom' ? null : st.preset} options={PRESET_NAMES.map((p) => ({ ...p, label: t(p.label) }))} onChange={(preset) => a.setSettings({ preset })} />
-            </Row>
-            {ROLES.map((r) => (
-              <Row key={r.id} label={t(r.label)} help={t(r.does)}><Fixed>{modelInfo(st.models[r.id]).label}</Fixed></Row>
-            ))}
-            <Row help={a.usingDemo
-              ? t('The preset sets the model of each role; choosing them one by one comes later. While the demo narrator is on, none of these models is called: costs are estimated as if they were.')
-              : t('The preset sets the model of each role; choosing them one by one comes later. A change applies from the next turn.')} />
-          </div>
+          <ModelsSection />
         </Section>
 
         {/* Narration */}
@@ -345,16 +279,16 @@ function AppSettingsTab() {
 
         {/* Prices */}
         <Section info={sec('prices')} end={<span className="t-sm t-2">{t('As of {date}', { date: longDate(PRICES_AS_OF) })}</span>}>
-          <p className="help">{t('Anthropic’s list prices, in US dollars for a million units of text. The app counts the cost of every turn with them.')}</p>
+          <p className="help">{t('List prices, in US dollars for a million units of text. The app counts the cost of every turn with them. Claude’s are kept here; those of Venice and NanoGPT are read from their own lists when a model is chosen, and both also say what each call cost.')}</p>
           <table className="tbl prices">
             <thead><tr><th>{t('Model')}</th><th className="r">{t('Read')}</th><th className="r">{t('From cache')}</th><th className="r">{t('Written')}</th></tr></thead>
             <tbody>
-              {Object.values(MODELS).map((x) => (
-                <tr key={x.id}><td><b>{x.label}</b></td><td className="r">{price(x.input)}</td><td className="r">{price(x.cacheRead)}</td><td className="r">{price(x.output)}</td></tr>
+              {[...Object.values(MODELS), ...others].map((x) => (
+                <tr key={x.id}><td><b>{x.label}</b>{serviceOf(x.id) !== 'anthropic' && <span className="t-2"> · {SERVICE_NAME[serviceOf(x.id)]}</span>}</td><td className="r">{price(x.input)}</td><td className="r">{price(x.cacheRead)}</td><td className="r">{price(x.output)}</td></tr>
               ))}
             </tbody>
           </table>
-          <p className="help prices-n">{t('Saving text to the cache costs {five} times the read price when it is kept for five minutes, and {hour} times when it is kept for an hour; reading it back costs the “from cache” price. The table cannot be edited yet.', { five: CACHE_WRITE_5M, hour: CACHE_WRITE_1H })}</p>
+          <p className="help prices-n">{t('At Claude, saving text to the cache costs {five} times the read price when it is kept for five minutes, and {hour} times when it is kept for an hour; reading it back costs the “from cache” price. The table cannot be edited yet.', { five: CACHE_WRITE_5M, hour: CACHE_WRITE_1H })}</p>
         </Section>
 
         {/* Your data */}
@@ -377,7 +311,7 @@ function AppSettingsTab() {
               <input ref={file} type="file" accept=".json,application/json" hidden onChange={(e) => { void importIt(e.target.files?.[0]); e.target.value = ''; }} />
             </Row>
             {note && <div className="set set-join"><p className="help" role="status">{note}</p></div>}
-            <Row label={t('Erase everything')} help={t('Erases every story, these settings and the key from this device. It cannot be undone.')} wrap>
+            <Row label={t('Erase everything')} help={t('Erases every story, these settings and the keys from this device. It cannot be undone.')} wrap>
               <button className="btn btn-danger" type="button" onClick={() => setAsk('erase')}><Icon name="trash" size={18} />{t('Erase everything')}</button>
             </Row>
           </div>
@@ -394,7 +328,7 @@ function AppSettingsTab() {
             <Row
               label={a.install.standalone ? t('Installed on this device') : t('Install on this device')}
               help={a.install.standalone
-                ? (a.install.offline ? t('Bitor Quest opens in a window of its own, and opens without a network connection. Talking to Claude still needs one.') : t('Bitor Quest opens in a window of its own.'))
+                ? (a.install.offline ? t('Bitor Quest opens in a window of its own, and opens without a network connection. Playing still needs one.') : t('Bitor Quest opens in a window of its own.'))
                 : a.install.can ? t('Puts Bitor Quest on your home screen or desktop, in a window of its own. Nothing is downloaded from anywhere but this site, and your stories stay where they are.')
                   : a.install.ios ? t('In Safari, tap the Share button, then “Add to Home Screen”.')
                     : (a.install.offline ? t('Your browser’s menu may offer “Install” or “Add to Home screen”. Either way, the app is kept on this device and opens without a network connection.') : t('Your browser’s menu may offer “Install” or “Add to Home screen”.'))}
@@ -407,21 +341,11 @@ function AppSettingsTab() {
             <div><dt>{t('Version')}</dt><dd>{t('Bitor Quest 0.1, a prototype')}</dd></div>
             <div><dt>{t('Licence')}</dt><dd>{t('Open source, under AGPL-3.0-or-later')}</dd></div>
             <div><dt>{t('Rules')}</dt><dd>{t('Penta. Its rules descend from 3D&T by Marcelo Cassaro.')}</dd></div>
-            <div><dt>Anthropic</dt><dd>{t('Bitor Quest is not affiliated with Anthropic.')}</dd></div>
+            <div><dt>{t('The services')}</dt><dd>{t('Bitor Quest is not affiliated with Anthropic, Venice or NanoGPT.')}</dd></div>
           </dl>
         </Section>
       </div>
 
-      {ask === 'key' && (
-        <Modal title={t('Remove the key?')} onClose={() => setAsk(null)} foot={(
-          <>
-            <button className="btn" type="button" onClick={() => setAsk(null)}>{t('Keep the key')}</button>
-            <button className="btn btn-danger" type="button" onClick={() => { void a.removeKey(); setAsk(null); }}><Icon name="trash" size={18} />{t('Remove the key')}</button>
-          </>
-        )}>
-          <p className="t-2">{t('The key is erased from this device. Your stories and settings stay. Until you add a key again, the demo narrator answers and nothing is charged.')}</p>
-        </Modal>
-      )}
       {ask === 'erase' && (
         <Modal title={t('Erase everything?')} onClose={() => setAsk(null)} foot={(
           <>
@@ -429,7 +353,7 @@ function AppSettingsTab() {
             <button className="btn btn-danger" type="button" onClick={() => { void a.eraseEverything(); }}><Icon name="trash" size={18} />{t('Erase everything')}</button>
           </>
         )}>
-          <p className="t-2">{t('{things} will be erased from this device. This cannot be undone.', { things: cap(listOf([tn(a.stories.length, '{n} story', '{n} stories'), t('your settings'), t('the API key')])) })}</p>
+          <p className="t-2">{t('{things} will be erased from this device. This cannot be undone.', { things: cap(listOf([tn(a.stories.length, '{n} story', '{n} stories'), t('your settings'), t('the API keys')])) })}</p>
           {target && (
             <>
               <div className="alert alert-warn">

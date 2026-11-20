@@ -2,12 +2,14 @@ import { defineConfig } from 'vitest/config';
 import type { Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// The built site may talk to exactly one place: the Claude API. Everything else must come from the
-// site's own files. The policy is added at build time only, because the dev server needs inline
-// scripts for hot reloading.
+// The built site may talk to exactly three places, the services that can play the game: Claude's API,
+// Venice's (src/game/llm/venice.ts) and NanoGPT's (src/game/llm/nanogpt.ts). Each is used only for a
+// player who gave that service's key, and only for the roles set to its models. Everything else must
+// come from the site's own files. The policy is added at build time only, because the dev server needs
+// inline scripts for hot reloading.
 const CSP = [
   "default-src 'self'",
-  "connect-src https://api.anthropic.com",
+  "connect-src https://api.anthropic.com https://api.venice.ai https://nano-gpt.com",
   "script-src 'self'",
   "style-src 'self' 'unsafe-inline'", // React writes style attributes (meter widths, colours per person)
   "img-src 'self' data:",
@@ -31,7 +33,7 @@ function contentSecurityPolicy(): Plugin {
 //   - The page and the files it needs at once are kept when the worker is installed.
 //   - Anything else of the site's own (the PDF reader, fetched only when a PDF is chosen) is kept the first time it is used.
 //   - The page itself is fetched fresh when there is a network, so a new version is noticed; the kept copy is for when there is none.
-//   - A request to anywhere else (the Claude API) is never touched.
+//   - A request to anywhere else (the services' APIs) is never touched.
 //   - A kept file is found by its address alone. Some hosts answer with "Vary: Origin", and the page asks for its script with an Origin
 //     header the worker's own fetch did not send: matched strictly, the script would never be found again. (Seen with the preview server.)
 const SERVICE_WORKER = `const CACHE = 'bq-__VERSION__';

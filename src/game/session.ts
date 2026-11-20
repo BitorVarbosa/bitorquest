@@ -28,11 +28,11 @@ import { applyExpansion, cleanExpansion } from './expand';
 import { advanceFronts, frontOpen, setBack, stopFront } from './fronts';
 import { PARTY, applyFate, canJoin, joinParty, lapseSeeds, leaveParty, movePerson, sendAway, tell, walkingOut } from './whereabouts';
 import { expandRequest, type ExpandOut } from './llm/architect';
-import { costOf } from './llm/models';
+import { costOf, type Service } from './llm/models';
 import { PASSAGE_MIN_CHARS, firstPassageSoFar, parseReply, storyTextSoFar, type Flags, type StoryPart } from './llm/parse';
 import { SCENE_MAX_CHARS, asideRequest, epilogueRequest, narratorRequest, refereeRequest, scribeRequest, transcriptChars, type ModelChoice } from './llm/requests';
 import type { EpilogueOut, RefereeOut, ScribeOut } from './llm/schemas';
-import { LlmError, type LlmResponse, type MockHints, type Role, type Transport } from './llm/transport';
+import { LlmError, type LlmErrorDetail, type LlmResponse, type MockHints, type Role, type Transport } from './llm/transport';
 import { applyUndo, undoOf } from './patch';
 import { findMentions, recall, recallLine, unknownNamedIn } from './search';
 import { currentScene, fallbackSummary, nextId, putAwayScenes, routeBetween, sceneTitle, startScene } from './story';
@@ -88,7 +88,7 @@ export type Phase =
   | 'mapping'; // the place being arrived at was only a sketch: what is inside it is being written
 
 export type Blocker =
-  | { kind: 'offline' | 'overloaded' | 'rate' | 'key' | 'credit' | 'error'; message: string; status: number | null; retryAfter: number | null }
+  | { kind: 'offline' | 'overloaded' | 'rate' | 'key' | 'credit' | 'error'; message: string; status: number | null; retryAfter: number | null; service?: Service; detail?: LlmErrorDetail | null }
   | { kind: 'refusal' }
   | { kind: 'budget'; spent: number; cap: number }
   /** The same story is open in another window: playing here would let one overwrite the other. */
@@ -718,7 +718,7 @@ export class Session {
       return;
     }
     const kind = e.kind === 'auth' ? 'key' : e.kind === 'bad_request' || e.kind === 'other' ? 'error' : e.kind;
-    this.blocker = { kind, message: e.message, status: e.status, retryAfter: e.retryAfter };
+    this.blocker = { kind, message: e.message, status: e.status, retryAfter: e.retryAfter, service: e.service, detail: e.detail };
     if (this.live) this.live.first = undefined;
     this.emit();
   }
@@ -726,7 +726,7 @@ export class Session {
   private async call(role: Role, send: () => Promise<LlmResponse>, into: UsageEntry[]): Promise<LlmResponse> {
     const res = await send();
     const entry: UsageEntry = {
-      at: this.deps.now(), role, model: res.model, ...res.usage, cost: costOf(res.model, res.usage), simulated: res.simulated,
+      at: this.deps.now(), role, model: res.model, ...res.usage, cost: res.cost ?? costOf(res.model, res.usage), simulated: res.simulated,
     };
     into.push(entry);
     this.deps.budget.record(entry, this.story.id);

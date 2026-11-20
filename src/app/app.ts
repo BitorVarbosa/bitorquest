@@ -9,10 +9,18 @@ import { APPEARANCE_MAX, LOOK_MAX } from '../game/cards';
 import type { DocState } from '../game/ingest';
 import { anthropicTransport, checkKey } from '../game/llm/anthropic';
 import { mockTransport } from '../game/llm/mock';
-import { PRESETS, type Preset, type RoleModels } from '../game/llm/models';
+import {
+  PRESETS, SERVICES, SERVICE_NAME, gameModelId, registerModel, roleModels, serviceOf, servicesOf,
+  type ModelInfo, type Preset, type RoleModels, type Service,
+} from '../game/llm/models';
 import { costOf } from '../game/llm/models';
+import { checkNanoKey, nanoTransport } from '../game/llm/nanogpt';
 import { pictureRequest, pictureWords, type ModelChoice } from '../game/llm/requests';
+import { byService } from '../game/llm/route';
 import { LlmError, type Transport } from '../game/llm/transport';
+import { checkVeniceKey, veniceTransport } from '../game/llm/venice';
+import { suggestPlan } from '../game/llm/plans';
+import { modelsOf } from './services';
 import { SAVE_VERSION, SaveError, fromFile, toFile, upgrade } from '../game/save';
 import { Session, type Budget, type SceneStore } from '../game/session';
 import { currentScene, newStory } from '../game/story';
@@ -57,12 +65,57 @@ export interface AppSettings {
   demo: boolean;
   /** The welcome screen has been completed. */
   onboarded: boolean;
+  /**
+   * Models of Venice and NanoGPT chosen at some time, newest first, with their prices and what they can
+   * do, as those services listed them: the requests and the usage records are priced and named from these.
+   */
+  providerModels: ModelInfo[];
+  /** Send NanoGPT requests only to providers that keep nothing of them. */
+  nanoPrivate: boolean;
+  /** Offer only Venice's own models, which keep nothing; Venice's "anonymized" models pass the text on to another company. */
+  venicePrivate: boolean;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
   keep: 'device', language: 'en', dailyCap: 1, preset: 'balanced', models: PRESETS.balanced, effort: 'low',
   paging: true, diceAnimation: true, throwDice: true, ...DEFAULT_LOOK, demo: true, onboarded: false,
+  providerModels: [], nanoPrivate: false, venicePrivate: true,
 };
+
+/**
+ * A key pasted for the wrong service is never sent there: a key is a secret, and the other company
+ * would see it. Keys say whose they are: Claude's start "sk-ant-", NanoGPT's "sk-nano-", Venice's
+ * "VENICE".
+ */
+export function refuseOtherServicesKey(service: Service, key: string): void {
+  const k = key.trim();
+  const owner: Service | null = /^sk-ant-/i.test(k) ? 'anthropic' : /^sk-nano-/i.test(k) ? 'nanogpt' : /^venice/i.test(k) ? 'venice' : null;
+  if (owner && owner !== service) {
+    throw new LlmError('auth', t('This looks like a {owner} key. Choose {owner} to use it; it was not sent to {service}.', { owner: SERVICE_NAME[owner], service: SERVICE_NAME[service] }), null, null, service);
+  }
+}
+
+/** A NanoGPT narrator chosen in the version that allowed only that, as it was kept. */
+interface LegacyNano { id: string; name?: string; description?: string; category?: string; input: number; output: number; cacheRead: number; context?: number | null; maxOutput?: number | null; thinks?: boolean; canStopThinking?: boolean }
+
+/** Settings kept by an earlier version, brought to this one: a NanoGPT narrator becomes the narrator's model. */
+export function upgradeSettings(kept: Partial<AppSettings> & { nanoNarrator?: string | null; nanoModels?: LegacyNano[] }): Partial<AppSettings> {
+  const { nanoNarrator, nanoModels, ...rest } = kept;
+  if (!nanoModels?.length && !nanoNarrator) return rest;
+  const old: ModelInfo[] = (nanoModels ?? []).map((m) => ({
+    id: gameModelId('nanogpt', m.id), label: m.name || m.id, input: m.input, output: m.output, cacheRead: m.cacheRead,
+    thinkingOff: !m.thinks || m.canStopThinking ? { type: 'disabled' } : null,
+    structured: false, vision: false, thinks: !!m.thinks, efforts: m.canStopThinking ? ['none'] : [],
+    privacy: m.category === 'Private/TEE' ? 'private' : 'passed-on', context: m.context ?? null, maxOutput: m.maxOutput ?? null,
+    description: m.description ?? '', category: m.category ?? '',
+  }));
+  const providerModels = [...(rest.providerModels ?? []), ...old.filter((m) => !(rest.providerModels ?? []).some((x) => x.id === m.id))];
+  // Only story turns and questions to the narrator went to NanoGPT: world building stays on the model it used.
+  const models = nanoNarrator && rest.models
+    ? { ...rest.models, architect: rest.models.architect ?? rest.models.narrator, narrator: gameModelId('nanogpt', nanoNarrator) }
+    : rest.models;
+  return { ...rest, providerModels, ...(models ? { models } : {}), ...(nanoNarrator ? { preset: 'custom' as const } : {}) };
+}
 
 /**
  * Look commands for "&script=" (development and screenshots only): "theme:<id>", "light" (Paper),
@@ -82,6 +135,12 @@ function devLook(st: AppSettings, cmd: string, arg: string): AppSettings {
 }
 
 const SESSION_KEY = 'bq-key';
+/** Where each service's key is kept: in this browser's storage, or for this session only. */
+const KEY_SLOT: Record<Service, { kv: string; session: string }> = {
+  anthropic: { kv: 'apiKey', session: SESSION_KEY },
+  venice: { kv: 'veniceKey', session: 'bq-venice-key' },
+  nanogpt: { kv: 'nanoKey', session: 'bq-nano-key' },
+};
 const LOOK_CACHE = 'bq-look';
 
 /**
@@ -131,7 +190,13 @@ function rowOf(story: Story): StoryRow {
 class App {
   ready = false;
   settings: AppSettings = DEFAULT_SETTINGS;
+  /** The player's Claude key. */
   apiKey: string | null = null;
+  /** The player's Venice and NanoGPT keys, when they gave them. */
+  veniceKey: string | null = null;
+  nanoKey: string | null = null;
+  /** Each service's balance in dollars when its key was last checked, when the service says. */
+  balance: Partial<Record<Service, number | null>> = {};
   /** Model ids the key can use, as reported by the API when the key was last checked. */
   available: string[] = [];
   stories: StoryRow[] = [];
@@ -148,7 +213,8 @@ class App {
   private version = 0;
   private listeners = new Set<() => void>();
   private unsubSession: (() => void) | null = null;
-  private real: { key: string; transport: Transport } | null = null;
+  /** The connection to each service, made again when its key or its privacy setting changes. */
+  private links: Partial<Record<Service, { sig: string; transport: Transport }>> = {};
   private demo: Transport | null = null;
 
   subscribe = (fn: () => void): (() => void) => {
@@ -173,12 +239,17 @@ class App {
       const kept = await getKv<Partial<AppSettings>>('settings', {});
       // On a first run the interface takes the device's language, where that is Portuguese.
       const first: Partial<AppSettings> = kept.language ? {} : { language: /^pt\b/i.test(navigator.language ?? '') ? 'pt' : 'en' };
-      this.settings = { ...DEFAULT_SETTINGS, ...first, ...kept };
+      this.settings = { ...DEFAULT_SETTINGS, ...first, ...upgradeSettings(kept) };
       await this.useLanguage(this.settings.language);
       // Settings saved by an earlier version: 'dark' becomes Slate, 'light' becomes Paper, an unknown theme falls back to Slate.
       this.settings = { ...this.settings, ...cleanLook(this.settings) };
-      const stored = this.settings.keep === 'device' ? await getKv<string | null>('apiKey', null) : sessionStorage.getItem(SESSION_KEY);
-      this.apiKey = stored || null;
+      for (const service of SERVICES) {
+        const slot = KEY_SLOT[service];
+        const stored = this.settings.keep === 'device' ? await getKv<string | null>(slot.kv, null) : sessionStorage.getItem(slot.session);
+        this.setKeyOf(service, stored || null);
+      }
+      for (const m of this.settings.providerModels ?? []) registerModel(m);
+      void this.refreshModels();
       this.available = await getKv<string[]>('models', []);
       this.stories = (await db.stories.toArray()).sort((a, b) => b.lastPlayed - a.lastPlayed);
       this.worlds = (await db.worlds.toArray()).sort((a, b) => b.built - a.built);
@@ -254,6 +325,7 @@ class App {
     if (patch.language && patch.language !== this.settings.language) void this.useLanguage(patch.language);
     this.settings = { ...this.settings, ...patch };
     if (patch.preset && patch.preset !== 'custom') this.settings.models = PRESETS[patch.preset];
+    for (const m of patch.providerModels ?? []) registerModel(m);
     if (!this.sandbox) void setKv('settings', this.settings).catch(() => {});
     this.applyTheme();
     this.bump();
@@ -306,43 +378,196 @@ class App {
     }
   }
 
-  /** Check a key with Anthropic (free: it lists models) and keep it. Throws an LlmError when the key is rejected. */
+  /** The key for a service, when there is one on this device. */
+  keyOf(service: Service): string | null {
+    return service === 'anthropic' ? this.apiKey : service === 'venice' ? this.veniceKey : this.nanoKey;
+  }
+
+  private setKeyOf(service: Service, key: string | null): void {
+    if (service === 'anthropic') this.apiKey = key;
+    else if (service === 'venice') this.veniceKey = key;
+    else this.nanoKey = key;
+  }
+
+  /** The services there is a key for on this device. */
+  get keyed(): Service[] {
+    return SERVICES.filter((s) => !!this.keyOf(s));
+  }
+
+  /** Keep a service's key where the player chose, or forget it (null). Every key is kept the same way. */
+  private async storeKey(service: Service, key: string | null): Promise<void> {
+    if (this.sandbox) return;
+    const slot = KEY_SLOT[service];
+    sessionStorage.removeItem(slot.session);
+    await db.kv.delete(slot.kv).catch(() => {});
+    if (!key) return;
+    if (this.settings.keep === 'device') await setKv(slot.kv, key).catch(() => {});
+    else sessionStorage.setItem(slot.session, key);
+  }
+
+  /** Check a Claude key with Anthropic (free: it lists models) and keep it. Throws an LlmError when the key is rejected. */
   async useKey(key: string, keep: AppSettings['keep']): Promise<string[]> {
+    refuseOtherServicesKey('anthropic', key);
+    const first = this.keyed.length === 0;
     const ids = await checkKey(key.trim());
     this.apiKey = key.trim();
     this.available = ids;
-    this.real = null;
-    if (!this.sandbox) {
-      sessionStorage.removeItem(SESSION_KEY);
-      await db.kv.delete('apiKey').catch(() => {});
-      if (keep === 'device') await setKv('apiKey', this.apiKey).catch(() => {});
-      else sessionStorage.setItem(SESSION_KEY, this.apiKey);
-      void setKv('models', ids).catch(() => {});
-    }
-    this.setSettings({ keep, demo: false });
+    delete this.links.anthropic;
+    // Where keys are kept is one choice for all of them: the others move with this one.
+    this.settings = { ...this.settings, keep };
+    for (const service of SERVICES) await this.storeKey(service, this.keyOf(service));
+    if (!this.sandbox) void setKv('models', ids).catch(() => {});
+    this.setSettings({ keep, ...(first ? { demo: false } : {}) });
     return ids;
   }
 
-  async removeKey(): Promise<void> {
-    this.apiKey = null;
-    this.real = null;
-    if (!this.sandbox) {
-      sessionStorage.removeItem(SESSION_KEY);
-      await db.kv.delete('apiKey').catch(() => {});
+  /**
+   * Check a Venice or NanoGPT key (free: it asks for the balance) and keep it where the other keys are.
+   * Returns the balance in dollars when the service says. Throws an LlmError when the key is rejected.
+   */
+  async useServiceKey(service: Exclude<Service, 'anthropic'>, key: string, keep: AppSettings['keep'] = this.settings.keep): Promise<number | null> {
+    refuseOtherServicesKey(service, key);
+    const first = this.keyed.length === 0;
+    const balance = service === 'venice' ? await checkVeniceKey(key.trim()) : await checkNanoKey(key.trim());
+    this.setKeyOf(service, key.trim());
+    this.balance = { ...this.balance, [service]: balance };
+    delete this.links[service];
+    if (keep !== this.settings.keep) {
+      this.settings = { ...this.settings, keep };
+      for (const s of SERVICES) await this.storeKey(s, this.keyOf(s));
+    } else {
+      await this.storeKey(service, this.keyOf(service));
     }
-    this.setSettings({ demo: true });
+    this.setSettings({ keep, ...(first ? { demo: false } : {}) });
+    void this.refreshModels();
+    return balance;
   }
 
-  /** True when turns are answered by the demo narrator: either chosen, or there is no key. */
-  get usingDemo(): boolean { return this.settings.demo || !this.apiKey; }
+  /** Keep every key on this device, or for this session only: each is moved where the player chose. */
+  async keepKeys(keep: AppSettings['keep']): Promise<void> {
+    if (keep === this.settings.keep) return;
+    this.settings = { ...this.settings, keep };
+    for (const service of SERVICES) await this.storeKey(service, this.keyOf(service));
+    this.setSettings({ keep });
+  }
+
+  /**
+   * Forget a service's key. When a part of the game was played on that service, the demo narrator
+   * answers until the player adds the key again or chooses other models: the game never moves a part
+   * of the game to another service on its own, since a player may have chosen this one for its privacy.
+   */
+  async removeServiceKey(service: Service): Promise<void> {
+    this.setKeyOf(service, null);
+    if (service === 'anthropic') this.available = [];
+    delete this.balance[service];
+    delete this.links[service];
+    await this.storeKey(service, null);
+    this.bump();
+  }
+
+  /** Forget the Claude key. */
+  removeKey(): Promise<void> {
+    return this.removeServiceKey('anthropic');
+  }
+
+  /** Remember models of another service with their prices, so that requests and usage records can be priced and named. */
+  remember(models: ModelInfo[]): ModelInfo[] {
+    const fresh = models.filter((m) => serviceOf(m.id) !== 'anthropic');
+    const kept = [...fresh, ...(this.settings.providerModels ?? []).filter((m) => !fresh.some((x) => x.id === m.id))].slice(0, 80);
+    for (const m of fresh) registerModel(m);
+    return kept;
+  }
+
+  /** Put a model to one role. A model of another service is remembered with its price. */
+  chooseModel(role: keyof RoleModels, model: ModelInfo): void {
+    const providerModels = this.remember([model]);
+    this.setSettings({ providerModels, preset: 'custom', models: { ...this.settings.models, [role]: model.id } });
+  }
+
+  /** Put a whole plan in place: a model for every role, at one service or several. Claude's presets go through setSettings({ preset }). */
+  usePlan(models: RoleModels, infos: ModelInfo[]): void {
+    const providerModels = this.remember(infos);
+    this.setSettings({ providerModels, preset: 'custom', models });
+  }
+
+  /**
+   * Play the whole game on one service. Claude: its preset (the one chosen last, or Balanced). Venice or
+   * NanoGPT: a model for every role from that service's live list (plans.ts), private models only when
+   * the player asked for that. Throws an LlmError when the list cannot be read, and an Error when it has
+   * no model that can do the work.
+   */
+  async useService(service: Service, claudePreset?: Preset): Promise<void> {
+    if (service === 'anthropic') {
+      this.setSettings({ preset: claudePreset ?? (this.settings.preset === 'custom' ? 'balanced' : this.settings.preset) });
+      return;
+    }
+    const list = await modelsOf(service);
+    const privateOnly = service === 'venice' ? this.settings.venicePrivate : this.settings.nanoPrivate;
+    const plan = suggestPlan(service, list, privateOnly);
+    if (!plan) throw new Error(t('{service} lists no model that can play every part of the game right now.', { service: SERVICE_NAME[service] }));
+    this.usePlan(plan.models, plan.infos);
+  }
+
+  /**
+   * What the other services' lists now say of the models in use: price, what each can do and, above
+   * all, whether it is still private. A model Venice now passes on to another company is then refused
+   * before anything is sent (venice.ts). Quietly does nothing when a list cannot be read.
+   */
+  async refreshModels(): Promise<void> {
+    const ids = new Set<string>(Object.values(roleModels(this.settings.models)));
+    const fresh: ModelInfo[] = [];
+    for (const service of this.servicesInUse) {
+      if (service === 'anthropic') continue;
+      try {
+        for (const m of await modelsOf(service)) if (ids.has(m.id)) fresh.push(m);
+      } catch { /* the list could not be read: what was known stays */ }
+    }
+    if (!fresh.length) return;
+    this.setSettings({ providerModels: this.remember(fresh) });
+  }
+
+  /** Ask Venice or NanoGPT again for a key's balance (free). Quietly does nothing when it cannot. */
+  async refreshBalance(service: Exclude<Service, 'anthropic'>): Promise<void> {
+    const key = this.keyOf(service);
+    if (!key || this.sandbox) return;
+    try {
+      const balance = service === 'venice' ? await checkVeniceKey(key) : await checkNanoKey(key);
+      this.balance = { ...this.balance, [service]: balance };
+      this.bump();
+    } catch { /* the balance stays unknown */ }
+  }
+
+  /** The services the chosen models send anything to. */
+  get servicesInUse(): Service[] {
+    return servicesOf(this.settings.models);
+  }
+
+  /** The services in use that have no key on this device: their roles cannot be played. */
+  get missingKeys(): Service[] {
+    return this.servicesInUse.filter((s) => !this.keyOf(s));
+  }
+
+  /** True when turns are answered by the demo narrator: either chosen, or a key that the chosen models need is missing. */
+  get usingDemo(): boolean { return this.settings.demo || this.missingKeys.length > 0; }
 
   transport(): Transport {
-    if (this.usingDemo || !this.apiKey) {
+    if (this.usingDemo) {
       this.demo ??= mockTransport({ streamDelay: 16 });
       return this.demo;
     }
-    if (this.real?.key !== this.apiKey) this.real = { key: this.apiKey, transport: anthropicTransport(this.apiKey) };
-    return this.real.transport;
+    const links: Partial<Record<Service, Transport>> = {};
+    for (const service of this.servicesInUse) {
+      const key = this.keyOf(service);
+      if (!key) continue;
+      const privateOnly = service === 'nanogpt' ? this.settings.nanoPrivate : service === 'venice' ? this.settings.venicePrivate : false;
+      const sig = JSON.stringify([key, privateOnly]);
+      if (this.links[service]?.sig !== sig) {
+        const transport = service === 'anthropic' ? anthropicTransport(key) : service === 'venice' ? veniceTransport(key, { privateOnly }) : nanoTransport(key, { privateOnly });
+        this.links[service] = { sig, transport };
+      }
+      links[service] = this.links[service]!.transport;
+    }
+    return byService(links);
   }
 
   models(): ModelChoice {
@@ -870,7 +1095,7 @@ class App {
     const models = this.models();
     const hints = { you: '', input: note, place: '', opening: false, outcome: null, checkLabel: null, cast: [], exits: [], abilities: [], attemptable: [], teachable: [], threads: [], fight: null, fightOver: null, moment: null, aside: false, clarified: false, movedTo: null, held: null, turn: 0, picture: { who, note } };
     const res = await this.transport().send(pictureRequest(picture, who, note, language, models, hints));
-    this.budget.record({ at: Date.now(), role: 'scribe', model: res.model, ...res.usage, cost: costOf(res.model, res.usage), simulated: res.simulated }, ledger);
+    this.budget.record({ at: Date.now(), role: 'scribe', model: res.model, ...res.usage, cost: res.cost ?? costOf(res.model, res.usage), simulated: res.simulated }, ledger);
     this.bump();
     const words = pictureWords(res.text, LOOK_MAX, APPEARANCE_MAX);
     if (res.refusal || !words.appearance) throw new Error(t('Nothing came back for that picture.'));
@@ -929,7 +1154,8 @@ class App {
       await db.delete().catch(() => {});
       try { localStorage.removeItem(LOOK_CACHE); } catch { /* storage is unavailable */ }
     }
-    sessionStorage.removeItem(SESSION_KEY);
+    // Every service's key kept for this session goes too (the ones kept on the device went with the database).
+    for (const service of SERVICES) sessionStorage.removeItem(KEY_SLOT[service].session);
     location.reload();
   }
 }

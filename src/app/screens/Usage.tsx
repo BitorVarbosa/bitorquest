@@ -1,9 +1,9 @@
 // Usage: what was spent, by this app's own count.
 // Real charges and demo estimates are two separate ledgers and are never added together: real
-// spending counts against the daily limit; demo rows estimate what Claude would have cost and were
-// never charged. The page shows one ledger at a time and always says which.
+// spending counts against the daily limit; demo rows estimate what the chosen models would have cost
+// and were never charged. The page shows one ledger at a time and always says which.
 import { useState, type CSSProperties } from 'react';
-import { CACHE_WRITE_1H, CACHE_WRITE_5M, PRICES_AS_OF, cacheShare, modelInfo } from '../../game/llm/models';
+import { CACHE_WRITE_1H, CACHE_WRITE_5M, PRICES_AS_OF, SERVICES, SERVICE_NAME, cacheShare, modelInfo, serviceOf } from '../../game/llm/models';
 import type { UsageEntry } from '../../game/types';
 import { listOf, locale, m, num, t, tn } from '../../i18n';
 import { useApp } from '../app';
@@ -121,13 +121,19 @@ export function Usage() {
   const turnDemo = (turn?.usage ?? []).some((u) => u.simulated);
   const turnShare = cacheShare((turn?.usage ?? []).filter((u) => u.role === 'narrator'));
 
+  // ----- whose bill it is: the services that charged for what is counted here, else those the game is set to use -----
+  const charged = SERVICES.filter((s) => real.some((u) => serviceOf(u.model) === s));
+  const billers = charged.length > 0 ? charged : a.servicesInUse;
+  const claudeOnly = billers.every((s) => s === 'anthropic');
+  const asOf = part(new Date(`${PRICES_AS_OF}T12:00:00`), { day: 'numeric', month: 'long', year: 'numeric' });
+
   return (
     <LibraryPage page="usage" title={t('Usage')}>
       <div className="usg">
         <header className="page-h">
           <div>
             <h1 className="only-desktop">{t('Usage')}</h1>
-            <p>{a.usage.length === 0 ? t('What your key is charged, by this app’s own count') : isDemo ? t('Demo estimates: what Claude would have cost. Nothing was charged') : t('What your key was charged, by this app’s own count')}</p>
+            <p>{a.usage.length === 0 ? t('What your key is charged, by this app’s own count') : isDemo ? t('Demo estimates: what the chosen models would have cost. Nothing was charged') : t('What your key was charged, by this app’s own count')}</p>
           </div>
         </header>
 
@@ -146,9 +152,9 @@ export function Usage() {
                 <div className="grow">
                   <b>{t('These are demo estimates')}</b>
                   <p>{both
-                    ? t('This view shows only the turns played with the demo narrator. Nothing was sent to Anthropic and nothing was charged for them: the figures estimate what the same turns would have cost with Claude.')
-                    : t('Every turn so far was played with the demo narrator. Nothing was sent to Anthropic and nothing was charged: the figures estimate what the same turns would have cost with Claude.')}</p>
-                  {!a.apiKey && <a className="link link-tap" href={href('welcome')}>{t('Add your API key to play for real')}<Icon name="right" size={14} strong /></a>}
+                    ? t('This view shows only the turns played with the demo narrator. Nothing was sent to any service and nothing was charged for them: the figures estimate what the same turns would have cost with the models chosen.')
+                    : t('Every turn so far was played with the demo narrator. Nothing was sent to any service and nothing was charged: the figures estimate what the same turns would have cost with the models chosen.')}</p>
+                  {a.keyed.length === 0 && <a className="link link-tap" href={href('welcome')}>{t('Add your API key to play for real')}<Icon name="right" size={14} strong /></a>}
                 </div>
               </div>
             )}
@@ -259,7 +265,7 @@ export function Usage() {
                     </div>
                   ))}
                 </div>
-                <div className="u-sum"><span>{t('Three roles')}</span><b>{money(total)}</b></div>
+                <div className="u-sum"><span>{t('All roles')}</span><b>{money(total)}</b></div>
               </section>
             </div>
 
@@ -273,7 +279,7 @@ export function Usage() {
                   <div className="track track-l" role="img" aria-label={t('{pct} from the cache', { pct: pct(share) })}><i style={bar(share)} /></div>
                   <p className="tile-s">
                     {t('Text read from the cache costs a fraction of the usual price.')}
-                    {saved >= 0.0001 && <>{' '}{isDemo ? <T text="Over all three roles that would have saved about <b>{amount}</b>." vars={{ amount: money(saved) }} /> : <T text="Over all three roles that saved about <b>{amount}</b>." vars={{ amount: money(saved) }} />}</>}
+                    {saved >= 0.0001 && <>{' '}{isDemo ? <T text="Over all the roles that would have saved about <b>{amount}</b>." vars={{ amount: money(saved) }} /> : <T text="Over all the roles that saved about <b>{amount}</b>." vars={{ amount: money(saved) }} />}</>}
                   </p>
                 </div>
                 <ul className="why">
@@ -313,13 +319,19 @@ export function Usage() {
           </>
         )}
 
-        {/* The authoritative bill */}
+        {/* The authoritative bill: each service keeps its own. Claude's turns are priced with the table in Settings; the others with their own lists, or the cost the service reported. */}
         <div className="alert">
           <Icon name="info" />
           <div className="grow">
-            <b>{t('Anthropic’s console has the authoritative bill.')}</b>
-            <p>{t('These figures are this app’s own count, made with the price table in Settings (prices as of {date}). Small differences are possible.', { date: part(new Date(`${PRICES_AS_OF}T12:00:00`), { day: 'numeric', month: 'long', year: 'numeric' }) })}</p>
-            <a className="link link-tap" href={href('settings')}>{t('Open the price table')}<Icon name="right" size={14} strong /></a>
+            <b>{claudeOnly
+              ? t('Anthropic’s console has the authoritative bill.')
+              : billers.length === 1
+                ? t('{service}’s own account page has the authoritative bill.', { service: SERVICE_NAME[billers[0]!] })
+                : t('Each service’s own account page has the authoritative bill: {services}.', { services: listOf(billers.map((s) => SERVICE_NAME[s])) })}</b>
+            <p>{claudeOnly
+              ? t('These figures are this app’s own count, made with the price table in Settings (prices as of {date}). Small differences are possible.', { date: asOf })
+              : t('These figures are this app’s own count, made with the prices each service lists, or with what the service said a call cost. Small differences are possible.')}</p>
+            {billers.includes('anthropic') && <a className="link link-tap" href={href('settings')}>{t('Open the price table')}<Icon name="right" size={14} strong /></a>}
           </div>
         </div>
       </div>

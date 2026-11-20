@@ -47,8 +47,10 @@ export default {
   'Primary': 'Principal',
   'Something changed': 'Algo mudou',
   'Demo narrator': 'Narrador de demonstração',
-  'The story text is canned and nothing is sent or charged. Costs shown are estimates of what Claude would have cost.': 'O texto da história é pré-gravado e nada é enviado nem cobrado. Os custos mostrados são estimativas do que o Claude teria custado.',
+  'The story text is canned and nothing is sent or charged. Costs shown are estimates of what the chosen models would have cost.': 'O texto da história é pré-gravado e nada é enviado nem cobrado. Os custos mostrados são estimativas do que os modelos escolhidos teriam custado.',
   'Add your API key to play for real': 'Adicione a sua chave de API para jogar de verdade',
+  'Add a key for {services} in Settings, or choose other models': 'Adicione uma chave de {services} em Configurações, ou escolha outros modelos',
+  'Turn the demo narrator off in Settings to play for real': 'Desligue o narrador de demonstração em Configurações para jogar de verdade',
   // Root.tsx
   'Not saved': 'Não salvo',
   'Export the story': 'Exportar a história',
